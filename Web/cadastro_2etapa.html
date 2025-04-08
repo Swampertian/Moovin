@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Detalhes do Imóvel - Moovin</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <img src="img/logo.png" height="15%" width="15%" alt="Moovin">
+      <span>Moovin</span>
+    </div>
+    <nav>
+      <a href="#">Sobre</a>
+      <a href="#">Serviços</a>
+      <a href="#">Contato</a>
+      <div class="perfil-icon"></div>
+    </nav>
+  </header>
+
+  <div class="progress-bar">
+    <div class="step completed">
+      <div class="circle">1</div>
+      <span>Dados do Proprietário</span>
+    </div>
+    <div class="step active">
+      <div class="circle">2</div>
+      <span>Detalhes do imóvel</span>
+    </div>
+    <div class="step">
+      <div class="circle">3</div>
+      <span>Detalhes adicionais</span>
+    </div>
+  </div>
+
+  <main>
+    <h2>Agora, conte-nos sobre seu imóvel!</h2>
+
+    <form class="form-container">
+      <h3>Informações do Imóvel</h3>
+
+      <div class="tipo-imovel">
+        <label><input type="radio" name="tipo" value="Casa"> <div class="icon">🏠</div> Casa</label>
+        <label><input type="radio" name="tipo" value="Apartamento"> <div class="icon">🏢</div> Apartamento</label>
+        <label><input type="radio" name="tipo" value="Kitnet"> <div class="icon">🏚️</div> Kitnet</label>
+        <label><input type="radio" name="tipo" value="Sala comercial"> <div class="icon">🏬</div> Sala comercial</label>
+      </div>
+
+      <label>CEP do Imóvel
+        <input type="text" placeholder="00000-000">
+      </label>
+
+      <div class="row">
+        <label>Estado
+          <input type="text" placeholder="Digite seu Estado">
+        </label>
+        <label>Cidade
+          <input type="text" placeholder="Digite sua Cidade">
+        </label>
+      </div>
+
+      <div class="row">
+        <label>Rua ou Avenida
+          <input type="text" placeholder="Digite sua Rua/Avenida">
+        </label>
+        <label>Número
+          <input type="text" placeholder="Ex: 123">
+        </label>
+        <label class="sem-numero">
+          <input type="checkbox"> Sem número
+        </label>
+      </div>
+
+      <div class="row">
+        <label>Número de Quartos?
+          <input type="number" placeholder="Ex: 2">
+        </label>
+        <label>Número de Banheiros?
+          <input type="number" placeholder="Ex: 2">
+        </label>
+        <label>Área do Imóvel?
+          <input type="text" placeholder="Em m²">
+        </label>
+        <label>Valor do aluguel?
+          <input type="text" placeholder="Em R$">
+        </label>
+      </div>
+
+      <div class="checkboxes">
+        <div><span>Tem ar condicionado?</span>
+          <label><input type="radio" name="ar" value="sim"> Sim</label>
+          <label><input type="radio" name="ar" value="nao"> Não</label>
+        </div>
+
+        <div><span>Tem garagem?</span>
+          <label><input type="radio" name="garagem" value="sim"> Sim</label>
+          <label><input type="radio" name="garagem" value="nao"> Não</label>
+        </div>
+
+        <div><span>Tem piscina?</span>
+          <label><input type="radio" name="piscina" value="sim"> Sim</label>
+          <label><input type="radio" name="piscina" value="nao"> Não</label>
+        </div>
+
+        <div><span>É mobiliado?</span>
+          <label><input type="radio" name="mobilia" value="sim"> Sim</label>
+          <label><input type="radio" name="mobilia" value="nao"> Não</label>
+        </div>
+
+        <div><span>Permite animais?</span>
+          <label><input type="radio" name="pet" value="sim"> Sim</label>
+          <label><input type="radio" name="pet" value="nao"> Não</label>
+        </div>
+
+        <div><span>Tem mercado próximo?</span>
+          <label><input type="radio" name="mercado" value="sim"> Sim</label>
+          <label><input type="radio" name="mercado" value="nao"> Não</label>
+        </div>
+
+        <div><span>Tem ônibus próximo?</span>
+          <label><input type="radio" name="onibus" value="sim"> Sim</label>
+          <label><input type="radio" name="onibus" value="nao"> Não</label>
+        </div>
+
+        <div><span>Tem serviço de internet?</span>
+          <label><input type="radio" name="internet" value="sim"> Sim</label>
+          <label><input type="radio" name="internet" value="nao"> Não</label>
+        </div>
+      </div>
+
+      <button type="submit">Continuar</button>
+    </form>
+  </main>
+</body>
+</html>
