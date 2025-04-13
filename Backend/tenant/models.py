@@ -29,17 +29,4 @@ class Tenant(models.Model):
 
     def __str__(self):
         return self.name
-    
-class TenantRating(models.Model):
-    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='ratings')
-    rated_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    rating = models.PositiveIntegerField(choices=[(1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5')])
-    comment = models.TextField(blank=True, null=True)
-    recommended = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    class Meta:
-        unique_together = ('tenant', 'rated_by')
-        
-    def __str__(self):
-        return f"Rating for {self.tenant.name} by {self.rated_by.username}"
+

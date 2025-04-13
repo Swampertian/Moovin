@@ -1,12 +1,5 @@
 from rest_framework import serializers
-from .models import Tenant, TenantRating
-
-class TenantRatingSerializer(serializers.ModelSerializer):
-    rated_by_name = serializers.ReadOnlyField(source='rated_by.username')
-    
-    class Meta:
-        model = TenantRating
-        fields = ['id', 'rating', 'comment', 'recommended', 'created_at', 'rated_by', 'rated_by_name']
+from .models import Tenant
 
 class TenantSerializer(serializers.ModelSerializer):
     class Meta:
@@ -18,3 +11,4 @@ class TenantSerializer(serializers.ModelSerializer):
             'properties_rented', 'rated_by_landlords', 'recommended_by_landlords',
             'favorited_properties', 'fast_responder', 'member_since'
         ]
+
