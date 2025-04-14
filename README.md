@@ -56,7 +56,7 @@ Universidade: Universidade Federal do Tocantins
    - **Descrição:** Formulários com autenticação JWT
    - **Revisor:** João Vitor
 
-4. **Criar e visualizar perfis de usuário**
+4. **Criar e visualizar perfis de inquilino e proprietário (frontend e backend)**
    - **Responsáveis:** Pedro e Mayconn
    - **Descrição:** Edição e exibição de perfil com foto e informações. Inclui protótipo da tela "Criar perfil"
    - **Revisora:** Ana Julia
