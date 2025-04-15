@@ -1,0 +1,139 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Detalhes do Imóvel - Moovin</title>
+  <link rel="stylesheet" href="{% static 'immobile/css/style.css' %}">
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <img src="{% static 'immobile/img/logo.png' %}" height="15%" width="15%" alt="Moovin">
+      <span>Moovin</span>
+    </div>
+    <nav>
+      <a href="#">Sobre</a>
+      <a href="#">Serviços</a>
+      <a href="#">Contato</a>
+      <div class="perfil-icon"></div>
+    </nav>
+  </header>
+
+  <div class="progress-bar">
+    <div class="step completed">
+      <div class="circle">1</div>
+      <span>Dados do Proprietário</span>
+    </div>
+    <div class="step active">
+      <div class="circle">2</div>
+      <span>Detalhes do imóvel</span>
+    </div>
+    <div class="step">
+      <div class="circle">3</div>
+      <span>Detalhes adicionais</span>
+    </div>
+  </div>
+
+  <main>
+    <h2>Agora, conte-nos sobre seu imóvel!</h2>
+  
+    <form class="form-container" data-step="2">
+      <h3>Informações do Imóvel</h3>
+  
+      <div class="tipo-imovel">
+        <label><input type="radio" name="tipo" value="Casa" id="tipo_casa"> <div class="icon">🏠</div> Casa</label>
+        <label><input type="radio" name="tipo" value="Apartamento" id="tipo_apartamento"> <div class="icon">🏢</div> Apartamento</label>
+        <label><input type="radio" name="tipo" value="Kitnet" id="tipo_kitnet"> <div class="icon">🏚️</div> Kitnet</label>
+        <label><input type="radio" name="tipo" value="Sala comercial" id="tipo_sala"> <div class="icon">🏬</div> Sala comercial</label>
+      </div>
+  
+      <label>CEP do Imóvel
+        <input type="text" id="cep_imovel" placeholder="00000-000">
+      </label>
+  
+      <div class="row">
+        <label>Estado
+          <input type="text" id="estado_imovel" placeholder="Digite seu Estado">
+        </label>
+        <label>Cidade
+          <input type="text" id="cidade_imovel" placeholder="Digite sua Cidade">
+        </label>
+      </div>
+  
+      <div class="row">
+        <label>Rua ou Avenida
+          <input type="text" id="rua_imovel" placeholder="Digite sua Rua/Avenida">
+        </label>
+        <label>Número
+          <input type="text" id="numero_imovel" placeholder="Ex: 123">
+        </label>
+        <label class="sem-numero">
+          <input type="checkbox" id="sem_numero_imovel"> Sem número
+        </label>
+      </div>
+  
+      <div class="row">
+        <label>Número de Quartos?
+          <input type="number" id="quartos" placeholder="Ex: 2">
+        </label>
+        <label>Número de Banheiros?
+          <input type="number" id="banheiros" placeholder="Ex: 2">
+        </label>
+        <label>Área do Imóvel?
+          <input type="text" id="area" placeholder="Em m²">
+        </label>
+        <label>Valor do aluguel?
+          <input type="text" id="aluguel" placeholder="Em R$">
+        </label>
+      </div>
+  
+      <div class="checkboxes">
+        <div><span>Tem ar condicionado?</span>
+          <label><input type="radio" name="ar" value="true" id="ar_sim"> Sim</label>
+          <label><input type="radio" name="ar" value="false" id="ar_nao" checked> Não</label>
+        </div>
+  
+        <div><span>Tem garagem?</span>
+          <label><input type="radio" name="garagem" value="true" id="garagem_sim"> Sim</label>
+          <label><input type="radio" name="garagem" value="false" id="garagem_nao" checked> Não</label>
+        </div>
+  
+        <div><span>Tem piscina?</span>
+          <label><input type="radio" name="piscina" value="true" id="piscina_sim"> Sim</label>
+          <label><input type="radio" name="piscina" value="false" id="piscina_nao" checked> Não</label>
+        </div>
+  
+        <div><span>É mobiliado?</span>
+          <label><input type="radio" name="mobilia" value="true" id="mobilia_sim"> Sim</label>
+          <label><input type="radio" name="mobilia" value="false" id="mobilia_nao" checked> Não</label>
+        </div>
+  
+        <div><span>Permite animais?</span>
+          <label><input type="radio" name="pet" value="true" id="pet_sim"> Sim</label>
+          <label><input type="radio" name="pet" value="false" id="pet_nao" checked> Não</label>
+        </div>
+  
+        <div><span>Tem mercado próximo?</span>
+          <label><input type="radio" name="mercado" value="true" id="mercado_sim"> Sim</label>
+          <label><input type="radio" name="mercado" value="false" id="mercado_nao" checked> Não</label>
+        </div>
+  
+        <div><span>Tem ônibus próximo?</span>
+          <label><input type="radio" name="onibus" value="true" id="onibus_sim"> Sim</label>
+          <label><input type="radio" name="onibus" value="false" id="onibus_nao" checked> Não</label>
+        </div>
+  
+        <div><span>Tem serviço de internet?</span>
+          <label><input type="radio" name="internet" value="true" id="internet_sim"> Sim</label>
+          <label><input type="radio" name="internet" value="false" id="internet_nao" checked> Não</label>
+        </div>
+      </div>
+  
+      <button type="submit">Continuar</button>
+    </form>
+  
+    <script src="{% static 'immobile/js/register.js' %}"></script>
+  </main>
+</body>
+</html>

@@ -1,14 +1,15 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <title>Detalhes Adicionais - Moovin</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="{% static 'immobile/css/style.css' %}">
 </head>
 <body>
   <header>
     <div class="logo">
-      <img src="img/logo.png" height="15%" width="15%" alt="Moovin">
+      <img src="{% static 'immobile/img/logo.png' %}" height="15%" width="15%" alt="Moovin">
       <span>Moovin</span>
     </div>
     <nav>
@@ -35,7 +36,7 @@
   </div>
 
   <main>
-    <form class="form-container">
+    <form class="form-container" data-step="3">
       <label for="descricao">
         <strong>Adicione detalhes do imóvel</strong>
         <textarea id="descricao" placeholder="Descreva as características e diferenciais do imóvel."></textarea>
@@ -61,5 +62,7 @@
       <button type="submit" class="submit-btn">Finalizar</button>
     </form>
   </main>
+
+  <script src="{% static 'immobile/js/register.js' %}"></script>
 </body>
 </html>

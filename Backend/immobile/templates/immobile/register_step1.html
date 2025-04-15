@@ -1,14 +1,15 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <title>Cadastro do Proprietário - Moovin</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="{% static 'immobile/css/style.css' %}">
 </head>
 <body>
   <header>
     <div class="logo">
-      <img src="img/logo.png" height="15%" width="15%" alt="Moovin">
+      <img src="{% static 'immobile/img/logo.png' %}" height="15%" width="15%" alt="Moovin">
       <span>Moovin</span>
     </div>
     <nav>
@@ -38,7 +39,7 @@
     <h2>Alugue sem complicações!</h2>
     <p>Preencha suas informações abaixo e dê vida ao seu anúncio. Estamos aqui para conectar você aos melhores inquilinos.</p>
 
-    <form class="form-container">
+    <form class="form-container" data-step="1">
       <h3>Informações do Proprietário</h3>
 
       <label>Nome Completo
@@ -87,7 +88,7 @@
     </form>
   </main>
 
-  <script src="js/cadastro.js"></script>
+  <script src="{% static 'immobile/js/register.js' %}"></script>
 
 </body>
 </html>

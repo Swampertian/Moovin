@@ -13,7 +13,21 @@ STATUS_CHOICES = [
     ('Unavailable', 'Unavailable'),
 ]
 
-
+class Owner(models.Model):
+    full_name = models.CharField(max_length=100)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20)
+    cpf_cnpj = models.CharField(max_length=20, unique=True)
+    postal_code = models.CharField(max_length=10)
+    state = models.CharField(max_length=2)
+    city = models.CharField(max_length=50)
+    street = models.CharField(max_length=100)
+    number = models.CharField(max_length=10, blank=True, null=True)
+    no_number = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return self.full_name
+    
 class Immobile(models.Model):
     id_immobile = models.IntegerField(primary_key=True)
     property_type = models.CharField(max_length=20, choices=PROPERTY_TYPE_CHOICES,default='House')
@@ -47,4 +61,10 @@ class Immobile(models.Model):
     def __str__(self):
         return f"{self.property_type} in {self.city} - {self.street}, {self.number or 'No number'}"
 
-
+class Photo(models.Model):
+    immobile = models.ForeignKey(Immobile, on_delete=models.CASCADE, related_name='photos')
+    image = models.ImageField(upload_to='properties/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Foto {self.id} - {self.immobile}"
