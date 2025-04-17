@@ -1,0 +1,4 @@
+SECRET_KEY=abc123
+DEBUG=True
+DB_NAME=moovin
+DB_USER=admin
