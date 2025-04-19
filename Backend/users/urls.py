@@ -12,5 +12,4 @@ urlpatterns = [
     path('all',UserListView.as_view(),name='user-list'),
     path('<str:pk>',UserRetriverView.as_view(),name='get-user'),
     path('destroy/<str:pk>',UserDeleteView.as_view(),name='delete-user'),
-    path('home',ProtectedView.as_view(),name='test'),
 ]
