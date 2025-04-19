@@ -2,67 +2,78 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Detalhes Adicionais - Moovin</title>
-  <link rel="stylesheet" href="{% static 'immobile/css/style.css' %}">
+    <meta charset="UTF-8">
+    <title>Detalhes Adicionais - Moovin</title>
+    <link rel="stylesheet" href="{% static 'immobile/css/style.css' %}">
 </head>
 <body>
-  <header>
-    <div class="logo">
-      <img src="{% static 'immobile/img/logo.png' %}" height="15%" width="15%" alt="Moovin">
-      <span>Moovin</span>
-    </div>
-    <nav>
-      <a href="#">Sobre</a>
-      <a href="#">Serviços</a>
-      <a href="#">Contato</a>
-      <div class="perfil-icon"></div>
-    </nav>
-  </header>
-
-  <div class="progress-bar">
-    <div class="step completed">
-      <div class="circle">1</div>
-      <span>Dados do Proprietário</span>
-    </div>
-    <div class="step completed">
-      <div class="circle">2</div>
-      <span>Detalhes do imóvel</span>
-    </div>
-    <div class="step active">
-      <div class="circle">3</div>
-      <span>Detalhes adicionais</span>
-    </div>
-  </div>
-
-  <main>
-    <form class="form-container" data-step="3">
-      <label for="descricao">
-        <strong>Adicione detalhes do imóvel</strong>
-        <textarea id="descricao" placeholder="Descreva as características e diferenciais do imóvel."></textarea>
-      </label>
-
-      <label for="regras">
-        <strong>O imóvel possui taxas ou regras adicionais?</strong> <small>(Opcional)</small>
-        <textarea id="regras" placeholder="Ex: Taxa de R$ 60 reais para a limpeza da piscina, não é permitido festas após 22h."></textarea>
-      </label>
-
-      <div class="upload-box">
-        <strong>Adicione fotos do imóvel</strong>
-        <div class="upload-area">
-          <div class="upload-icon">📤</div>
-          <p>Máx. 70 MB, PNG, JPEG</p>
-          <label class="upload-button">
-            <input type="file" multiple accept=".png,.jpg,.jpeg">
-            Escolher arquivos
-          </label>
+    <header>
+        <div class="logo">
+            <img src="{% static 'immobile/img/logo.png' %}" height="15%" width="15%" alt="Moovin">
+            <span>Moovin</span>
         </div>
-      </div>
+        <nav>
+            <a href="#">Sobre</a>
+            <a href="#">Serviços</a>
+            <a href="#">Contato</a>
+            <div class="perfil-icon"></div>
+        </nav>
+    </header>
 
-      <button type="submit" class="submit-btn">Finalizar</button>
-    </form>
-  </main>
+    <div class="progress-bar">
+        <div class="step completed">
+            <div class="circle">1</div>
+            <span>Detalhes do imóvel</span>
+        </div>
+        <div class="step active">
+            <div class="circle">2</div>
+            <span>Detalhes adicionais</span>
+        </div>
+    </div>
 
-  <script src="{% static 'immobile/js/register.js' %}"></script>
+    <main>
+        <form class="form-container" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% if form.errors %}
+              <div>
+                <strong>Erros no formulário de detalhes:</strong>
+                  {{ form.errors }}
+              </div>
+            {% endif %}
+            <label for="{{ form.description.id_for_label }}">
+                <strong>{{ form.description.label }}</strong>
+                {{ form.description }}
+                {{ form.description.errors }}
+            </label>
+
+            <label for="{{ form.additional_rules.id_for_label }}">
+                <strong>{{ form.additional_rules.label }}</strong> <small>(Opcional)</small>
+                {{ form.additional_rules }}
+                {{ form.additional_rules.errors }}
+            </label>
+
+            <div class="upload-box">
+              <strong>Enviar imagens do imóvel</strong>
+              <div class="upload-area">
+                  <div class="upload-icon">📤</div>
+                  <p>Máx. 70 MB, PNG, JPEG</p>
+                  
+                  <input type="file" name="image"  multiple accept=".png,.jpg,.jpeg">
+                  {{ photo_form.images.errors }}
+              </div>
+          </div>
+            
+          {% if photo_form.errors %}
+          <div>
+              <strong>Erros no formulário de fotos:</strong>
+              {{ photo_form.errors }}
+          </div>
+          {% endif %}
+
+            <button type="submit" class="submit-btn">Finalizar</button>
+        </form>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'immobile/js/register.js' %}"></script>
 </body>
 </html>

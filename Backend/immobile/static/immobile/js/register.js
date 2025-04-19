@@ -74,72 +74,142 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-// ETAPA 3 - Detalhes Finais
-document.querySelector('.form-container[data-step="3"]')?.addEventListener('submit', async function(e) {
-  e.preventDefault();
-  
-  const submitBtn = e.target.querySelector('button[type="submit"]');
-  submitBtn.disabled = true;
-  submitBtn.innerHTML = '<span class="loader"></span> Enviando...';
-
-  try {
-    // 1. Combinar todos os dados
-    const formData = new FormData();
-    
-    // Dados do proprietário
-    const ownerData = JSON.parse(localStorage.getItem('ownerData'));
-    for (const [key, value] of Object.entries(ownerData)) {
-      formData.append(key, value);
-    }
-    
-    // Dados do imóvel
-    const immobileData = JSON.parse(localStorage.getItem('immobileData'));
-    for (const [key, value] of Object.entries(immobileData)) {
-      formData.append(key, value);
-    }
-    
-    // Dados da etapa 3
-    formData.append('description', document.getElementById('descricao').value);
-    formData.append('additional_rules', document.getElementById('regras').value);
-    
-    // Fotos
-    const photosInput = document.getElementById('fotos');
-    for (let i = 0; i < photosInput.files.length; i++) {
-      formData.append('photos', photosInput.files[i]);
-    }
-
-    // 2. Enviar para a API
-    const response = await fetch('http://localhost:8000/immobile_api/immobile/complete-registration/', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'X-CSRFToken': getCookie('csrftoken'),
+// Função para pegar o token CSRF
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
       }
-    });
+    }
+  }
+  return cookieValue;
+}
 
-    const result = await response.json();
+// Verifica se o DOM está totalmente carregado
+document.addEventListener('DOMContentLoaded', function() {
+  // Seleciona o formulário da etapa 3
+  const form = document.querySelector('form.form-container[data-step="3"]');
+  
+  if (!form) {
+    console.error('Formulário não encontrado! Verifique:');
+    console.log('- O elemento existe no DOM?');
+    console.log('- O seletor está correto? (deve ser form.form-container[data-step="3"])');
+    return;
+  }
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
     
-    if (!response.ok) throw new Error(result.message || 'Erro no servidor');
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalBtnText = submitBtn.innerHTML;
+    
+    try {
+      // 1. Configura estado de carregamento
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `
+        <span class="loader"></span> Enviando...
+        <span class="loading-dots"></span>
+      `;
 
-    // 3. Feedback e redirecionamento
-    Swal.fire({
-      icon: 'success',
-      title: 'Sucesso!',
-      text: 'Imóvel cadastrado com ID: ' + result.id,
-      confirmButtonText: 'OK'
-    }).then(() => {
+      // 2. Validações básicas
+      const descricao = document.getElementById('descricao').value;
+      if (!descricao || descricao.length < 10) {
+        throw new Error('A descrição deve ter pelo menos 10 caracteres');
+      }
+
+      const photosInput = document.getElementById('fotos');
+      if (photosInput.files.length === 0) {
+        throw new Error('Por favor, adicione pelo menos uma foto');
+      }
+
+      // 3. Combinar todos os dados
+      const formData = new FormData();
+      
+      // Dados do proprietário
+      const ownerData = JSON.parse(localStorage.getItem('ownerData') || {});
+      for (const [key, value] of Object.entries(ownerData)) {
+        if (value !== null && value !== undefined) {
+          formData.append(`owner[${key}]`, value);
+        }
+      }
+      
+      // Dados do imóvel
+      const immobileData = JSON.parse(localStorage.getItem('immobileData') || {});
+      for (const [key, value] of Object.entries(immobileData)) {
+        if (value !== null && value !== undefined) {
+          formData.append(key, value);
+        }
+      }
+      
+      // Dados da etapa 3
+      formData.append('description', descricao);
+      formData.append('additional_rules', document.getElementById('regras').value);
+      
+      // Fotos
+      for (let i = 0; i < photosInput.files.length; i++) {
+        formData.append('photos', photosInput.files[i]);
+      }
+
+      // 4. Enviar para a API
+      const response = await fetch('http://localhost:8000/immobile_api/immobile/complete-registration/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRFToken': getCookie('csrftoken'),
+        }
+      });
+
+      // 5. Processar resposta
+      if (!response.ok) {
+        const errorResponse = await response.json().catch(() => ({}));
+        throw new Error(
+          errorResponse.message || 
+          errorResponse.detail || 
+          `Erro ${response.status}: ${response.statusText}`
+        );
+      }
+
+      const result = await response.json();
+
+      // 6. Feedback de sucesso
+      if (typeof Swal !== 'undefined') {
+        await Swal.fire({
+          icon: 'success',
+          title: 'Sucesso!',
+          text: `Imóvel cadastrado com ID: ${result.id || 'N/A'}`,
+          confirmButtonText: 'OK'
+        });
+      } else {
+        alert(`Sucesso! Imóvel cadastrado com ID: ${result.id || 'N/A'}`);
+      }
+
+      // 7. Limpar e redirecionar
       localStorage.clear();
       window.location.href = '/dashboard/';
-    });
-    
-  } catch (error) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Erro',
-      text: error.message,
-      confirmButtonText: 'Entendi'
-    });
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Finalizar Cadastro';
-  }
+
+    } catch (error) {
+      console.error('Erro no envio:', error);
+      
+      // Feedback de erro
+      if (typeof Swal !== 'undefined') {
+        await Swal.fire({
+          icon: 'error',
+          title: 'Erro',
+          text: error.message,
+          confirmButtonText: 'Entendi'
+        });
+      } else {
+        alert('Erro: ' + error.message);
+      }
+
+      // Restaurar botão
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtnText;
+    }
+  });
 });
