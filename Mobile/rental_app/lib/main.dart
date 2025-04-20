@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: const TenantProfileScreen(tenantId: 1),
+      home: const TenantProfileScreen(tenantId: 2),
     );
   }
 }

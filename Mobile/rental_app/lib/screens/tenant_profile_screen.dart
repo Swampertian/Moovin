@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/tenant_provider.dart';
+import './tenant_edit_profile_screen.dart';
 
 class TenantProfileScreen extends StatelessWidget {
   final int tenantId;
@@ -21,11 +22,26 @@ class TenantProfileScreen extends StatelessWidget {
             onPressed: () => Navigator.pop(context),
           ),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Editar perfil')),
+            Consumer<TenantProvider>(
+              builder: (context, provider, child) {
+                return IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: provider.tenant != null
+                      ? () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => TenantEditProfileScreen(
+                                tenantId: tenantId,
+                                tenant: provider.tenant!,
+                              ),
+                            ),
+                          );
+                          if (result == true) {
+                            provider.fetchTenant(tenantId); // Refresh the data after editing
+                          }
+                        }
+                      : null,
                 );
               },
             ),
@@ -46,7 +62,6 @@ class TenantProfileScreen extends StatelessWidget {
             return SingleChildScrollView(
               child: Column(
                 children: [
-                  // Header with background and profile card
                   Stack(
                     children: [
                       Container(
@@ -217,7 +232,6 @@ class TenantProfileScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                        // Platform History Section
                         const SizedBox(height: 24),
                         const Text(
                           'Histórico na plataforma',
@@ -303,25 +317,25 @@ class TenantProfileScreen extends StatelessWidget {
             BottomNavigationBarItem(
               icon: Icon(Icons.search),
               label: 'Pesquisar',
-              backgroundColor: Colors.green, // Para o modo shifting
+              backgroundColor: Colors.green,
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.chat),
               label: 'Chat',
-              backgroundColor: Colors.green, // Para o modo shifting
+              backgroundColor: Colors.green,
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.favorite),
               label: 'Favoritos',
-              backgroundColor: Colors.green, // Para o modo shifting
+              backgroundColor: Colors.green,
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person),
               label: 'Perfil',
-              backgroundColor: Colors.green, // Para o modo shifting
+              backgroundColor: Colors.green,
             ),
           ],
-          backgroundColor: Colors.green[600], 
+          backgroundColor: Colors.green[600],
           selectedItemColor: Colors.white,
           unselectedItemColor: Colors.white70,
           currentIndex: 3,
