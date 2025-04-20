@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'features/auth/screens/login_screen.dart';
-import 'features/auth/screens/register_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile/features/auth/screens/login_screen.dart';
+import 'package:mobile/features/auth/screens/register_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,13 +13,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Auth App',
+      title: 'Moovin',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.deepPurple,
+        primarySwatch: Colors.green,
+        textTheme: GoogleFonts.khulaTextTheme(), 
       ),
-      initialRoute: '/',
+      home: const LoginScreen(),
       routes: {
-        '/': (context) => const LoginScreen(),
+        '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
       },
     );
