@@ -13,7 +13,10 @@ class UserRegisterView(generics.CreateAPIView):
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
 
-class ProtectedView(APIView):
+
+# View para testar o uso do JWT,
+# deverá ser excluída juntamente com sua respectiva rota 
+class ProtectedView(APIView): 
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -38,3 +41,8 @@ class UserRetriverView(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
+
+class UserDeleteView(generics.DestroyAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAdminUser]
