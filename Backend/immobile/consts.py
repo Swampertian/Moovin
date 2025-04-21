@@ -1,11 +1,12 @@
 PROPERTY_TYPE_CHOICES = [
-    ('House', 'House'),
-    ('Apartment', 'Apartment'),
+    ('house', 'Casa'),
+    ('apartment', 'Apartamento'),
+    ('kitnet', 'Kitnet'),
     # Adicione outros conforme necessário
 ]
 
 STATUS_CHOICES = [
-    ('Available', 'Available'),
-    ('Rented', 'Rented'),
-    ('Unavailable', 'Unavailable'),
+    ('Available', 'Disponível'),
+    ('Rented', 'Alugada'),
+    ('Unavailable', 'Indisponível'),
 ]

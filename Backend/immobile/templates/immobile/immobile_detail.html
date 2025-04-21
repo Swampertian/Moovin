@@ -1,0 +1,160 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Imóvel</title>
+    <link rel="stylesheet" href="{% static 'immobile/css/style.css' %}">
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+        }
+        .immobile-detail {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        p {
+            margin: 5px 0;
+        }
+        .photos {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .photo-item {
+            max-width: 95%;
+            height: auto;
+            border: 1px solid #eee;
+            box-shadow: 1px 1px 3px #ddd;
+            margin: 20px auto;
+        }
+        .photo-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .edit-button, .delete-button{
+            
+            top: 20px; 
+            right: 20px; 
+            background-color: #2c5e3d;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px; 
+            cursor: pointer;
+            text-decoration: none; 
+            font-size: 1em;
+        }
+
+        .edit-button {
+            right: 20px; 
+            background-color: #2c5e3d;
+            text-decoration: none;
+        }
+        .edit-button:hover {
+            background-color: #367c3f;
+        }
+        .delete-button {
+            right: 20px;
+            background-color: #b30000; 
+        }
+        .delete-button:hover {
+            background-color: #e60000;
+        }
+
+        .link-voltar {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+          <img src="{% static 'immobile/img/logo.png' %}" height="15%" width="15%" alt="Moovin">
+          <span>Moovin</span>
+        </div>
+        <nav>
+          <a href="#">Sobre</a>
+          <a href="#">Serviços</a>
+          <a href="#">Contato</a>
+          <div class="perfil-icon"></div>
+        </nav>
+      </header>
+    <main>
+
+        {% if immobile.photos.all %}
+        <div class="immobile-detail" style="border: none; padding: 0; margin-bottom: 40px;">
+            <h3>Fotos do Imóvel</h3>
+            <div class="photos">
+                {% for photo in immobile.photos.all %}
+                <div class="photo-item">
+                    <img src="{{ photo.image.url }}" alt="Foto do Imóvel">
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <a href="{% url 'immobile_edit' pk=immobile.pk %}" class="edit-button">Editar</a>
+
+
+        <h2>Detalhes do Imóvel Registrado</h2>
+
+        <div class="immobile-detail">
+            <h3>Informações Gerais</h3>
+            <p><strong>Tipo:</strong> {{ immobile.get_property_type_display }}</p>
+            <p><strong>CEP:</strong> {{ immobile.zip_code }}</p>
+            <p><strong>Estado:</strong> {{ immobile.state }}</p>
+            <p><strong>Cidade:</strong> {{ immobile.city }}</p>
+            <p><strong>Rua:</strong> {{ immobile.street }}</p>
+            <p><strong>Número:</strong> {{ immobile.number }}{% if immobile.no_number %} (Sem Número){% endif %}</p>
+            <p><strong>Quartos:</strong> {{ immobile.bedrooms }}</p>
+            <p><strong>Banheiros:</strong> {{ immobile.bathrooms }}</p>
+            <p><strong>Área:</strong> {{ immobile.area }} m²</p>
+            <p><strong>Aluguel:</strong> R$ {{ immobile.rent }}</p>
+        </div>
+
+        <div class="immobile-detail">
+            <h3>Comodidades</h3>
+            <p><strong>Ar Condicionado:</strong> {% if immobile.air_conditioning %}Sim{% else %}Não{% endif %}</p>
+            <p><strong>Garagem:</strong> {% if immobile.garage %}Sim{% else %}Não{% endif %}</p>
+            <p><strong>Piscina:</strong> {% if immobile.pool %}Sim{% else %}Não{% endif %}</p>
+            <p><strong>Mobiliado:</strong> {% if immobile.furnished %}Sim{% else %}Não{% endif %}</p>
+            <p><strong>Aceita Animais:</strong> {% if immobile.pet_friendly %}Sim{% else %}Não{% endif %}</p>
+            <p><strong>Próximo a Mercado:</strong> {% if immobile.nearby_market %}Sim{% else %}Não{% endif %}</p>
+            <p><strong>Próximo a Ônibus:</strong> {% if immobile.nearby_bus %}Sim{% else %}Não{% endif %}</p>
+            <p><strong>Internet:</strong> {% if immobile.internet %}Sim{% else %}Não{% endif %}</p>
+        </div>
+
+        <div class="immobile-detail">
+            <h3>Descrição e Regras</h3>
+            <p><strong>Descrição:</strong></p>
+            <p>{{ immobile.description|linebreaksbr }}</p>
+            {% if immobile.additional_rules %}
+            <p><strong>Regras Adicionais:</strong></p>
+            <p>{{ immobile.additional_rules|linebreaksbr }}</p>
+            {% endif %}
+        </div>
+
+        <form method="post" action="{% url 'immobile_delete' pk=immobile.pk %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="delete-button" onclick="return confirm('Tem certeza que deseja excluir este imóvel?')">Excluir</button>
+        </form>
+
+        <p class="link-voltar"><a href="/">Voltar para a página inicial</a></p>
+    </main>
+</body>
+</html>

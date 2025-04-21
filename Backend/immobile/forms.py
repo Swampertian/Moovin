@@ -119,6 +119,11 @@ class ImmobileForm(forms.ModelForm):
 
 
 class ImmobilePhotoForm(forms.ModelForm):
+    image = forms.FileField(
+        widget=forms.FileInput(attrs={'multiple': False}),
+        label='Adicione fotos do imóvel',
+        required=True
+    )
     class Meta:
         model = ImmobilePhoto
         fields = ['image'] 
