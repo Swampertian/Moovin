@@ -24,11 +24,11 @@ class _LoginScreenState extends State<LoginScreen> {
       _errorMessage = null; // Resetando mensagem de erro
     });
 
-    final apiService = ApiService(baseUrl: 'http://localhost:8000'); // URL do seu backend
+    final apiService = ApiService(baseUrl: 'http://localhost:8000/api'); // URL do seu backend
 
     try {
       final loginData = {
-        'username': _emailController.text,
+        'email': _emailController.text,
         'password': _passwordController.text,
       };
 
@@ -39,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
       await _secureStorage.write(key: 'jwt_token', value: result['access']);
 
       // Redireciona para a tela inicial ou outra após login bem-sucedido
-      Navigator.pushReplacementNamed(context, '/home');
+      Navigator.pushReplacementNamed(context, '/login');
     } catch (e) {
       // Exibe mensagem de erro em caso de falha no login
       setState(() {

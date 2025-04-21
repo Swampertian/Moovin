@@ -11,7 +11,7 @@ class ApiService {
   Future<Map<String, dynamic>> registerUser(Map<String, dynamic> userData) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/register/'),
+        Uri.parse('$baseUrl/users/register'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode(userData),
       );
@@ -30,7 +30,7 @@ class ApiService {
   Future<Map<String, dynamic>> loginUser(Map<String, dynamic> loginData) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/token/'),
+        Uri.parse('$baseUrl/users/token'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode(loginData),
       );
@@ -49,7 +49,7 @@ class ApiService {
   Future<Map<String, dynamic>> updateUser(String userId, Map<String, dynamic> userData, String token) async {
     try {
       final response = await http.put(
-        Uri.parse('$baseUrl/users/$userId/'),  // Ajuste na URL (assumindo que a URL é /users/{id}/)
+        Uri.parse('$baseUrl/users/$userId'),  // Ajuste na URL (assumindo que a URL é /users/{id}/)
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token', // Inclui o token JWT
