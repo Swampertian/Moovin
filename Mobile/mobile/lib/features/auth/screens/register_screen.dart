@@ -14,6 +14,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
+  // Lista local para armazenar os usuários cadastrados
+  List<Map<String, String>> _users = [];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -67,7 +70,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Por favor, insira o e-mail';
                     }
-                    if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$")
+                    if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zAZ0-9.-]+\.[a-zA-Z]{2,4}$")
                         .hasMatch(value)) {
                       return 'Por favor, insira um e-mail válido';
                     }
@@ -118,7 +121,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   text: 'Cadastrar-se como locatário',
                   onPressed: () {
                     if (_formKey.currentState?.validate() ?? false) {
-                      // Lógica para cadastro do locatário
+                      // Lógica para cadastrar o locatário localmente
+                      final user = {
+                        'name': _nameController.text,
+                        'email': _emailController.text,
+                        'password': _passwordController.text,
+                      };
+
+                      setState(() {
+                        _users.add(user); // Armazena o usuário na lista
+                      });
+
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Cadastro realizado com sucesso!'),
@@ -144,7 +157,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   outlined: true,
                   onPressed: () {
                     if (_formKey.currentState?.validate() ?? false) {
-                      // Lógica para cadastro do inquilino
+                      // Lógica para cadastro do inquilino localmente
+                      final user = {
+                        'name': _nameController.text,
+                        'email': _emailController.text,
+                        'password': _passwordController.text,
+                      };
+
+                      setState(() {
+                        _users.add(user); // Armazena o usuário na lista
+                      });
+
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Cadastro realizado com sucesso!'),

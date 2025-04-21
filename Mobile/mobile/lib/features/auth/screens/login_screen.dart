@@ -27,19 +27,21 @@ class _LoginScreenState extends State<LoginScreen> {
     final apiService = ApiService(baseUrl: 'http://localhost:8000/api'); // URL do seu backend
 
     try {
-      final loginData = {
-        'email': _emailController.text,
-        'password': _passwordController.text,
-      };
+    String email = _emailController.text;
+    String password = _passwordController.text;
 
-      // Envia as credenciais para o backend e recebe o token
-      final result = await apiService.loginUser(loginData);
+    // Chamando a função loginUser
+    final result = await apiService.loginUser(email, password);
 
-      // Armazena o token JWT de forma segura
+    // Verificando o resultado
+    print('Resultado do login: $result');
+
+    if (result['access'] != null) {
+      // Armazenando o token JWT de forma segura
       await _secureStorage.write(key: 'jwt_token', value: result['access']);
 
       // Redireciona para a tela inicial ou outra após login bem-sucedido
-      Navigator.pushReplacementNamed(context, '/login');
+      Navigator.pushReplacementNamed(context, '/home');
     } catch (e) {
       // Exibe mensagem de erro em caso de falha no login
       setState(() {
