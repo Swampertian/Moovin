@@ -3,6 +3,7 @@ import 'api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+//Tela de Registro
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
