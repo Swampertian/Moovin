@@ -1,4 +1,7 @@
+import 'dart:convert';
+import 'api_service.dart'; 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -8,14 +11,11 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _formKey = GlobalKey<FormState>(); // GlobalKey para validação do formulário
+  final _formKey = GlobalKey<FormState>(); 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
-
-  // Lista local para armazenar os usuários cadastrados
-  List<Map<String, String>> _users = [];
 
   @override
   Widget build(BuildContext context) {
@@ -25,13 +25,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
           child: Form(
-            key: _formKey, // Atribuindo a chave do formulário
+            key: _formKey, 
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Logo da empresa
+   
                 Image.asset(
-                  'assets/images/logo.png', // Substitua com o nome correto da imagem
+                  'assets/images/logo.png', 
                   height: 180,
                 ),
 
@@ -42,13 +42,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF2F6D3C), // Verde escuro
+                    color: Color(0xFF2F6D3C), 
                   ),
                 ),
 
                 const SizedBox(height: 20),
 
-                // Campo Nome
                 _buildTextField(
                   controller: _nameController,
                   label: 'Nome',
@@ -62,7 +61,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 const SizedBox(height: 16),
 
-                // Campo E-mail
                 _buildTextField(
                   controller: _emailController,
                   label: 'E-mail',
@@ -80,7 +78,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 const SizedBox(height: 16),
 
-                // Campo Senha
                 _buildTextField(
                   controller: _passwordController,
                   label: 'Senha',
@@ -98,7 +95,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 const SizedBox(height: 16),
 
-                // Campo Confirmar Senha
                 _buildTextField(
                   controller: _confirmPasswordController,
                   label: 'Confirmar Senha',
@@ -116,78 +112,79 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 const SizedBox(height: 40),
 
-                // Botão: Cadastrar-se como locatário
-                _buildSubmitButton(
-                  text: 'Cadastrar-se como locatário',
-                  onPressed: () {
-                    if (_formKey.currentState?.validate() ?? false) {
-                      // Lógica para cadastrar o locatário localmente
-                      final user = {
-                        'name': _nameController.text,
-                        'email': _emailController.text,
-                        'password': _passwordController.text,
-                      };
+              _buildSubmitButton(
+                text: 'Cadastrar-se como locatário',
+                onPressed: () async {
+                  if (_formKey.currentState?.validate() ?? false) {
+                    final userData = {
+                      'name': _nameController.text,
+                      'email': _emailController.text,
+                      'username': _emailController.text,
+                      'password': _passwordController.text,
+                      'user_type': 'Proprietario',
+                    };
+                     
+                    final apiService = ApiService(baseUrl: 'http://localhost:8000');
 
-                      setState(() {
-                        _users.add(user); // Armazena o usuário na lista
-                      });
-
+                    try {
+                      await apiService.registerUser(userData);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Cadastro realizado com sucesso!'),
                           backgroundColor: Colors.green,
                         ),
                       );
-                    } else {
+                    } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Por favor, verifique os dados inseridos'),
+                        SnackBar(
+                          content: Text('Erro no cadastro: $e'),
                           backgroundColor: Colors.red,
                         ),
                       );
                     }
-                  },
-                ),
+                  }
+                },
+              ),
 
-                const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-                // Botão: Cadastrar-se como inquilino
-                _buildSubmitButton(
-                  text: 'Cadastrar-se como inquilino',
-                  outlined: true,
-                  onPressed: () {
-                    if (_formKey.currentState?.validate() ?? false) {
-                      // Lógica para cadastro do inquilino localmente
-                      final user = {
-                        'name': _nameController.text,
-                        'email': _emailController.text,
-                        'password': _passwordController.text,
-                      };
+              _buildSubmitButton(
+                text: 'Cadastrar-se como inquilino',
+                outlined: true,
+                onPressed: () async {
+                  if (_formKey.currentState?.validate() ?? false) {
+                    final userData = {
+                      'name': _nameController.text,
+                      'email': _emailController.text,
+                      'username': _emailController.text,
+                      'password': _passwordController.text,
+                      'user_type': 'Inquilino',
+                    };
 
-                      setState(() {
-                        _users.add(user); // Armazena o usuário na lista
-                      });
+                    final apiService = ApiService(baseUrl: 'http://localhost:8000');
 
+                    try {
+                      await apiService.registerUser(userData);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Cadastro realizado com sucesso!'),
                           backgroundColor: Colors.green,
                         ),
                       );
-                    } else {
+                    } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Por favor, verifique os dados inseridos'),
+                        SnackBar(
+                          content: Text('Erro no cadastro: $e'),
                           backgroundColor: Colors.red,
                         ),
                       );
                     }
-                  },
-                ),
+                  }
+                },
+              ),
 
                 const SizedBox(height: 30),
 
-                // Link para login
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

@@ -21,39 +21,45 @@ class _LoginScreenState extends State<LoginScreen> {
   void _login() async {
     setState(() {
       _isLoading = true;
-      _errorMessage = null; // Resetando mensagem de erro
+      _errorMessage = null; 
     });
 
-    final apiService = ApiService(baseUrl: 'http://localhost:8000/api'); // URL do seu backend
+    final apiService = ApiService(baseUrl: 'http://localhost:8000'); 
 
     try {
     String email = _emailController.text;
     String password = _passwordController.text;
 
-    // Chamando a função loginUser
     final result = await apiService.loginUser(email, password);
 
-    // Verificando o resultado
     print('Resultado do login: $result');
 
     if (result['access'] != null) {
-      // Armazenando o token JWT de forma segura
+
       await _secureStorage.write(key: 'jwt_token', value: result['access']);
 
-      // Redireciona para a tela inicial ou outra após login bem-sucedido
-      Navigator.pushReplacementNamed(context, '/home');
-    } catch (e) {
-      // Exibe mensagem de erro em caso de falha no login
-      setState(() {
-        _errorMessage = 'Erro ao fazer login. Tente novamente.';
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Login bem-sucedido!'),
+          backgroundColor: Colors.green,
+        ),
+      );
 
+    } else {
+      throw Exception('Token de acesso não encontrado.');
+    }
+  } catch (e) {
+    print('Erro ao fazer login: $e');
+    
+    setState(() {
+      _errorMessage = 'Erro ao fazer login. Tente novamente.';
+    });
+  } finally {
+    setState(() {
+      _isLoading = false;
+    });
+  }
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,24 +70,22 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Logo da empresa
+
               Image.asset(
                 'assets/images/logo.png',
                 height: 250,
               ),
 
-              // Título "Login"
               const Text(
                 'Login',
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF2F6D3C), // verde escuro
+                  color: Color(0xFF2F6D3C), 
                 ),
               ),
               const SizedBox(height: 32),
 
-              // Campo de E-mail
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -106,7 +110,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 20),
 
-              // Campo de Senha
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -130,7 +133,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
 
-              // Exibe mensagem de erro se houver
               if (_errorMessage != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 16.0),
@@ -140,12 +142,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
 
-              // Esqueceu a senha?
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () {
-                    // ação de esqueceu senha
                   },
                   child: const Text(
                     'Esqueceu a senha?',
@@ -188,7 +188,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 height: 50,
                 child: OutlinedButton.icon(
                   onPressed: () {
-                    // lógica de autenticação com Google
                   },
                   icon: Image.asset(
                     'assets/images/devicon_google.png',
@@ -213,7 +212,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 40),
 
-              // Texto de cadastro
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

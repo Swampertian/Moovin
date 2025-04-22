@@ -1,37 +1,45 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  // URL base da API
+
   final String baseUrl;
 
-  // Construtor para receber o baseUrl
   ApiService({required this.baseUrl});
 
-  // Função para registrar um usuário
+
   Future<Map<String, dynamic>> registerUser(Map<String, dynamic> userData) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/users/register'),
+        Uri.parse('$baseUrl/api/users/register'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode(userData),
       );
 
       if (response.statusCode == 201) {
-        return json.decode(response.body);
+        final data = json.decode(response.body);
+
+        final SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('name', userData['name']);
+        await prefs.setString('email', userData['email']);
+        await prefs.setString('password', userData['password']);
+        await prefs.setString('userType', userData['user_type']);
+
+        return data;
       } else {
-        throw Exception('Falha ao registrar usuário: ${response.body}');
+        throw Exception('Falha ao registrar usuário: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
       throw Exception('Erro na requisição de registro: $e');
     }
   }
 
-  // Função para fazer login e obter o token JWT
+
   Future<Map<String, dynamic>> loginUser(String email, String password) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/users/token'),
+        Uri.parse('$baseUrl/api/users/token'), 
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'email': email,
@@ -49,7 +57,6 @@ class ApiService {
     }
   }
 
-  // Função para atualizar um usuário
   Future<Map<String, dynamic>> updateUser(String userId, Map<String, dynamic> userData, String token) async {
     try {
       final response = await http.put(
@@ -71,7 +78,6 @@ class ApiService {
     }
   }
 
-  // Função para obter dados de um usuário
   Future<Map<String, dynamic>> getUser(String userId, String token) async {
     try {
       final response = await http.get(
