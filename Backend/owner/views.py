@@ -5,3 +5,4 @@ from .serializers import OwnerSerializer
 class OwnerViewSet(ModelViewSet):
     queryset = Owner.objects.all()
     serializer_class = OwnerSerializer
+
