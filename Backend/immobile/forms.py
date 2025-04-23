@@ -118,12 +118,10 @@ class ImmobileForm(forms.ModelForm):
         ]
 
 
-class ImmobilePhotoForm(forms.ModelForm):
-    image = forms.FileField(
-        widget=forms.FileInput(attrs={'multiple': False}),
-        label='Adicione fotos do imóvel',
-        required=True
-    )
+class ImmobilePhotoForm(forms.Form):
     class Meta:
         model = ImmobilePhoto
-        fields = ['image'] 
+        fields = ['image']  # Inclua o campo que você quer editar
+        widgets = {
+            'image': forms.FileInput(attrs={'accept': '.png,.jpg,.jpeg'})
+        }
