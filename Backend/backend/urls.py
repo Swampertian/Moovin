@@ -23,5 +23,5 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('', home, name='home'),  # A página inicial agora tem um nome
     path('admin/', admin.site.urls),
-    path('immobile/', include('immobile.urls')),  # Prefixando as URLs do app 'immobile' com 'imoveis/'
+    path('api/immobile/', include('immobile.urls')),  # Prefixando as URLs do app 'immobile' com 'imoveis/'
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
