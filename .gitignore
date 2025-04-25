@@ -1,0 +1,78 @@
+# ========== GERAL ==========
+*.log
+*.pyc
+*.class
+*.swp
+.DS_Store
+Thumbs.db
+
+# ========== PYTHON / DJANGO ==========
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.env
+.env
+venv/
+.venv/
+db.sqlite3
+
+# ========== FLUTTER ==========
+# Flutter/Dart/Pub
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+.flutter-plugins
+.flutter-plugins-dependencies
+.melos_tool/
+build/
+
+# Flutter iOS
+**/ios/Flutter/.last_build_id
+**/ios/Flutter/Flutter.framework/
+**/ios/Flutter/Flutter.podspec
+**/ios/.symlinks/
+**/ios/Pods/
+**/ios/Runner.xcworkspace/
+**/ios/DerivedData/
+**/ios/xcuserdata/
+**/ios/profile
+**/ios/.generated/
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/ServiceDefinitions.json
+**/ios/Runner/GeneratedPluginRegistrant.*
+
+# Flutter Android
+**/android/.gradle/
+**/android/captures/
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
+
+# Obfuscation / Symbolication
+**/app.*.symbols
+**/app.*.map.json
+
+# ========== VS CODE / IDEs ==========
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# ========== WEB (caso use frameworks web) ==========
+node_modules/
+dist/
+.cache/
+*.log
+.env.local
+.env.production
+.env.development
+
+# ========== BACKUP / TEMP ==========
+*.bak
+*.tmp
+*.old
+*.orig
+*.swp
