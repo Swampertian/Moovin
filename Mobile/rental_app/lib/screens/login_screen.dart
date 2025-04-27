@@ -25,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
       _errorMessage = null; 
     });
 
-    final apiService = ApiService(baseUrl: 'http://localhost:8000/api'); 
+    final apiService = ApiService(baseUrl: 'http://localhost:8000'); 
 
     try {
     String email = _emailController.text;
