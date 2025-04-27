@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:rental_app/screens/owner_profile_screen.dart';
 import 'screens/tenant_profile_screen.dart';
-
+import 'screens/owner_profile_screen.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -15,7 +16,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: const TenantProfileScreen(tenantId: 1),
+      home: const OwnerProfileScreen(ownerId: 1),
+
     );
   }
 }
