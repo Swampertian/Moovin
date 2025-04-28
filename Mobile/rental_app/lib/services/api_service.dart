@@ -49,7 +49,7 @@ class ApiService {
   }
   Future<Owner> updateOwner(int id, Map<String, dynamic> data) async {
     final response = await http.patch(
-      Uri.parse('$_base/owners/$id/update-profile/'),
+      Uri.parse('$ownerBase/$id/'),
       headers: {'Content-Type': 'application/json; charset=UTF-8'},
       body: jsonEncode(data),
     );

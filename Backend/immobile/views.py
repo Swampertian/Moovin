@@ -19,6 +19,7 @@ from rest_framework import viewsets
 class ImmobileViewSet(viewsets.ModelViewSet):
     queryset = Immobile.objects.all()
     serializer_class = ImmobileSerializer
+
 class ImmobileListAPIView(APIView):
     """
     Lista todos os imóveis.
