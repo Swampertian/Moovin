@@ -1,9 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
 from immobile.models import Immobile
+from django.conf import settings
+
+
 
 class Owner(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='owner_profile')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,related_name='owner_profile')
     name = models.CharField(max_length=100)
     phone = models.CharField(max_length=20)
     city = models.CharField(max_length=100)

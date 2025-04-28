@@ -61,12 +61,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-
     'immobile',
     'tenant',
-    'owner'
-    'tenant',
-     'users',
+    'owner',
+    'users',
 
 ]
 AUTH_USER_MODEL = 'users.User'

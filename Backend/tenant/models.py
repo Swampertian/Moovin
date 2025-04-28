@@ -1,8 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from django.conf import settings
 class Tenant(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='tenant_profile')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,related_name='tenant_profile')
     name = models.CharField(max_length=100)
     age = models.PositiveIntegerField()
     job = models.CharField(max_length=100)

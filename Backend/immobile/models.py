@@ -4,7 +4,6 @@ from .consts import *
 
 
 class Immobile(models.Model):
-
     owner = models.ForeignKey('owner.Owner', related_name='properties', on_delete=models.CASCADE, null=True,blank=True)
 
     id_immobile = models.AutoField(primary_key=True)
