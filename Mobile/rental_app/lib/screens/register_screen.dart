@@ -162,7 +162,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       'user_type': 'Inquilino',
                     };
 
-                    final apiService = ApiService(baseUrl: 'http://localhost:8000');
+                    final apiService = ApiService(baseUrl: 'http://localhost:8000/api');
 
                     try {
                       await apiService.registerUser(userData);
