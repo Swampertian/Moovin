@@ -45,6 +45,33 @@ class _LoginScreenState extends State<LoginScreen> {
           backgroundColor: Colors.green,
         ),
       );
+      
+// Lógica para direcionar para o perfil. Precisa ser refatorada depois. Não excluir o comentário até a refatoração  
+      String? token = await _secureStorage.read(key: 'jwt_token');
+      
+     
+      if (token != null) {
+        final userData = await apiService.getUser(token); 
+        
+        String userType = userData['user_type']; // Acessando diretamente o 'user_type'
+
+        // Armazenando o 'user_type' no Flutter Secure Storage
+        await _secureStorage.write(key: 'user_type', value: userType);
+
+      } else {
+      
+        print('Token não encontrado');
+       
+      }
+
+      String? userType = await _secureStorage.read(key: 'user_type');
+      print(userType);
+      if (userType == 'Inquilino') {
+        Navigator.pushReplacementNamed(context, '/tenant');
+      } else {
+        Navigator.pushReplacementNamed(context, '/owner');
+      }
+// -------------     
 
     } else {
       throw Exception('Token de acesso não encontrado.');

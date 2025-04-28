@@ -6,7 +6,7 @@ from .models import *
 from .serializers import UserSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
-
+from rest_framework.exceptions import NotFound
 
 class UserRegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -41,6 +41,18 @@ class UserRetriverView(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
+    def get_object(self):
+        """
+        Sobrescreve o método get_object para buscar o usuário através do
+        JWT (request.user), que já contém o pk do usuário autenticado.
+        """
+        user = self.request.user  # O user é populado automaticamente com o JWT
+
+        if not user:
+            raise NotFound("Usuário não encontrado.")
+
+        return user
+    
 
 class UserDeleteView(generics.DestroyAPIView):
     queryset = User.objects.all()

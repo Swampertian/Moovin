@@ -79,11 +79,13 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> getUser(String userId, String token) async {
+//Função que puxa a instacia do usuário
+  Future<Map<String, dynamic>> getUser(String token) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl$userId/'),
+        Uri.parse('$baseUrl/users/user'),
         headers: {
+          'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
       );
@@ -97,4 +99,6 @@ class ApiService {
       throw Exception('Erro na requisição de obtenção: $e');
     }
   }
+
+
 }
