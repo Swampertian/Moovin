@@ -95,18 +95,16 @@
       </header>
     <main>
 
-        {% if immobile.photos.all %}
-        <div class="immobile-detail" style="border: none; padding: 0; margin-bottom: 40px;">
+        <div>
             <h3>Fotos do Imóvel</h3>
-            <div class="photos">
-                {% for photo in immobile.photos.all %}
-                <div class="photo-item">
-                    <img src="{{ photo.image.url }}" alt="Foto do Imóvel">
-                </div>
+            <div class="immobile-photos">
+                {% for photo in immobile.photos_blob.all %}
+                    <img src="{% url 'serve_image_blob' photo.id %}" alt="Foto do Imóvel">
+                {% empty %}
+                    <p>Nenhuma foto cadastrada para este imóvel.</p>
                 {% endfor %}
             </div>
         </div>
-        {% endif %}
 
         <a href="{% url 'immobile_edit' pk=immobile.pk %}" class="edit-button">Editar</a>
 

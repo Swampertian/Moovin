@@ -3,11 +3,7 @@ from django.utils import timezone
 from .consts import *
 
 
-
 class Immobile(models.Model):
-
-    owner = models.ForeignKey('owner.Owner', related_name='properties', on_delete=models.CASCADE, null=True)
-
     id_immobile = models.AutoField(primary_key=True)
     property_type = models.CharField(max_length=20, choices=PROPERTY_TYPE_CHOICES,default='House')
     zip_code = models.CharField(max_length=9)
@@ -41,9 +37,10 @@ class Immobile(models.Model):
         return f"{self.property_type} in {self.city} - {self.street}, {self.number or 'No number'}"
 
 class ImmobilePhoto(models.Model):
-    immobile = models.ForeignKey(Immobile, related_name='photos', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='immobile_photos/')  # Certifique-se de ter o Pillow instalado
+    immobile = models.ForeignKey(Immobile, related_name='photos_blob', on_delete=models.CASCADE)
+    image_blob = models.BinaryField(default=bytes)
+    content_type = models.CharField(max_length=50, default='')
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Photo for {self.immobile}"
+        return f"Photo (BLOB) for {self.immobile}"
