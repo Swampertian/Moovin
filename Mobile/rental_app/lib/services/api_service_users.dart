@@ -1,20 +1,22 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
+import '../config.dart';
+//Tentativa de refatoracao do codigo para usar do arquivo config.dart, alguns parametros foram alterados
+//a api permanece não funcionando, existe algum problema entre a camada do backend django e os modelos no flutter
+//Possivelmente necessita da implementacao de uma segunda camada como tenant e owner para a integracao entre flutter e django
 class ApiService {
 
   final String baseUrl;
 
-  ApiService({required this.baseUrl});
-
+  ApiService({String? baseUrl}) : baseUrl = baseUrl ?? userBase;
 
   Future<Map<String, dynamic>> registerUser(Map<String, dynamic> userData) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/api/users/register'),
+        Uri.parse('$baseUrl/register/'),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode(userData),
+        body: json.encode(userData)
       );
 
       if (response.statusCode == 201) {
@@ -35,11 +37,10 @@ class ApiService {
     }
   }
 
-
   Future<Map<String, dynamic>> loginUser(String email, String password) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/api/users/token'), 
+        Uri.parse('$baseUrl/token/'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'email': email,
@@ -60,7 +61,7 @@ class ApiService {
   Future<Map<String, dynamic>> updateUser(String userId, Map<String, dynamic> userData, String token) async {
     try {
       final response = await http.put(
-        Uri.parse('$baseUrl/users/$userId'),  // Ajuste na URL (assumindo que a URL é /users/{id}/)
+        Uri.parse('$baseUrl$userId/'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -81,7 +82,7 @@ class ApiService {
   Future<Map<String, dynamic>> getUser(String userId, String token) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/api/users/$userId/'),
+        Uri.parse('$baseUrl$userId/'),
         headers: {
           'Authorization': 'Bearer $token',
         },
