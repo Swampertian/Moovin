@@ -5,31 +5,71 @@ import '../models/owner.dart';
 import '../config.dart';
 
 class ApiService {
-  final String _base = apiBase;
+  final String _tenantBase = '$apiBase/tenants';
+  final String _ownerBase = '$apiBase/owners/owners';
+  final String _immobileBase = '$apiBase/immobile';
+
+  // ========================= TENANT =========================
 
   Future<Tenant> fetchTenant(int id) async {
-    final url = Uri.parse('$_base/$id/');
-    print('Chamando: $url');
+    final url = Uri.parse('$_tenantBase/profile/$id/');
+    print('🔎 Fetching Tenant: $url');
 
     final response = await http.get(url);
 
-    print('STATUS: ${response.statusCode}');
-    print('BODY: ${response.body}');
+    print('📡 STATUS: ${response.statusCode}');
+    print('📦 BODY: ${response.body}');
 
     if (response.statusCode == 200) {
-      return Tenant.fromJson(jsonDecode(response.body));
+      final decodedBody = utf8.decode(response.bodyBytes);
+      return Tenant.fromJson(jsonDecode(decodedBody));
     } else {
       throw Exception('Failed to load tenant profile');
     }
   }
+
+  Future<Tenant> updateTenant(int id, Map<String, dynamic> data) async {
+    final url = Uri.parse('$_tenantBase/profile/$id/update-profile/');
+    print('✏️ Updating Tenant: $url');
+
+    final response = await http.patch(
+      url,
+      headers: {'Content-Type': 'application/json; charset=UTF-8'},
+      body: jsonEncode(data),
+    );
+
+    print('📡 STATUS: ${response.statusCode}');
+    print('📦 BODY: ${response.body}');
+
+    if (response.statusCode == 200) {
+      final decodedBody = utf8.decode(response.bodyBytes);
+      return Tenant.fromJson(jsonDecode(decodedBody));
+    } else {
+      throw Exception('Failed to update tenant profile');
+    }
+  }
+
+  Future<void> favoriteProperty(int tenantId) async {
+    final url = Uri.parse('$_tenantBase/profile/$tenantId/favorite_property/');
+    print('⭐ Favoriting property for Tenant: $url');
+
+    final response = await http.post(url);
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to mark property as favorite');
+    }
+  }
+
+  // ========================= OWNER =========================
+
   Future<Owner> fetchOwner(int id) async {
-    final url = Uri.parse('$ownerBase/$id/');
-    print('Chamando: $url');
+    final url = Uri.parse('$_ownerBase/$id/');
+    print('🔎 Fetching Owner: $url');
 
     final response = await http.get(url);
 
-    print('STATUS: ${response.statusCode}');
-    print('BODY: ${response.body}');
+    print('📡 STATUS: ${response.statusCode}');
+    print('📦 BODY: ${response.body}');
 
     if (response.statusCode == 200) {
       return Owner.fromJson(jsonDecode(response.body));
@@ -38,21 +78,18 @@ class ApiService {
     }
   }
 
-  Future<void> favoriteProperty(int tenantId) async {
-    final response = await http.post(
-      Uri.parse('$_base/$tenantId/favorite_property/'),
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception('Failed to mark property as favorite');
-    }
-  }
   Future<Owner> updateOwner(int id, Map<String, dynamic> data) async {
+    final url = Uri.parse('$_ownerBase/$id/');
+    print('✏️ Updating Owner: $url');
+
     final response = await http.patch(
-      Uri.parse('$ownerBase/$id/'),
+      url,
       headers: {'Content-Type': 'application/json; charset=UTF-8'},
       body: jsonEncode(data),
     );
+
+    print('📡 STATUS: ${response.statusCode}');
+    print('📦 BODY: ${response.body}');
 
     if (response.statusCode == 200) {
       return Owner.fromJson(jsonDecode(response.body));
@@ -60,22 +97,24 @@ class ApiService {
       throw Exception('Failed to update owner profile');
     }
   }
+
+  // ========================= IMMOBILE =========================
+
   Future<void> updateImmobile(int id, Map<String, dynamic> data) async {
-    final url = Uri.parse('$immobileBase/$id/');  // << note o "s" e a barra final
+    final url = Uri.parse('$_immobileBase/$id/');
+    print('✏️ Updating Immobile: $url');
+
     final response = await http.patch(
       url,
       headers: {'Content-Type': 'application/json; charset=UTF-8'},
       body: jsonEncode(data),
     );
 
+    print('📡 STATUS: ${response.statusCode}');
+    print('📦 BODY: ${response.body}');
+
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      // DEBUG:
-      print('=== ERRO UPDATE IMMOBILE ===');
-      print('URL: $url');
-      print('STATUS: ${response.statusCode}');
-      print('BODY: ${response.body}');
-      throw Exception('Falha ao atualizar imóvel');
+      throw Exception('Failed to update immobile');
     }
   }
-
 }
