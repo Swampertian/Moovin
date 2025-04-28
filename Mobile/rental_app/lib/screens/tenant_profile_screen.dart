@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/tenant_provider.dart';
+
 import './tenant_edit_profile_screen.dart';
+
 
 class TenantProfileScreen extends StatelessWidget {
   final int tenantId;
@@ -22,6 +24,7 @@ class TenantProfileScreen extends StatelessWidget {
             onPressed: () => Navigator.pop(context),
           ),
           actions: [
+
             Consumer<TenantProvider>(
               builder: (context, provider, child) {
                 return IconButton(
@@ -42,6 +45,7 @@ class TenantProfileScreen extends StatelessWidget {
                           }
                         }
                       : null,
+
                 );
               },
             ),
@@ -62,6 +66,8 @@ class TenantProfileScreen extends StatelessWidget {
             return SingleChildScrollView(
               child: Column(
                 children: [
+
+
                   Stack(
                     children: [
                       Container(
@@ -232,6 +238,7 @@ class TenantProfileScreen extends StatelessWidget {
                             ),
                           ],
                         ),
+
                         const SizedBox(height: 24),
                         const Text(
                           'Histórico na plataforma',
@@ -317,25 +324,33 @@ class TenantProfileScreen extends StatelessWidget {
             BottomNavigationBarItem(
               icon: Icon(Icons.search),
               label: 'Pesquisar',
+
               backgroundColor: Colors.green,
+
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.chat),
               label: 'Chat',
+
               backgroundColor: Colors.green,
+
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.favorite),
               label: 'Favoritos',
+
               backgroundColor: Colors.green,
+
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person),
               label: 'Perfil',
+
               backgroundColor: Colors.green,
             ),
           ],
           backgroundColor: Colors.green[600],
+
           selectedItemColor: Colors.white,
           unselectedItemColor: Colors.white70,
           currentIndex: 3,

@@ -5,6 +5,7 @@ from .views import TenantViewSet
 router = DefaultRouter()
 router.register(r'profile', TenantViewSet)
 
+
 urlpatterns = [
     path('', include(router.urls)),
 ]
