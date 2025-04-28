@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rental_app/screens/edit_immobile_screen.dart';
+
 import '../providers/owner_provider.dart';
 import '../models/owner.dart';
 import 'edit_owner_profile_screen.dart';
 import 'owner_immobiles_screen.dart';
 import 'edit_immobile_screen.dart';
+
 class OwnerProfileScreen extends StatelessWidget {
   final int ownerId;
 
@@ -66,30 +67,45 @@ class OwnerProfileScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // HEADER CARD
-                  Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
-                        children: [
-                          const CircleAvatar(
-                            radius: 35,
-                            child: Icon(Icons.person, size: 40),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(owner.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                                const SizedBox(height: 4),
-                                const Text('Proprietário individual'),
-                                Text('${owner.city}, ${owner.state}'),
-                              ],
+                  InkWell(
+                    onTap: () async {
+                      final provider = context.read<OwnerProvider>();
+                      final owner = provider.owner!;
+                      final updated = await Navigator.push<bool>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => EditOwnerProfileScreen(owner: owner),
+                        ),
+                      );
+                      if (updated == true) {
+                        provider.fetchOwner(ownerId);
+                      }
+                    },
+                    child: Card(
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          children: [
+                            const CircleAvatar(
+                              radius: 35,
+                              child: Icon(Icons.person, size: 40),
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(owner.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                                  const SizedBox(height: 4),
+                                  const Text('Proprietário individual'),
+                                  Text('${owner.city}, ${owner.state}'),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -106,18 +122,23 @@ class OwnerProfileScreen extends StatelessWidget {
                     physics: const NeverScrollableScrollPhysics(),
                     itemBuilder: (context, index) {
                       final p = owner.properties[index];
+                      // pega a primeira foto, se existir
+                      final imageUrl =
+                      p.photosBlob.isNotEmpty ? p.photosBlob.first.imageBase64 : null;
                       return Card(
                         margin: const EdgeInsets.only(bottom: 10),
                         child: ListTile(
-                          leading: p.imageUrl != null && p.imageUrl!.isNotEmpty
-                              ? Image.network(p.imageUrl!, width: 60, height: 60, fit: BoxFit.cover)
+                          leading: imageUrl != null && imageUrl.isNotEmpty
+                              ? Image.network(imageUrl,
+                              width: 60, height: 60, fit: BoxFit.cover)
                               : const SizedBox(width: 60, height: 60),
                           title: Text(p.street),
                           subtitle: Text('${p.city}, ${p.state}'),
                           trailing: Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              Text('${owner.ratedByTenants} ★'),
+                              // exibe rating do OWNER, não do imóvel
+                              Text('${owner.rating.toStringAsFixed(1)} ★'),
                               const SizedBox(height: 4),
                               Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -132,12 +153,10 @@ class OwnerProfileScreen extends StatelessWidget {
                             ],
                           ),
                           onTap: () {
-                            // ao tocar, vai para edição daquele imóvel
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => EditImmobileScreen(immobile: p),
-                              ),
+                                  builder: (_) => EditImmobileScreen(immobile: p)),
                             );
                           },
                         ),
@@ -158,7 +177,8 @@ class OwnerProfileScreen extends StatelessWidget {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
                       ),
                       child: const Text('Ver todos'),
                     ),
@@ -167,18 +187,22 @@ class OwnerProfileScreen extends StatelessWidget {
                   const SizedBox(height: 30),
 
                   // AVALIAÇÃO
-                  const Text('Avaliação do Locatário', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text('Avaliação do Locatário',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   Row(
                     children: [
                       const Icon(Icons.star_rate_rounded, color: Colors.green),
                       const SizedBox(width: 6),
-                      Text(owner.rentedProperties.toStringAsFixed(1), style: const TextStyle(fontSize: 24)),
+                      Text(owner.rating.toStringAsFixed(1),
+                          style: const TextStyle(fontSize: 24)),
                       const SizedBox(width: 8),
                       Row(
                         children: List.generate(5, (i) {
                           return Icon(
-                            i < owner.rentedProperties.floor() ? Icons.star : Icons.star_border,
+                            i < owner.rating.floor()
+                                ? Icons.star
+                                : Icons.star_border,
                             color: Colors.amber,
                           );
                         }),
@@ -192,7 +216,8 @@ class OwnerProfileScreen extends StatelessWidget {
                   Text(owner.aboutMe),
 
                   const SizedBox(height: 24),
-                  const Text('Sobre o proprietário', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text('Sobre o proprietário',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.all(16),
@@ -202,9 +227,13 @@ class OwnerProfileScreen extends StatelessWidget {
                     ),
                     child: Column(
                       children: [
-                        _buildItem('🟢 ${owner.rentedProperties} imóveis alugados pela plataforma'),
-                        _buildItem(owner.fastResponder ? '🟢 Responde rapidamente' : '🔴 Responde lentamente'),
-                        _buildItem('🟢 ${owner.ratedByTenants} inquilinos favoritaram imóveis deste proprietário'),
+                        _buildItem(
+                            '🟢 ${owner.rentedProperties} imóveis alugados pela plataforma'),
+                        _buildItem(owner.fastResponder
+                            ? '🟢 Responde rapidamente'
+                            : '🔴 Responde lentamente'),
+                        _buildItem(
+                            '🟢 ${owner.rating} inquilinos avaliaram este proprietário'),
                         _buildItem('🟢 Perfil verificado'),
                       ],
                     ),

@@ -62,6 +62,39 @@ class Owner {
   }
 }
 
+
+class ImmobilePhoto {
+  final int id;
+  final String imageBase64;
+  final String contentType;
+  final String uploadedAt;
+
+  ImmobilePhoto({
+    required this.id,
+    required this.imageBase64,
+    required this.contentType,
+    required this.uploadedAt,
+  });
+
+  factory ImmobilePhoto.fromJson(Map<String, dynamic> json) {
+    return ImmobilePhoto(
+      id: json['id'] as int,
+      imageBase64: json['image_blob'] as String,
+      contentType: json['content_type'] as String,
+      uploadedAt: json['uploaded_at'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'image_blob': imageBase64,
+      'content_type': contentType,
+      'uploaded_at': uploadedAt,
+    };
+  }
+}
+
 class Immobile {
   final int idImmobile;
   final String propertyType;
@@ -87,7 +120,7 @@ class Immobile {
   final String? additionalRules;
   final String status;
   final String createdAt;
-  final String? imageUrl;
+  final List<ImmobilePhoto> photosBlob;
 
   Immobile({
     required this.idImmobile,
@@ -114,17 +147,15 @@ class Immobile {
     this.additionalRules,
     required this.status,
     required this.createdAt,
-    this.imageUrl,
+    required this.photosBlob,
   });
 
   factory Immobile.fromJson(Map<String, dynamic> json) {
-    // Helper para converter num ou string em double
     double parseDouble(dynamic v) {
       if (v is num) return v.toDouble();
       if (v is String) return double.tryParse(v) ?? 0.0;
       return 0.0;
     }
-    // Helper para converter num ou string em int
     int parseInt(dynamic v) {
       if (v is int) return v;
       if (v is num) return v.toInt();
@@ -135,29 +166,31 @@ class Immobile {
     return Immobile(
       idImmobile: parseInt(json['id_immobile']),
       propertyType: json['property_type'] as String,
-      zipCode:json['zip_code'] as String ?? '',
-      city: json['city'] as String? ?? '',
-      state: json['state'] as String? ?? '',
-      street: json['street'] as String? ?? '',
+      zipCode: json['zip_code'] as String,
+      state: json['state'] as String,
+      city: json['city'] as String,
+      street: json['street'] as String,
       number: json['number'] as String?,
       noNumber: json['no_number'] as bool? ?? false,
       bedrooms: parseInt(json['bedrooms']),
       bathrooms: parseInt(json['bathrooms']),
       area: parseDouble(json['area']),
       rent: parseDouble(json['rent']),
-      airConditioning: json['air_conditioning'],
-      garage: json['garage'],
-      pool: json['pool'],
-      furnished: json['furnished'],
-      petFriendly: json['pet_friendly'],
-      nearbyMarket: json['nearby_market'],
-      nearbyBus: json['nearby_bus'],
-      internet: json['internet'],
-      description: json['description'],
-      additionalRules: json['additional_rules'],
-      status: json['status'],
-      createdAt: json['created_at'],
-      imageUrl: json['imageUrl'],
+      airConditioning: json['air_conditioning'] as bool? ?? false,
+      garage: json['garage'] as bool? ?? false,
+      pool: json['pool'] as bool? ?? false,
+      furnished: json['furnished'] as bool? ?? false,
+      petFriendly: json['pet_friendly'] as bool? ?? false,
+      nearbyMarket: json['nearby_market'] as bool? ?? false,
+      nearbyBus: json['nearby_bus'] as bool? ?? false,
+      internet: json['internet'] as bool? ?? false,
+      description: json['description'] as String,
+      additionalRules: json['additional_rules'] as String?,
+      status: json['status'] as String,
+      createdAt: json['created_at'] as String,
+      photosBlob: (json['photos_blob'] as List<dynamic>? ?? [])
+          .map((e) => ImmobilePhoto.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 
@@ -187,7 +220,8 @@ class Immobile {
       'additional_rules': additionalRules,
       'status': status,
       'created_at': createdAt,
-      'imageUrl': imageUrl,
+      'photos_blob': photosBlob.map((p) => p.toJson()).toList(),
     };
   }
 }
+

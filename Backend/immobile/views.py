@@ -14,7 +14,11 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Immobile, ImmobilePhoto
 from .serializers import ImmobileSerializer, ImmobilePhotoSerializer
+from rest_framework import viewsets
 
+class ImmobileViewSet(viewsets.ModelViewSet):
+    queryset = Immobile.objects.all()
+    serializer_class = ImmobileSerializer
 class ImmobileListAPIView(APIView):
     """
     Lista todos os imóveis.

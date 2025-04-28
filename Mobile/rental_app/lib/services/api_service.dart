@@ -5,7 +5,7 @@ import '../models/owner.dart';
 import '../config.dart';
 
 class ApiService {
-  final String _base = baseUrl;
+  final String _base = apiBase;
 
   Future<Tenant> fetchTenant(int id) async {
     final url = Uri.parse('$_base/$id/');
@@ -23,7 +23,7 @@ class ApiService {
     }
   }
   Future<Owner> fetchOwner(int id) async {
-    final url = Uri.parse('$_base/$id/');
+    final url = Uri.parse('$ownerBase/$id/');
     print('Chamando: $url');
 
     final response = await http.get(url);
@@ -60,14 +60,20 @@ class ApiService {
       throw Exception('Failed to update owner profile');
     }
   }
-  Future<void> updateImmobile(int immobileId, Map<String, dynamic> data) async {
+  Future<void> updateImmobile(int id, Map<String, dynamic> data) async {
+    final url = Uri.parse('$immobileBase/$id/');  // << note o "s" e a barra final
     final response = await http.patch(
-      Uri.parse('$baseUrl/immobiles/$immobileId/update/'),
+      url,
       headers: {'Content-Type': 'application/json; charset=UTF-8'},
       body: jsonEncode(data),
     );
 
-    if (response.statusCode != 200) {
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      // DEBUG:
+      print('=== ERRO UPDATE IMMOBILE ===');
+      print('URL: $url');
+      print('STATUS: ${response.statusCode}');
+      print('BODY: ${response.body}');
       throw Exception('Falha ao atualizar imóvel');
     }
   }
