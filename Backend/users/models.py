@@ -6,10 +6,18 @@ class UserManager(BaseUserManager):
         if not email:
             raise ValueError('O email é obrigatório')
         email = self.normalize_email(email)
+
+        username = extra_fields.get('username')
+        if not username:
+            username = email.split('@')[0]  
+        extra_fields['username'] = username  
+
+       
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
+
 
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
@@ -23,6 +31,7 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True, null=False)
     name = models.CharField(max_length=200, null=False)
+    username = models.CharField(max_length=150, unique=True, null=False)  
     
     user_type = models.CharField(
         max_length=15,
