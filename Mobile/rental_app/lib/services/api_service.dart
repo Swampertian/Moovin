@@ -153,16 +153,17 @@ class ApiService {
   };
 
   final uri = Uri.parse('$immobileBase').replace(queryParameters: queryParams);
-  print(uri); // para debug
 
   final response = await http.get(uri);
 
   if (response.statusCode == 200) {
-    final List<dynamic> data = jsonDecode(response.body);
+    final String decodedBody = utf8.decode(response.bodyBytes); 
+    final List<dynamic> data = jsonDecode(decodedBody);
     return data.map((item) => Immobile.fromJson(item)).toList();
   } else {
     throw Exception('Erro ao buscar imóveis');
   }
+
 }
 
 }

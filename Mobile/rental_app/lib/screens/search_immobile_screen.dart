@@ -17,6 +17,13 @@ class _SearchImmobileScreenState extends State<SearchImmobileScreen> {
   final apiService = ApiService();
   List<Immobile> imoveis = [];
   bool isLoading = true;
+  bool isPressed = false;
+  final Map<String, String> tipoMap = {
+  'Casa': 'house',
+  'Apartamento': 'apartment',
+  'Kitnet': 'kitnet',
+    };
+
 
   @override
   void initState() {
@@ -353,7 +360,11 @@ class _SearchImmobileScreenState extends State<SearchImmobileScreen> {
     },
   );
 }
-
+  Map<String, bool> isPressedMap = {
+  'Casa': false,
+  'Apartamento': false,
+  'Kitnet': false,
+};
 
 Widget _buildCategoryButton(
   BuildContext context, {
@@ -364,12 +375,40 @@ Widget _buildCategoryButton(
 }) {
   return GestureDetector(
     onTap: onTap,
+    onTapDown: (_) {
+      // Ao pressionar o botão
+      setState(() {
+        isPressed = true;
+      });
+    },
+    onTapUp: (_) {
+      // Quando o botão é liberado
+      setState(() {
+        isPressed = false;
+      });
+    },
+    onTapCancel: () {
+      // Caso o toque seja cancelado
+      setState(() {
+        isPressed = false;
+      });
+    },
     child: Column(
       children: [
-        Container(
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
           decoration: BoxDecoration(
             color: selected ? Theme.of(context).primaryColor : Colors.grey[200],
             shape: BoxShape.circle,
+            boxShadow: isPressed
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 4,
+                      offset: Offset(0, 4), // Sombra para efeito de pressionamento
+                    )
+                  ]
+                : [],
           ),
           padding: const EdgeInsets.all(12),
           child: Icon(
@@ -387,6 +426,7 @@ Widget _buildCategoryButton(
     ),
   );
 }
+
 
 
   @override
@@ -460,11 +500,76 @@ Widget _buildCategoryButton(
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: const [
-                CategoryIcon(icon: Icons.house_outlined, label: "Casa"),
-                CategoryIcon(icon: Icons.apartment, label: "Apartamento"),
-                CategoryIcon(icon: Icons.home_work_outlined, label: "Kitnet"),
-              ],
+              children:[  
+                GestureDetector(
+                                  onTap: () async {
+                                    setState(() {
+                                      isPressed = !isPressed; // Alterna o estado de pressionado
+                                    });
+                                    final tipoSelecionado = tipoMap['Casa']; // ou qualquer label clicado dinamicamente
+                                    print('Tipo selecionado: $tipoSelecionado');
+                                    await fetchImmobiles({'tipo': tipoSelecionado});
+                                  },
+                                  child: _buildCategoryButton(
+                                    context,
+                                    icon: Icons.house_outlined,
+                                    label: "Casa",
+                                    selected: 'House' == tipoMap['Casa'],
+                                    onTap: () {
+                                      setState(() {
+                                        isPressedMap['Casa'] = true;  // Atualiza o estado de pressionado
+                                      });
+                                      final tipoSelecionado = tipoMap['Casa'];
+                                      print('Tipo selecionado: $tipoSelecionado');
+                                      fetchImmobiles({'tipo': tipoSelecionado});
+                                    },
+                                  ),
+                                ),
+                GestureDetector(onTap: () async {
+                                    setState(() {
+                                      isPressed = !isPressed; // Alterna o estado de pressionado
+                                    });
+                                    final tipoSelecionado = tipoMap['Apartamento']; // ou qualquer label clicado dinamicamente
+                                    print('Tipo selecionado: $tipoSelecionado');
+                                    await fetchImmobiles({'tipo': tipoSelecionado});
+                                  },
+                                  child: _buildCategoryButton(
+                                    context,
+                                    icon: Icons.apartment,
+                                    label: "Apartamento",
+                                    selected: 'Apartament' == tipoMap['Apartamento'],
+                                    onTap: () {
+                                      setState(() {
+                                        isPressedMap['Apartamento'] = true; 
+                                      });
+                                      final tipoSelecionado = tipoMap['Apartamento'];
+                                      print('Tipo selecionado: $tipoSelecionado');
+                                      fetchImmobiles({'tipo': tipoSelecionado});
+                                    },
+                                  ),),
+                             
+                  GestureDetector(onTap: () async {
+                                    setState(() {
+                                      isPressed = !isPressed; // Alterna o estado de pressionado
+                                    });
+                                    final tipoSelecionado = tipoMap['Kitnet']; // ou qualquer label clicado dinamicamente
+                                    print('Tipo selecionado: $tipoSelecionado');
+                                    await fetchImmobiles({'tipo': tipoSelecionado});
+                                  },
+                                  child: _buildCategoryButton(
+                                    context,
+                                    icon: Icons.home_work_outlined,
+                                    label: "Kitnet",
+                                    selected: 'Kitnet' == tipoMap['Kitnet'],
+                                    onTap: () {
+                                      setState(() {
+                                       isPressedMap['Kitnet'] = true; 
+                                      });
+                                      final tipoSelecionado = tipoMap['Kitnet'];
+                                      print('Tipo selecionado: $tipoSelecionado');
+                                      fetchImmobiles({'tipo': tipoSelecionado});
+                                    },
+                                  ),),              ],
             ),
             const SizedBox(height: 24),
             const Text(
@@ -485,13 +590,14 @@ Widget _buildCategoryButton(
                               itemBuilder: (context, index) {
                                 final imovel = imoveis[index];
                                     return PropertyCard(
-                                                  imageUrl: 'https://th.bing.com/th/id/OIP.Dzz0pHitTq_-nEuYC0dgtQHaFC?rs=1&pid=ImgDetMain', 
+                                                  imageUrl: 'https://th.bing.com/th/id/OIP.Dzz0pHitTq_-nEuYC0dgtQHaFC?rs=1&pid=ImgDetMain', //imagem padrão, depois é necesssário puxar do banco, 
                                                   title: imovel.propertyType,
                                                   location: '${imovel.city}, ${imovel.state}',
                                                   beds: imovel.bedrooms,
                                                   baths: imovel.bathrooms,
-                                                  size: 2,
+                                                  size: 2, // tamanho padrão, alterar depois
                                                   rating: 4.5, 
+                                                
 );
 
                               },
