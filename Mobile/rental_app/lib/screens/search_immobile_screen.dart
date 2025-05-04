@@ -99,8 +99,36 @@ class _SearchImmobileScreenState extends State<SearchImmobileScreen> {
         "Piscina": false,
       };
 
+      Map<String, bool> filtrosAtivos = {
+        "tipo": false,
+        "quartos": false,
+        "banheiros": false,
+        "garagem": false,
+        "valorAluguel": false,
+        "tamanho": false,
+        "distancia": false,
+        "data": false,
+        "itens": false,
+      };
+
       return StatefulBuilder(
         builder: (context, setState) {
+          Widget buildSwitch(String label, String chave) {
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+                Transform.scale(
+                  scale: 0.75,
+                  child: Switch(
+                    value: filtrosAtivos[chave]!,
+                    onChanged: (v) => setState(() => filtrosAtivos[chave] = v),
+                  ),
+                ),
+              ],
+            );
+          }
+
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: SingleChildScrollView(
@@ -116,220 +144,180 @@ class _SearchImmobileScreenState extends State<SearchImmobileScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // Categoria
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildCategoryButton(
-                        context,
-                        icon: Icons.home_work_outlined,
-                        label: "Casa",
-                        selected: tipoSelecionado == "Casa",
-                        onTap: () {
-                          setState(() {
-                            tipoSelecionado = tipoSelecionado == "Casa" ? "" : "Casa";
-                          });
-                        },
-                      ),
-                      _buildCategoryButton(
-                        context,
-                        icon: Icons.apartment,
-                        label: "Apartamento",
-                        selected: tipoSelecionado == "Apartamento",
-                        onTap: () {
-                          setState(() {
-                            tipoSelecionado = tipoSelecionado == "Apartamento" ? "" : "Apartamento";
-                          });
-                        },
-                      ),
-                      _buildCategoryButton(
-                        context,
-                        icon: Icons.house_outlined,
-                        label: "Kitnet",
-                        selected: tipoSelecionado == "Kitnet",
-                        onTap: () {
-                          setState(() {
-                            tipoSelecionado = tipoSelecionado == "Kitnet" ? "" : "Kitnet";
-                          });
-                        },
-                      ),
-                    ],
-                  ),
+                  buildSwitch("Filtrar por tipo de imóvel", "tipo"),
+                  if (filtrosAtivos["tipo"]!)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildCategoryButton(
+                          context,
+                          icon: Icons.home_work_outlined,
+                          label: "Casa",
+                          selected: tipoSelecionado == "Casa",
+                          onTap: () {
+                            setState(() {
+                              tipoSelecionado = tipoSelecionado == "Casa" ? "" : "Casa";
+                            });
+                          },
+                        ),
+                        _buildCategoryButton(
+                          context,
+                          icon: Icons.apartment,
+                          label: "Apartamento",
+                          selected: tipoSelecionado == "Apartamento",
+                          onTap: () {
+                            setState(() {
+                              tipoSelecionado = tipoSelecionado == "Apartamento" ? "" : "Apartamento";
+                            });
+                          },
+                        ),
+                        _buildCategoryButton(
+                          context,
+                          icon: Icons.house_outlined,
+                          label: "Kitnet",
+                          selected: tipoSelecionado == "Kitnet",
+                          onTap: () {
+                            setState(() {
+                              tipoSelecionado = tipoSelecionado == "Kitnet" ? "" : "Kitnet";
+                            });
+                          },
+                        ),
+                      ],
+                    ),
 
                   const SizedBox(height: 20),
 
-                  // Número de Quartos
-                  const Text("Número de quartos", style: TextStyle(fontWeight: FontWeight.bold)),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.remove),
-                        onPressed: () {
-                          setState(() {
+                  buildSwitch("Filtrar por número de quartos", "quartos"),
+                  if (filtrosAtivos["quartos"]!)
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.remove),
+                          onPressed: () => setState(() {
                             if (quartos > 0) quartos--;
-                          });
-                        },
-                      ),
-                      Text("$quartos"),
-                      IconButton(
-                        icon: const Icon(Icons.add),
-                        onPressed: () {
-                          setState(() {
+                          }),
+                        ),
+                        Text("$quartos"),
+                        IconButton(
+                          icon: const Icon(Icons.add),
+                          onPressed: () => setState(() {
                             quartos++;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
+                          }),
+                        ),
+                      ],
+                    ),
 
-                  const SizedBox(height: 10),
-
-                  // Número de Banheiros
-                  const Text("Número de banheiros", style: TextStyle(fontWeight: FontWeight.bold)),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.remove),
-                        onPressed: () {
-                          setState(() {
+                  buildSwitch("Filtrar por número de banheiros", "banheiros"),
+                  if (filtrosAtivos["banheiros"]!)
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.remove),
+                          onPressed: () => setState(() {
                             if (banheiros > 0) banheiros--;
-                          });
-                        },
-                      ),
-                      Text("$banheiros"),
-                      IconButton(
-                        icon: const Icon(Icons.add),
-                        onPressed: () {
-                          setState(() {
+                          }),
+                        ),
+                        Text("$banheiros"),
+                        IconButton(
+                          icon: const Icon(Icons.add),
+                          onPressed: () => setState(() {
                             banheiros++;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
+                          }),
+                        ),
+                      ],
+                    ),
 
-                  const SizedBox(height: 10),
-
-                  // Garagem
-                  const Text("Número de vagas na garagem", style: TextStyle(fontWeight: FontWeight.bold)),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.remove),
-                        onPressed: () {
-                          setState(() {
+                  buildSwitch("Filtrar por garagem", "garagem"),
+                  if (filtrosAtivos["garagem"]!)
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.remove),
+                          onPressed: () => setState(() {
                             if (garagem > 0) garagem--;
-                          });
-                        },
-                      ),
-                      Text("$garagem"),
-                      IconButton(
-                        icon: const Icon(Icons.add),
-                        onPressed: () {
-                          setState(() {
+                          }),
+                        ),
+                        Text("$garagem"),
+                        IconButton(
+                          icon: const Icon(Icons.add),
+                          onPressed: () => setState(() {
                             garagem++;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // Valor do aluguel
-                  const Text("Valor máximo do aluguel (R\$)", style: TextStyle(fontWeight: FontWeight.bold)),
-                  Slider(
-                    value: valorAluguel,
-                    min: 500,
-                    max: 10000,
-                    divisions: 95,
-                    label: "R\$ ${valorAluguel.toInt()}",
-                    onChanged: (value) {
-                      setState(() {
-                        valorAluguel = value;
-                      });
-                    },
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // Tamanho do imóvel
-                  const Text("Tamanho do imóvel (m²)", style: TextStyle(fontWeight: FontWeight.bold)),
-                  Slider(
-                    value: tamanho,
-                    min: 20,
-                    max: 1000,
-                    divisions: 50,
-                    label: "${tamanho.toInt()} m²",
-                    onChanged: (value) {
-                      setState(() {
-                        tamanho = value;
-                      });
-                    },
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // Distância
-                  const Text("Distância máxima (km)", style: TextStyle(fontWeight: FontWeight.bold)),
-                  Slider(
-                    value: distancia,
-                    min: 1,
-                    max: 100,
-                    divisions: 20,
-                    label: "${distancia.toInt()} km",
-                    onChanged: (value) {
-                      setState(() {
-                        distancia = value;
-                      });
-                    },
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // Data de Lançamento
-                  const Text("Data de Lançamento do Anúncio", style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  ElevatedButton.icon(
-                    onPressed: () async {
-                      DateTime? picked = await showDatePicker(
-                        context: context,
-                        initialDate: DateTime.now(),
-                        firstDate: DateTime(2000),
-                        lastDate: DateTime.now(),
-                      );
-                      if (picked != null) {
-                        setState(() {
-                          selectedDate = picked;
-                        });
-                      }
-                    },
-                    icon: const Icon(Icons.calendar_today),
-                    label: Text(
-                      selectedDate != null
-                          ? "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}"
-                          : "Selecionar data",
+                          }),
+                        ),
+                      ],
                     ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey[200],
-                      foregroundColor: Colors.black,
-                      elevation: 0,
+
+                  buildSwitch("Filtrar por valor de aluguel", "valorAluguel"),
+                  if (filtrosAtivos["valorAluguel"]!)
+                    Slider(
+                      value: valorAluguel,
+                      min: 500,
+                      max: 10000,
+                      divisions: 95,
+                      label: "R\$ ${valorAluguel.toInt()}",
+                      onChanged: (value) => setState(() => valorAluguel = value),
                     ),
-                  ),
 
-                  const SizedBox(height: 10),
+                  buildSwitch("Filtrar por tamanho do imóvel", "tamanho"),
+                  if (filtrosAtivos["tamanho"]!)
+                    Slider(
+                      value: tamanho,
+                      min: 20,
+                      max: 1000,
+                      divisions: 50,
+                      label: "${tamanho.toInt()} m²",
+                      onChanged: (value) => setState(() => tamanho = value),
+                    ),
 
-                  // Itens
-                  const Text("Itens", style: TextStyle(fontWeight: FontWeight.bold)),
-                  ...itens.entries.map((entry) => CheckboxListTile(
-                        title: Text(entry.key),
-                        value: entry.value,
-                        onChanged: (value) {
+                  buildSwitch("Filtrar por distância", "distancia"),
+                  if (filtrosAtivos["distancia"]!)
+                    Slider(
+                      value: distancia,
+                      min: 1,
+                      max: 100,
+                      divisions: 20,
+                      label: "${distancia.toInt()} km",
+                      onChanged: (value) => setState(() => distancia = value),
+                    ),
+
+                  buildSwitch("Filtrar por data de anúncio", "data"),
+                  if (filtrosAtivos["data"]!)
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime.now(),
+                        );
+                        if (picked != null) {
                           setState(() {
-                            itens[entry.key] = value ?? false;
+                            selectedDate = picked;
                           });
-                        },
-                      )),
+                        }
+                      },
+                      icon: const Icon(Icons.calendar_today),
+                      label: Text(
+                        selectedDate != null
+                            ? "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}"
+                            : "Selecionar data",
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey[200],
+                        foregroundColor: Colors.black,
+                        elevation: 0,
+                      ),
+                    ),
+
+                  buildSwitch("Filtrar por itens do imóvel", "itens"),
+                  if (filtrosAtivos["itens"]!)
+                    ...itens.entries.map((entry) => CheckboxListTile(
+                          title: Text(entry.key),
+                          value: entry.value,
+                          onChanged: (value) => setState(() {
+                            itens[entry.key] = value ?? false;
+                          }),
+                        )),
 
                   const SizedBox(height: 20),
 
@@ -346,6 +334,7 @@ class _SearchImmobileScreenState extends State<SearchImmobileScreen> {
                           "distancia": distancia,
                           "data": selectedDate,
                           "itens": itens,
+                          "filtrosAtivos": filtrosAtivos,
                         });
                       },
                       child: const Text("Aplicar Filtros"),
@@ -359,6 +348,10 @@ class _SearchImmobileScreenState extends State<SearchImmobileScreen> {
       );
     },
   );
+
+
+
+
 }
   Map<String, bool> isPressedMap = {
   'Casa': false,
@@ -487,7 +480,24 @@ Widget _buildCategoryButton(
                               });
 
                               // Chama a função fetchImmobiles com os filtros
-                              await fetchImmobiles(filtros);
+                              Map<String, dynamic> filtrosSelecionados = {
+                                "tipo": filtros["tipo"]?.isNotEmpty ?? false ? filtros["tipo"] : null,
+                                "quartos": filtros["quartos"] != null && filtros["filtrosAtivos"]["quartos"] ? filtros["quartos"] : null,
+                                "banheiros": filtros["banheiros"] != null && filtros["filtrosAtivos"]["banheiros"] ? filtros["banheiros"] : null,
+                                "garagem": filtros["garagem"] != null && filtros["filtrosAtivos"]["garagem"] ? filtros["garagem"] : null,
+                                "valorAluguel": filtros["valorAluguel"] != null && filtros["filtrosAtivos"]["valorAluguel"] ? filtros["valorAluguel"] : null,
+                                "tamanho": filtros["tamanho"] != null && filtros["filtrosAtivos"]["tamanho"] ? filtros["tamanho"] : null,
+                                "distancia": filtros["distancia"] != null && filtros["filtrosAtivos"]["distancia"] ? filtros["distancia"] : null,
+                                "data": filtros["data"] != null && filtros["filtrosAtivos"]["data"] ? filtros["data"] : null,
+                                "itens": filtros["itens"] != null && filtros["filtrosAtivos"]["itens"] ? filtros["itens"] : null,
+                                "filtrosAtivos": filtros["filtrosAtivos"],
+                              };
+
+                              // Remove filtros desnecessários (valores nulos)
+                              filtrosSelecionados.removeWhere((key, value) => value == null);
+
+                              // Chama a função fetchImmobiles com os filtros
+                              await fetchImmobiles(filtrosSelecionados);
                             }
                           },
                 child: const Icon(Icons.tune),
