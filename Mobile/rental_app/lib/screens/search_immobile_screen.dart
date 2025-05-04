@@ -1,15 +1,72 @@
 import 'package:flutter/material.dart';
-
+import '../services/api_service.dart';
+import '../models/immobile.dart';
 
 
 class SearchImmobileScreen extends StatefulWidget {
   const SearchImmobileScreen({super.key});
 
   @override
-  State<SearchImmobileScreen> createState() => _SearchImmobileScreanState();
+  State<SearchImmobileScreen> createState() => _SearchImmobileScreenState();
 }
 
-class _SearchImmobileScreanState extends State<SearchImmobileScreen> {
+class _SearchImmobileScreenState extends State<SearchImmobileScreen> {
+
+  TextEditingController _searchController = TextEditingController();
+  String localization = '';
+  final apiService = ApiService();
+  List<Immobile> imoveis = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchImmobiles({});
+    _searchController.addListener(() {
+      setState(() {
+        localization = _searchController.text;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> fetchImmobiles(Map<String, dynamic>? filtros) async {
+    try {
+      
+      final lista = await apiService.fetchImmobile(
+                                type: filtros?['tipo'],
+                                bedrooms: filtros?['quartos'],
+                                bathrooms: filtros?['banheiros'],
+                                garage: filtros?['garagem'],
+                                rentValue: filtros?['valorAluguel'],
+                                areaSize: filtros?['tamanho'],
+                                distance: filtros?['distancia'],
+                                date: filtros?['data'],
+                                wifi: filtros?['itens']?['Wi-Fi'],
+                                airConditioning: filtros?['itens']?['Ar-condicionado'],
+                                petFriendly: filtros?['itens']?['Aceita pets'],
+                                furnished: filtros?['itens']?['Mobiliado'],
+                                pool: filtros?['itens']?['Piscina'],
+                                city: filtros?['city'],
+                              );
+
+      setState(() {
+        imoveis = lista;
+        isLoading = false;
+      });
+    } catch (e) {
+      print('Erro ao buscar imóveis: $e');
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   Future<Map<String, dynamic>?> _abrirBottomSheet(BuildContext context) {
   return showModalBottomSheet<Map<String, dynamic>>(
     context: context,
@@ -365,19 +422,36 @@ Widget _buildCategoryButton(
             ),
             const SizedBox(height: 12),
             TextField(
-              readOnly: true,
-             onTap: () async {
-                              final filtros = await _abrirBottomSheet(context);
-                              if (filtros != null) {
-                                // Use os filtros retornados como quiser
-                                print(filtros);
-                              }
-                            },
-
+              controller: _searchController,
+              onChanged: (value){localization = value;},
+              onSubmitted: (value) async {
+                      setState(() {
+                        isLoading = true;
+                      });
+                      await fetchImmobiles({'city': value});
+                    },     
               decoration: InputDecoration(
                 hintText: "Busque pela localização",
                 prefixIcon: const Icon(Icons.search),
-                suffixIcon: const Icon(Icons.tune),
+               suffixIcon: GestureDetector(
+               onTap: () async {
+                            final filtros = await _abrirBottomSheet(context);
+                            
+                            if (filtros != null) {
+                              // Exibe os filtros para debug
+                              print(filtros);
+                              
+                              // Avisa que está carregando antes de fazer a requisição
+                              setState(() {
+                                isLoading = true;
+                              });
+
+                              // Chama a função fetchImmobiles com os filtros
+                              await fetchImmobiles(filtros);
+                            }
+                          },
+                child: const Icon(Icons.tune),
+              ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -400,109 +474,30 @@ Widget _buildCategoryButton(
             const SizedBox(height: 8),
             Align(
                   alignment: Alignment.center,
-                  child: SizedBox(
-                    width: 320, // Defina a largura desejada!
-                    child: PropertyCard(
-                      imageUrl: "https://th.bing.com/th/id/OIP.Dzz0pHitTq_-nEuYC0dgtQHaFC?rs=1&pid=ImgDetMain",
-                      title: "Casa Duplex",
-                      location: "Palmas, TO",
-                      beds: 2,
-                      baths: 4,
-                      size: 320,
-                      rating: 4.3,
-                    ),
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.center,
-                  child: SizedBox(
-                    width: 320, // Defina a largura desejada!
-                    child: PropertyCard(
-                      imageUrl: "https://th.bing.com/th/id/OIP.Dzz0pHitTq_-nEuYC0dgtQHaFC?rs=1&pid=ImgDetMain",
-                      title: "Casa Duplex",
-                      location: "Palmas, TO",
-                      beds: 2,
-                      baths: 4,
-                      size: 320,
-                      rating: 4.3,
-                    ),
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.center,
-                  child: SizedBox(
-                    width: 320, // Defina a largura desejada!
-                    child: PropertyCard(
-                      imageUrl: "https://th.bing.com/th/id/OIP.Dzz0pHitTq_-nEuYC0dgtQHaFC?rs=1&pid=ImgDetMain",
-                      title: "Casa Duplex",
-                      location: "Palmas, TO",
-                      beds: 2,
-                      baths: 4,
-                      size: 320,
-                      rating: 4.3,
-                    ),
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.center,
-                  child: SizedBox(
-                    width: 320, // Defina a largura desejada!
-                    child: PropertyCard(
-                      imageUrl: "https://th.bing.com/th/id/OIP.Dzz0pHitTq_-nEuYC0dgtQHaFC?rs=1&pid=ImgDetMain",
-                      title: "Casa Duplex",
-                      location: "Palmas, TO",
-                      beds: 2,
-                      baths: 4,
-                      size: 320,
-                      rating: 4.3,
-                    ),
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.center,
-                  child: SizedBox(
-                    width: 320, // Defina a largura desejada!
-                    child: PropertyCard(
-                      imageUrl: "https://th.bing.com/th/id/OIP.Dzz0pHitTq_-nEuYC0dgtQHaFC?rs=1&pid=ImgDetMain",
-                      title: "Casa Duplex",
-                      location: "Palmas, TO",
-                      beds: 2,
-                      baths: 4,
-                      size: 320,
-                      rating: 4.3,
-                    ),
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.center,
-                  child: SizedBox(
-                    width: 320, // Defina a largura desejada!
-                    child: PropertyCard(
-                      imageUrl: "https://th.bing.com/th/id/OIP.Dzz0pHitTq_-nEuYC0dgtQHaFC?rs=1&pid=ImgDetMain",
-                      title: "Casa Duplex",
-                      location: "Palmas, TO",
-                      beds: 2,
-                      baths: 4,
-                      size: 320,
-                      rating: 4.3,
-                    ),
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.center,
-                  child: SizedBox(
-                    width: 320, // Defina a largura desejada!
-                    child: PropertyCard(
-                      imageUrl: "https://th.bing.com/th/id/OIP.Dzz0pHitTq_-nEuYC0dgtQHaFC?rs=1&pid=ImgDetMain",
-                      title: "Casa Duplex",
-                      location: "Palmas, TO",
-                      beds: 2,
-                      baths: 4,
-                      size: 320,
-                      rating: 4.3,
-                    ),
-                  ),
-                ),
+                  child:imoveis.isEmpty ? const Text(
+                                                'Nenhum imóvel encontrado',
+                                                style: TextStyle(fontSize: 16, color: Colors.grey),
+                                              )
+                            : ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: imoveis.length, 
+                              itemBuilder: (context, index) {
+                                final imovel = imoveis[index];
+                                    return PropertyCard(
+                                                  imageUrl: 'https://th.bing.com/th/id/OIP.Dzz0pHitTq_-nEuYC0dgtQHaFC?rs=1&pid=ImgDetMain', 
+                                                  title: imovel.propertyType,
+                                                  location: '${imovel.city}, ${imovel.state}',
+                                                  beds: imovel.bedrooms,
+                                                  baths: imovel.bathrooms,
+                                                  size: 2,
+                                                  rating: 4.5, 
+);
+
+                              },
+  ),)
+                  
+                  ,
           ],
         ),
       ),

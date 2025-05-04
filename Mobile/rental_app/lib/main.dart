@@ -23,9 +23,10 @@ class MyApp extends StatelessWidget {
 
         textTheme: GoogleFonts.khulaTextTheme(), 
       ),
-      home: const LoginScreen(),
+      //home: const LoginScreen(),
       //home: const OwnerProfileScreen(ownerId: 1),
       //home: const TenantProfileScreen(tenantId: 1),
+      home:SearchImmobileScreen(),
       routes: {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
