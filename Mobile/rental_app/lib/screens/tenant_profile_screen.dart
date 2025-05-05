@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/tenant_provider.dart';
+import '../services/api_service.dart';
 
 import './tenant_edit_profile_screen.dart';
 
 
 class TenantProfileScreen extends StatelessWidget {
-  final int tenantId;
 
-  const TenantProfileScreen({super.key, required this.tenantId});
-
+  const TenantProfileScreen({super.key});
+  
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => TenantProvider()..fetchTenant(tenantId),
+      create: (context) => TenantProvider()..fetchTenant(),
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
@@ -35,13 +35,13 @@ class TenantProfileScreen extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                               builder: (context) => TenantEditProfileScreen(
-                                tenantId: tenantId,
+                                tenantId: -1 ,
                                 tenant: provider.tenant!,
                               ),
                             ),
                           );
                           if (result == true) {
-                            provider.fetchTenant(tenantId); // Refresh the data after editing
+                            provider.fetchTenant(); // Refresh the data after editing
                           }
                         }
                       : null,

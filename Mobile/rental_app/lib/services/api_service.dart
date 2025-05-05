@@ -3,19 +3,33 @@ import 'package:http/http.dart' as http;
 import '../models/tenant.dart';
 import '../models/owner.dart';
 import '../config.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ApiService {
   final String _tenantBase = '$apiBase/tenants';
   final String _ownerBase = '$apiBase/owners/owners';
   final String _immobileBase = '$apiBase/immobile';
-
+  final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
   // ========================= TENANT =========================
 
-  Future<Tenant> fetchTenant(int id) async {
-    final url = Uri.parse('$_tenantBase/profile/$id/');
+  Future<Tenant> fetchTenant() async {
+    final url = Uri.parse('$_tenantBase/profile/me/');
     print('🔎 Fetching Tenant: $url');
 
-    final response = await http.get(url);
+    // Recupera o token do SecureStore
+  final token = await _secureStorage.read(key: 'jwt_token');
+
+  if (token == null) {
+    throw Exception('Token JWT não encontrado.');
+  }
+
+  final response = await http.get(
+    url,
+    headers: {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    },
+  );
 
     print('📡 STATUS: ${response.statusCode}');
     print('📦 BODY: ${response.body}');
