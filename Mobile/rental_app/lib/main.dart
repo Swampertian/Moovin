@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'screens/tenant_profile_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
+import 'screens/detail_immobile_screen.dart';
 
 
 void main() {
@@ -23,14 +24,15 @@ class MyApp extends StatelessWidget {
 
         textTheme: GoogleFonts.khulaTextTheme(), 
       ),
-      home: const LoginScreen(),
+      home: const DetailImmobileScreen(immobileId: 1),
       //home: const OwnerProfileScreen(ownerId: 1),
       //home: const TenantProfileScreen(tenantId: 1),
       routes: {
-        '/login': (context) => const LoginScreen(),
+        '/login': (context) => const DetailImmobileScreen(immobileId: 1),
         '/register': (context) => const RegisterScreen(),
         '/tenant': (context) => const TenantProfileScreen(tenantId: 1),
-        '/owner' : (context) => const OwnerProfileScreen(ownerId: 1)
+        '/owner' : (context) => const OwnerProfileScreen(ownerId: 1),
+        '/immobile_details': (context) => const DetailImmobileScreen(immobileId: 1),
       },
     );
   }
