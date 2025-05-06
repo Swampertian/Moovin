@@ -16,7 +16,7 @@
                 <i class="fas fa-calendar-alt"></i>
                 <span>Calendário de Pagamentos</span>
             </a>
-            <a href="#" class="quick-link-card">
+            <a href="#" class="quick-link-card active">
                 <i class="fas fa-chart-line"></i>
                 <span>Gráficos financeiros</span>
             </a>
@@ -26,6 +26,16 @@
     <!-- Charts Section -->
     <div class="charts-section">
         <h2>Gráficos</h2>
+        
+        <!-- Confirmação de dados carregados para debug -->
+        <div class="debug-info" style="display: none;">
+            <p>Dados carregados: {{ revenue_data|length }} meses</p>
+            <ul>
+                {% for data in revenue_data %}
+                <li>{{ data.month }}: R$ {{ data.revenue }}</li>
+                {% endfor %}
+            </ul>
+        </div>
 
         <!-- Chart Row for First Two Charts -->
         <div class="chart-row">
@@ -52,258 +62,368 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// Revenue Distribution Chart (Histogram)
-const revenueDistCtx = document.getElementById('revenueDistributionChart').getContext('2d');
-new Chart(revenueDistCtx, {
-    type: 'bar',
-    data: {
-        labels: [{% for data in revenue_data %}"{{ data.month }}",{% endfor %}],
-        datasets: [{
-            label: 'Receita Mensal (R$)',
-            data: [{% for data in revenue_data %}{{ data.revenue }},{% endfor %}],
-            backgroundColor: '#42a5f5',
-            borderColor: '#1e88e5',
-            borderWidth: 1
-        }]
-    },
-    options: {
-        scales: {
-            y: {
-                beginAtZero: true,
-                title: {
-                    display: true,
-                    text: 'Receita (R$)'
+    // Revenue Distribution Chart (Histogram)
+    const revenueDistCtx = document.getElementById('revenueDistributionChart').getContext('2d');
+    new Chart(revenueDistCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for data in revenue_data %}"{{ data.month }}",{% endfor %}],
+            datasets: [{
+                label: 'Receita Mensal (R$)',
+                data: [{% for data in revenue_data %}{{ data.revenue }},{% endfor %}],
+                backgroundColor: [{% for data in revenue_data %}
+                    {% if forloop.last %}"#4CAF50"{% else %}"#42a5f5"{% endif %},
+                {% endfor %}],
+                borderColor: [{% for data in revenue_data %}
+                    {% if forloop.last %}"#2E7D32"{% else %}"#1e88e5"{% endif %},
+                {% endfor %}],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Receita (R$)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Mês'
+                    }
                 }
             },
-            x: {
-                title: {
+            plugins: {
+                legend: {
                     display: true,
-                    text: 'Mês'
+                    position: 'top'
+                },
+                tooltip: {
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            const item = tooltipItems[0];
+                            const isCurrentMonth = item.dataIndex === tooltipItems[0].dataset.data.length - 1;
+                            return item.label + (isCurrentMonth ? ' (Mês Atual)' : '');
+                        }
+                    }
                 }
             }
-        },
-        plugins: {
-            legend: {
-                display: true,
-                position: 'top'
-            }
         }
-    }
-});
-
-// Cumulative Revenue Chart (Line/Area Chart)
-const cumulativeRevenueCtx = document.getElementById('cumulativeRevenueChart').getContext('2d');
-let cumulativeData = [];
-let runningTotal = 0;
-[{% for data in revenue_data %}{{ data.revenue }},{% endfor %}].forEach(revenue => {
-    runningTotal += revenue;
-    cumulativeData.push(runningTotal);
-});
-new Chart(cumulativeRevenueCtx, {
-    type: 'line',
-    data: {
-        labels: [{% for data in revenue_data %}"{{ data.month }}",{% endfor %}],
-        datasets: [{
-            label: 'Receita Acumulada (R$)',
-            data: cumulativeData,
-            borderColor: '#ef5350',
-            backgroundColor: 'rgba(239, 83, 80, 0.2)',
-            fill: true,
-            tension: 0.4
-        }]
-    },
-    options: {
-        scales: {
-            y: {
-                beginAtZero: true,
-                title: {
-                    display: true,
-                    text: 'Receita Acumulada (R$)'
+    });
+    
+    // Cumulative Revenue Chart (Line/Area Chart)
+    const cumulativeRevenueCtx = document.getElementById('cumulativeRevenueChart').getContext('2d');
+    let cumulativeData = [];
+    let runningTotal = 0;
+    // Certifique-se de que os dados são convertidos para números
+    const revenueValues = [{% for data in revenue_data %}parseFloat("{{ data.revenue }}"),{% endfor %}];
+    
+    revenueValues.forEach((revenue, index) => {
+        runningTotal += revenue;
+        cumulativeData.push(runningTotal);
+    });
+    
+    console.log("Cumulative data calculated: ", cumulativeData);
+    
+    new Chart(cumulativeRevenueCtx, {
+        type: 'line',
+        data: {
+            labels: [{% for data in revenue_data %}"{{ data.month }}",{% endfor %}],
+            datasets: [{
+                label: 'Receita Acumulada (R$)',
+                data: cumulativeData,
+                borderColor: '#ef5350',
+                backgroundColor: 'rgba(239, 83, 80, 0.2)',
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: function(context) {
+                    // Destaca o último ponto (mês atual) com uma cor diferente
+                    return context.dataIndex === context.dataset.data.length - 1 ? '#4CAF50' : '#ef5350';
+                },
+                pointRadius: function(context) {
+                    // Aumenta o tamanho do ponto do mês atual
+                    return context.dataIndex === context.dataset.data.length - 1 ? 6 : 3;
+                }
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Receita Acumulada (R$)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Mês'
+                    }
                 }
             },
-            x: {
-                title: {
+            plugins: {
+                legend: {
                     display: true,
-                    text: 'Mês'
+                    position: 'top'
+                },
+                tooltip: {
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            const item = tooltipItems[0];
+                            const isCurrentMonth = item.dataIndex === tooltipItems[0].dataset.data.length - 1;
+                            return item.label + (isCurrentMonth ? ' (Mês Atual)' : '');
+                        }
+                    }
                 }
             }
+        }
+    });
+    
+    // Revenue by Property Type Chart (Pie Chart)
+    const revenueByPropertyTypeCtx = document.getElementById('revenueByPropertyTypeChart').getContext('2d');
+    new Chart(revenueByPropertyTypeCtx, {
+        type: 'pie',
+        data: {
+            labels: [{% for data in revenue_by_property_type %}"{{ data.property_type }}",{% endfor %}],
+            datasets: [{
+                label: 'Receita por Tipo de Propriedade (R$)',
+                data: [{% for data in revenue_by_property_type %}{{ data.revenue }},{% endfor %}],
+                backgroundColor: [
+                    '#FF6384',
+                    '#36A2EB',
+                    '#FFCE56',
+                    '#4BC0C0',
+                    '#9966FF'
+                ],
+                borderColor: '#fff',
+                borderWidth: 1
+            }]
         },
-        plugins: {
-            legend: {
-                display: true,
-                position: 'top'
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            const value = context.raw;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = Math.round((value / total) * 100);
+                            label += `R$ ${value.toLocaleString('pt-BR', {minimumFractionDigits: 2})} (${percentage}%)`;
+                            return label;
+                        }
+                    }
+                }
             }
         }
-    }
-});
-
-// Revenue by Property Type Chart (Pie Chart)
-const revenueByPropertyTypeCtx = document.getElementById('revenueByPropertyTypeChart').getContext('2d');
-new Chart(revenueByPropertyTypeCtx, {
-    type: 'pie',
-    data: {
-        labels: [{% for data in revenue_by_property_type %}"{{ data.property_type }}",{% endfor %}],
-        datasets: [{
-            label: 'Receita por Tipo de Propriedade (R$)',
-            data: [{% for data in revenue_by_property_type %}{{ data.revenue }},{% endfor %}],
-            backgroundColor: [
-                '#FF6384',
-                '#36A2EB',
-                '#FFCE56',
-                '#4BC0C0',
-                '#9966FF'
-            ],
-            borderColor: '#fff',
-            borderWidth: 1
-        }]
-    },
-    options: {
-        plugins: {
-            legend: {
-                display: true,
-                position: 'top'
-            }
+    });
+    </script>
+    
+    <style>
+        /* Dashboard Layout */
+        .dashboard-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
         }
-    }
-});
-</script>
-
-<style>
-    /* Dashboard Layout */
-    .dashboard-container {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-    }
-
-    /* Charts Section */
-    .charts-section {
-        background: #fff;
-        border: 1px solid #ddd;
-        border-radius: 9px;
-        padding: 1.2rem;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-
-    .charts-section h2 {
-        font-size: 1.8rem;
-        color: #333;
-        margin: 0 0 1rem;
-        text-align: center;
-    }
-
+    
+        /* Charts Section */
+        .charts-section {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 9px;
+            padding: 1.2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+    
+        .charts-section h2 {
+            font-size: 1.8rem;
+            color: #333;
+            margin: 0 0 1rem;
+            text-align: center;
+        }
+    
+        .chart-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+    
+        .chart {
+            flex: 1;
+            min-width: 0; /* Prevents flex items from overflowing */
+            margin-bottom: 2rem;
+            height: 350px; /* Fixed height for charts */
+        }
+    
+        .chart-row .chart {
+            flex: 1 1 calc(50% - 0.75rem); /* Two charts side by side, accounting for gap */
+        }
+    
+        .chart h3 {
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+    
+        /* Estilo específico para o gráfico de pizza */
+        .pie-chart-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 300px; /* Fixed height */
+        }
+        
+        /* Estilo para a mensagem do mês atual */
+        .current-month-info {
+            background-color: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: #2E7D32;
+        }
+        
+        .current-month-info p {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .current-month-info i {
+            font-size: 1.1rem;
+        }
+    
+        /* Quick Links Section */
+        .quick-links {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 9px;
+            padding: 1.2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+    
+        .quick-links h3 {
+            margin: 0 0 1rem;
+            font-size: 1.2rem;
+            color: #333;
+        }
+    
+        .links-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+    
+        .quick-link-card {
+            flex: 1;
+            min-width: 180px;
+            background: transparent;
+            border: 1px solid #ddd;
+            border-radius: 9px;
+            padding: 1.5rem;
+            text-decoration: none;
+            color: #333;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+    
+        .quick-link-card:hover, .quick-link-card.active {
+            background: #e8f5e9;
+            transition: background 0.2s ease;
+        }
+        
+        .quick-link-card.active {
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 1px #4CAF50;
+        }
+    
+        .quick-link-card i {
+            font-size: 1.8rem;
+            color: #2e7d32;
+        }
+    
+        /* Responsivo para telas menores que 768px */
+@media (max-width: 768px) {
     .chart-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1.5rem;
-        margin-bottom: 2rem;
+        flex-direction: column;
     }
 
+    .chart-row .chart,
     .chart {
-        flex: 1;
-        min-width: 0; /* Prevents flex items from overflowing */
-        margin-bottom: 2rem;
-    }
-
-    .chart-row .chart {
-        flex: 1 1 calc(50% - 0.75rem); /* Two charts side by side, accounting for gap */
-    }
-
-    .chart h3 {
-        font-size: 1.2rem;
-        color: #333;
-        margin-bottom: 1rem;
-        text-align: center;
-    }
-
-    .chart canvas {
-        max-width: 100%;
+        flex: 1 1 100%;
+        width: 100%;
         height: 300px;
     }
 
-    /* Estilo específico para o gráfico de pizza */
-    .pie-chart-container canvas {
-        max-width: 200px !important; /* Reduz a largura */
-        max-height: 200px !important; /* Reduz a altura */
-        margin: 0 auto; /* Centraliza o gráfico */
-    }
-
-    /* Quick Links Section */
-    .quick-links {
-        background: #fff;
-        border: 1px solid #ddd;
-        border-radius: 9px;
-        padding: 1.2rem;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-
     .quick-links h3 {
-        margin: 0 0 1rem;
-        font-size: 1.2rem;
-        color: #333;
+        font-size: 1.1rem;
+        text-align: center;
     }
 
     .links-container {
         display: flex;
-        flex-wrap: wrap;
+        flex-direction: column;
         gap: 1rem;
+        align-items: center;
     }
 
     .quick-link-card {
-        flex: 1;
-        min-width: 180px;
-        background: transparent;
-        border: 1px solid #ddd;
-        border-radius: 9px;
-        padding: 1.5rem;
-        text-decoration: none;
-        color: #333;
+        width: 90%;
+        padding: 1rem;
+        font-size: 1rem;
         text-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 1rem;
     }
 
-    .quick-link-card:hover {
-        background: #e8f5e9;
-        transition: background 0.2s ease;
+    .charts-section h2 {
+        font-size: 1.5rem;
     }
 
-    .quick-link-card i {
-        font-size: 1.8rem;
-        color: #2e7d32;
+    .chart h3 {
+        font-size: 1rem;
     }
 
-    /* Responsive Adjustments */
-    @media (max-width: 768px) {
-        .chart-row {
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .chart-row .chart {
-            flex: 1 1 100%; /* Full width on mobile */
-        }
-
-        .chart canvas {
-            height: 200px;
-        }
-
-        .pie-chart-container canvas {
-            max-width: 150px !important; /* Ainda menor em dispositivos móveis */
-            max-height: 150px !important;
-        }
-
-        .links-container {
-            flex-direction: column;
-        }
-
-        .quick-link-card {
-            width: 100%;
-        }
+    .pie-chart-container {
+        height: 300px;
+        width: 100%;
     }
-</style>
+}
+
+/* Garantir que o canvas ocupe o tamanho do container */
+canvas {
+    width: 100% !important;
+    height: auto !important;
+}
+
+.chart canvas {
+    height: 100% !important;
+    max-height: 300px;
+}
+
+    </style>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 {% endblock %}

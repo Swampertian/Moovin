@@ -306,37 +306,72 @@ class OwnerChartsView(LoginRequiredMixin, TemplateView):
 
         properties = Immobile.objects.filter(owner=owner)
 
-        # Revenue data for the last 12 months
+        # Obtain revenue data for the last 12 months
+        today = timezone.now().date()
+        end_date = today
+        start_date = (today.replace(day=1) - timedelta(days=365)).replace(day=1)  # Get 12 full months
+
+        # Generate all months in range for complete data
         revenue_data = []
-        for i in range(11, -1, -1):
-            month_start = (timezone.now() - timedelta(days=30 * i)).replace(day=1)
-            month_end = month_start + timedelta(days=30)
+        month_dates = []
+        
+        # Generate all month dates first
+        current_date = start_date
+        while current_date <= end_date:
+            month_dates.append(current_date)
+            # Move to first day of next month
+            if current_date.month == 12:
+                current_date = current_date.replace(year=current_date.year + 1, month=1)
+            else:
+                current_date = current_date.replace(month=current_date.month + 1)
+        
+        # For each month, calculate revenue
+        for i, month_start in enumerate(month_dates):
+            # Calculate month end
+            if i == len(month_dates) - 1:  # Last month (current)
+                month_end = end_date
+            else:
+                month_end = month_dates[i + 1] - timedelta(days=1)
+            
+            # Get payments for this month
             payments = Payment.objects.filter(
                 immobile__owner=owner,
                 date_received__range=[month_start, month_end]
             )
             total = payments.aggregate(Sum('amount_received'))['amount_received__sum'] or 0
+            
+            # Add to revenue data
             revenue_data.append({
                 'month': month_start.strftime('%b %Y'),
-                'revenue': total
+                'revenue': float(total)  # Ensure it's a float for JS
             })
 
-        # Revenue distribution by property type for the last 12 months
-        start_date = (timezone.now() - timedelta(days=30 * 12)).replace(day=1)
-        end_date = timezone.now()
-        property_types = properties.values('property_type').distinct()
+        # Revenue distribution by property type for the same period
+        property_types = properties.values_list('property_type', flat=True).distinct()
         revenue_by_property_type = []
         for prop_type in property_types:
-            prop_type_name = prop_type['property_type']
+            if not prop_type:  # Skip if property type is None
+                continue
+                
             prop_payments = Payment.objects.filter(
                 immobile__owner=owner,
-                immobile__property_type=prop_type_name,
+                immobile__property_type=prop_type,
                 date_received__range=[start_date, end_date]
             )
             total_revenue = prop_payments.aggregate(Sum('amount_received'))['amount_received__sum'] or 0
+            
+            # Only add if there's revenue for this property type
+            if total_revenue > 0:
+                revenue_by_property_type.append({
+                    'property_type': prop_type if prop_type else 'Não Especificado',
+                    'revenue': float(total_revenue)  # Ensure it's a float for JS
+                })
+        
+        # If no property types with revenue, add default
+        if not revenue_by_property_type:
             revenue_by_property_type.append({
-                'property_type': prop_type_name,
-                'revenue': total_revenue
+                'property_type': 'Não Especificado',
+                'revenue': 0
             })
 
         context.update({
