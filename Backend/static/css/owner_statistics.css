@@ -1,0 +1,376 @@
+/* Dashboard Layout */
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Summary Cards */
+.dashboard-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.summary-card {
+    flex: 1;
+    min-width: 220px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 9px;
+    padding: 1.2rem;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.card-icon {
+    font-size: 2rem;
+    margin-right: 1rem;
+    color: #2e7d32;
+}
+
+.card-content h2 {
+    font-size: 1.6rem;
+    margin: 0.5rem 0;
+    color: #2e7d32;
+}
+
+.card-content h3 {
+    font-size: 0.9rem;
+    margin: 0;
+    color: #555;
+    text-transform: uppercase;
+}
+
+.card-content p {
+    font-size: 0.8rem;
+    color: #777;
+    margin: 0;
+}
+
+/* Filter Section */
+.filter-section {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 9px;
+    padding: 1.2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.filter-section h3 {
+    margin: 0 0 1rem;
+    font-size: 1.2rem;
+    color: #333;
+}
+
+.date-filter-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 150px;
+}
+
+.form-group label {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 0.3rem;
+}
+
+.form-group input, .form-group select {
+    padding: 0.6rem;
+    border: 1px solid #ddd;
+    border-radius: 7px;
+    font-size: 0.9rem;
+    width: 100%;
+}
+
+.filter-section .form-group input[type="date"] {
+    width: 400px;
+}
+
+.input-with-prefix {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-with-prefix .prefix {
+    position: absolute;
+    left: 10px;
+    color: #555;
+}
+
+.input-with-prefix input {
+    padding-left: 30px;
+}
+
+/* Register Payment Form Inputs */
+.register-payment-form .form-group {
+    min-width: 120px; /* Reduced minimum width for form fields */
+}
+
+.register-payment-form .form-group select,
+.register-payment-form .form-group input {
+    padding: 0.4rem; /* Reduced padding for smaller input fields */
+    font-size: 0.85rem; /* Slightly smaller font size */
+    width: 100%; /* Ensure full width within the smaller container */
+    box-sizing: border-box; /* Prevent padding from increasing width */
+}
+
+.register-payment-form .form-group input[type="date"] {
+    width: 100%; /* Override any fixed width for date input */
+}
+
+.register-payment-form .input-with-prefix .prefix {
+    left: 8px; /* Adjusted for smaller input */
+    font-size: 0.85rem; /* Match font size */
+}
+
+.register-payment-form .input-with-prefix input {
+    padding-left: 25px; /* Adjusted for smaller prefix */
+}
+
+/* Buttons */
+.btn {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 7px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.btn-primary {
+    background: #2e7d32;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: #1b5e20;
+    transition: background 0.2s ease;
+}
+
+.btn-success {
+    background: #388e3c;
+    color: #fff;
+}
+
+.btn-success:hover {
+    background: #2e7d32;
+    transition: background 0.2s ease;
+}
+
+.btn-secondary {
+    background: #757575;
+    color: #fff;
+}
+
+.btn-secondary:hover {
+    background: #616161;
+    transition: background 0.2s ease;
+}
+
+/* Properties Section */
+.properties-section {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 9px;
+    padding: 1.2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.section-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #333;
+}
+
+/* Table Styles */
+.table-responsive {
+    overflow-x: auto;
+}
+
+.property-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.property-table th {
+    background: rgb(237, 235, 235);
+    padding: 0.8rem;
+    text-align: left;
+    font-weight: bold;
+    color: #333;
+    border-bottom: 2px solid #ddd;
+}
+
+.property-table td {
+    padding: 0.8rem;
+    border-bottom: 1px solid #ddd;
+}
+
+.status-badge {
+    padding: 0.3rem 0.8rem;
+    border-radius: 14px;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.status-paid {
+    background: #c8e6c9;
+    color: #2e7d32;
+}
+
+.status-unpaid {
+    background: #ffcdd2;
+    color: #c62828;
+}
+
+.no-data {
+    text-align: center;
+    padding: 1.5rem;
+    color: #555;
+}
+
+/* Register Payment Form */
+.register-payment-form {
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 9px;
+    padding: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.payment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+/* Quick Links Section */
+.quick-links {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 9px;
+    padding: 1.2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.quick-links h3 {
+    margin: 0 0 1rem;
+    font-size: 1.2rem;
+    color: #333;
+}
+
+.links-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.quick-link-card {
+    flex: 1;
+    min-width: 180px;
+    background: transparent;
+    border: 1px solid #ddd;
+    border-radius: 9px;
+    padding: 1.5rem;
+    text-decoration: none;
+    color: #333;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.quick-link-card:hover {
+    background: #e8f5e9;
+    transition: background 0.2s ease;
+}
+
+.quick-link-card i {
+    font-size: 1.8rem;
+    color: #2e7d32;
+}
+
+/* Alert Styles */
+.alert {
+    padding: 0.8rem;
+    border-radius: 7px;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.alert-info {
+    background: #e3f2fd;
+    color: #0277bd;
+}
+
+.alert.error {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.alert.success {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .dashboard-header {
+        flex-direction: column;
+    }
+
+    .form-row {
+        flex-direction: column;
+    }
+
+    .form-group {
+        width: 100%;
+    }
+
+    .filter-section .form-group input[type="date"] {
+        width: 100%;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}

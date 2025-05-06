@@ -1,0 +1,448 @@
+{% extends 'base.html' %}
+
+{% block title %}Calendário de Pagamentos{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Calendar Title Section -->
+    <div class="section-header">
+        <h3>Seu Calendário</h3>
+    </div>
+
+    <!-- Calendar View Section -->
+    <div class="calendar-container">
+        <div class="month-header">
+            <h2>
+                <a href="?month={{ prev_month }}" class="month-nav">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+                {{ month_name }} {{ year }}
+                <a href="?month={{ next_month }}" class="month-nav">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </h2>
+            <div class="date-selector">
+                <select id="month-select" onchange="navigateToMonth()">
+                    {% for month_num, month_name in months %}
+                        <option value="{{ month_num }}" {% if month_num == month %}selected{% endif %}>{{ month_name }}</option>
+                    {% endfor %}
+                </select>
+                <select id="year-select" onchange="navigateToMonth()">
+                    {% for y in years %}
+                        <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        <div class="calendar-grid">
+            <div class="calendar-header">Dom</div>
+            <div class="calendar-header">Seg</div>
+            <div class="calendar-header">Ter</div>
+            <div class="calendar-header">Qua</div>
+            <div class="calendar-header">Qui</div>
+            <div class="calendar-header">Sex</div>
+            <div class="calendar-header">Sáb</div>
+            
+            {% for week in calendar_weeks %}
+                {% for day in week %}
+                    {% if day.day == 0 %}
+                        <div class="calendar-day empty"></div>
+                    {% else %}
+                        <div class="calendar-day {% if day.status == 'Não Pago' %}unpaid clickable{% elif day.today %}today{% endif %}"
+                             {% if day.status == 'Não Pago' %}onclick="window.location.href='{% url 'owner_statistics' %}'"{% endif %}>
+                            <div class="day-number">{{ day.day }}</div>
+                            {% if day.payments %}
+                                <div class="day-info">
+                                    <div class="payment-amount">R$ {{ day.payment_amount|floatformat:2 }}</div>
+                                    <div class="payment-properties">{{ day.payments }} imóvel(is)</div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        </div>
+
+        <!-- Legend Section -->
+        <div class="calendar-legend">
+            <div class="legend-item">
+                <span class="legend-color unpaid"></span>
+                <span>Pagamento Pendente ou Incompleto</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color today"></span>
+                <span>Hoje</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Links Section (unchanged, included for context) -->
+    <div class="quick-links">
+        <h3>Acesso as outras funcionalidades</h3>
+        <div class="links-container">
+            <a href="{% url 'owner_statistics' %}" class="quick-link-card">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <span>Estatísticas do Proprietário</span>
+            </a>
+            <a href="#" class="quick-link-card">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Calendário de Pagamentos</span>
+            </a>
+            <a href="{% url 'owner_charts' %}" class="quick-link-card">
+                <i class="fas fa-chart-line"></i>
+                <span>Gráficos financeiros</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript (unchanged) -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const unpaidDays = document.querySelectorAll('.calendar-day.unpaid');
+        unpaidDays.forEach(day => {
+            day.addEventListener('mouseenter', function() {
+                const dayInfo = this.querySelector('.day-info');
+                if (dayInfo) {
+                    dayInfo.classList.add('show');
+                }
+            });
+            
+            day.addEventListener('mouseleave', function() {
+                const dayInfo = this.querySelector('.day-info');
+                if (dayInfo) {
+                    dayInfo.classList.remove('show');
+                }
+            });
+        });
+
+        window.navigateToMonth = function() {
+            const month = document.getElementById('month-select').value;
+            const year = document.getElementById('year-select').value;
+            window.location.href = `?month=${year}-${month.padStart(2, '0')}`;
+        };
+    });
+</script>
+
+<!-- Updated Styles -->
+<style>
+    .dashboard-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .section-header {
+        margin: 0;
+        padding: 0;
+    }
+
+    .section-header h3 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: #333;
+    }
+
+    .calendar-container {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 9px;
+        padding: 1.2rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        max-width: 100%;
+        overflow-x: auto; /* Allow horizontal scrolling on mobile */
+        box-sizing: border-box;
+    }
+
+    .month-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 1rem;
+        gap: 0.5rem;
+    }
+
+    .month-header h2 {
+        font-size: 1.8rem;
+        color: #333;
+        margin: 0;
+        text-transform: capitalize;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .month-nav {
+        background: none;
+        border: none;
+        color: #607d8b;
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 0.2rem 0.5rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .month-nav:hover {
+        color: #455a64;
+        transition: color 0.2s ease;
+    }
+
+    .date-selector {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .date-selector select {
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 0.9rem;
+        color: #333;
+        background: #fff;
+        cursor: pointer;
+    }
+
+    .date-selector select:focus {
+        outline: none;
+        border-color: #2e7d32;
+    }
+
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(50px, 1fr)); /* Ensure columns are at least 50px wide */
+        gap: 0.5rem;
+        min-width: 350px; /* Ensure grid has a minimum width to prevent excessive shrinking */
+        max-width: 100%;
+    }
+
+    .calendar-header {
+        text-align: center;
+        font-weight: bold;
+        padding: 0.8rem;
+        background: #fff;
+        border-radius: 7px;
+        font-size: 0.9rem;
+    }
+
+    .calendar-day {
+        min-height: 80px; /* Reduced from 100px for better mobile fit */
+        border: 1px solid #ddd;
+        border-radius: 7px;
+        padding: 0.5rem;
+        position: relative;
+        background: #fff;
+        box-sizing: border-box;
+    }
+
+    .calendar-day.empty {
+        background: #f9f9f9;
+    }
+
+    .calendar-day.unpaid {
+        background: #ffcdd2;
+        color: #c62828;
+        border: 1px solid #ddd;
+    }
+
+    .calendar-day.today {
+        border: 2px solid #0277bd;
+        color: #0277bd;
+    }
+
+    .calendar-day.clickable {
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+
+    .calendar-day.clickable:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .day-number {
+        font-weight: bold;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .day-info {
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(255, 255, 255, 0.95);
+        padding: 0.8rem;
+        border-radius: 7px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        z-index: 10;
+        text-align: center;
+        min-width: 120px;
+    }
+
+    .day-info.show {
+        display: block;
+    }
+
+    .payment-amount {
+        font-weight: bold;
+        color: #2e7d32;
+        font-size: 1.1rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .payment-properties {
+        font-size: 0.85rem;
+        color: #555;
+    }
+
+    .calendar-legend {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .legend-color {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border-radius: 4px;
+        border: none;
+    }
+
+    .legend-color.unpaid {
+        background: #ffcdd2;
+    }
+
+    .legend-color.today {
+        background: #fff;
+        border: 2px solid #0277bd;
+        box-sizing: border-box;
+    }
+
+    .quick-links {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 9px;
+        padding: 1.2rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .quick-links h3 {
+        margin: 0 0 1rem;
+        font-size: 1.2rem;
+        color: #333;
+    }
+
+    .links-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .quick-link-card {
+        flex: 1;
+        min-width: 180px;
+        background: transparent;
+        border: 1px solid #ddd;
+        border-radius: 9px;
+        padding: 1.5rem;
+        text-decoration: none;
+        color: #333;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .quick-link-card:hover {
+        background: #e8f5e9;
+        transition: background 0.2s ease;
+    }
+
+    .quick-link-card i {
+        font-size: 1.8rem;
+        color: #2e7d32;
+    }
+
+    @media (max-width: 768px) {
+        .month-header {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .month-header h2 {
+            width: 100%;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+
+        .date-selector {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .date-selector select {
+            width: 100%;
+            font-size: 0.8rem;
+        }
+
+        .calendar-grid {
+            gap: 0.2rem;
+            grid-template-columns: repeat(7, minmax(40px, 1fr)); /* Smaller minimum width for mobile */
+            min-width: 300px; /* Slightly reduced for mobile */
+        }
+
+        .calendar-header {
+            font-size: 0.7rem;
+            padding: 0.5rem;
+        }
+
+        .calendar-day {
+            min-height: 50px; /* Further reduced for mobile */
+            padding: 0.2rem;
+        }
+
+        .day-number {
+            font-size: 0.8rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .day-info {
+            min-width: 100px;
+            padding: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .payment-amount {
+            font-size: 0.9rem;
+        }
+
+        .payment-properties {
+            font-size: 0.7rem;
+        }
+
+        .calendar-legend {
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+        }
+    }
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+{% endblock %}

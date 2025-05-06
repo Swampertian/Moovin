@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
         '/tenant': (context) => const TenantProfileScreen(tenantId: 1),
-        '/owner' : (context) => const OwnerProfileScreen(ownerId: 1)
+        '/owner' : (context) => const OwnerProfileScreen(ownerId: 3)
       },
     );
   }

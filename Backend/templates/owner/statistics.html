@@ -1,0 +1,577 @@
+{% extends 'base.html' %}
+
+{% block title %}Estatísticas do Proprietário{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Dashboard Header with Summary Cards -->
+    <div class="dashboard-header">
+        <div class="summary-card">
+            <div class="card-icon">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+            <div class="card-content">
+                <h3>Valor Esperado</h3>
+                <h2>R$ {{ total_expected|floatformat:2 }}</h2>
+                <p>Total de aluguéis</p>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="card-icon">
+                <i class="fas fa-hand-holding-usd"></i>
+            </div>
+            <div class="card-content">
+                <h3>Valor Recebido</h3>
+                <h2>R$ {{ total_received|floatformat:2 }}</h2>
+                <p>Período selecionado</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Date Filter Section -->
+    <div class="filter-section">
+        <h3>Filtrar por Período</h3>
+        <form method="GET" class="date-filter-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="start_date">De:</label>
+                    <input type="date" id="start_date" name="start_date" value="{{ start_date|date:'Y-m-d' }}">
+                </div>
+                <div class="form-group">
+                    <label for="end_date">Até:</label>
+                    <input type="date" id="end_date" name="end_date" value="{{ end_date|date:'Y-m-d' }}">
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Properties Table Section -->
+    <div class="properties-section">
+        <div class="section-header">
+            <h3>Imóveis e Pagamentos</h3>
+            <button id="toggleRegisterForm" class="btn btn-success">
+                Novo Pagamento
+            </button>
+        </div>
+
+        <!-- Register Payment Form (Initially Hidden) -->
+        <div id="registerPaymentForm" class="register-payment-form" style="display: none;">
+            <form method="POST" class="payment-form">
+                {% csrf_token %}
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="immobile_id">Imóvel:</label>
+                        <select id="immobile_id" name="immobile_id" required>
+                            <option value="">Selecione um imóvel</option>
+                            {% for prop in properties %}
+                                <option value="{{ prop.immobile.id_immobile }}">
+                                    {{ prop.immobile }} ({{ prop.immobile.property_type }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="amount_received">Valor Recebido:</label>
+                        <div class="input-with-prefix">
+                            <span class="prefix">R$</span>
+                            <input type="number" id="amount_received" name="amount_received" step="0.01" min="0" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="date_received">Data do Recebimento:</label>
+                        <input type="date" id="date_received" name="date_received" required>
+                    </div>
+                </div>
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-primary">
+                        Registrar Pagamento
+                    </button>
+                    <button type="button" id="cancelRegister" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        {% if no_properties_in_range %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> Não há imóveis com pagamentos registrados no período selecionado.
+        </div>
+        {% endif %}
+
+        <div class="table-responsive">
+            <table class="property-table">
+                <thead>
+                    <tr>
+                        <th>Imóvel</th>
+                        <th>Tipo</th>
+                        <th>Endereço</th>
+                        <th>Valor do Aluguel</th>
+                        <th>Valor Pago</th>
+                        <th>Status</th>
+                        <th>Data do Recebimento</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prop in properties %}
+                    <tr>
+                        <td><strong>{{ prop.immobile }}</strong></td>
+                        <td>{{ prop.immobile.property_type }}</td>
+                        <td>{{ prop.immobile.street }}, {{ prop.immobile.number }}</td>
+                        <td>R$ {{ prop.immobile.rent|floatformat:2 }}</td>
+                        <td>R$ {{ prop.valor_do_pagamento|floatformat:2 }}</td>
+                        <td>
+                            <span class="status-badge {% if prop.status == 'Pago' %}status-paid{% else %}status-unpaid{% endif %}">
+                                {{ prop.status }}
+                            </span>
+                        </td>
+                        <td>{{ prop.data_do_pagamento }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="no-data">
+                            <i class="fas fa-info-circle"></i> Nenhum imóvel cadastrado.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Quick Links Section -->
+    <div class="quick-links">
+        <h3>Acesso as outras funcionalidades</h3>
+        <div class="links-container">
+            <a href="#" class="quick-link-card">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <span>Estatísticas do Proprietário</span>
+            </a>
+            <a href="{% url 'owner_calendar' %}" class="quick-link-card">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Calendário de Pagamentos</span>
+            </a>
+            <a href="{% url 'owner_charts' %}" class="quick-link-card">
+                <i class="fas fa-chart-line"></i>
+                <span>Gráficos financeiros</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for interactions -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle register payment form
+        const toggleFormBtn = document.getElementById('toggleRegisterForm');
+        const registerForm = document.getElementById('registerPaymentForm');
+        const cancelBtn = document.getElementById('cancelRegister');
+        
+        if (toggleFormBtn && registerForm) {
+            toggleFormBtn.addEventListener('click', function() {
+                registerForm.style.display = 'block';
+                toggleFormBtn.style.display = 'none';
+            });
+        }
+        
+        if (cancelBtn && registerForm && toggleFormBtn) {
+            cancelBtn.addEventListener('click', function() {
+                registerForm.style.display = 'none';
+                toggleFormBtn.style.display = 'inline-block';
+            });
+        }
+        
+        // Auto-fill today's date in the date field
+        const dateField = document.getElementById('date_received');
+        if (dateField) {
+            const today = new Date();
+            const formattedDate = today.toISOString().substr(0, 10);
+            dateField.value = formattedDate;
+        }
+    });
+</script>
+
+<style>
+    /* Dashboard Layout */
+    .dashboard-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    /* Summary Cards */
+    .dashboard-header {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .summary-card {
+        flex: 1;
+        min-width: 220px;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 9px;
+        padding: 1.2rem;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .card-icon {
+        font-size: 2rem;
+        margin-right: 1rem;
+        color: #2e7d32;
+    }
+
+    .card-content h2 {
+        font-size: 1.6rem;
+        margin: 0.5rem 0;
+        color: #2e7d32;
+    }
+
+    .card-content h3 {
+        font-size: 0.9rem;
+        margin: 0;
+        color: #555;
+        text-transform: uppercase;
+    }
+
+    .card-content p {
+        font-size: 0.8rem;
+        color: #777;
+        margin: 0;
+    }
+
+    /* Filter Section */
+    .filter-section {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 9px;
+        padding: 1.2rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .filter-section h3 {
+        margin: 0 0 1rem;
+        font-size: 1.2rem;
+        color: #333;
+    }
+
+    .date-filter-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .form-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: flex-end;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-width: 150px;
+    }
+
+    .form-group label {
+        font-size: 0.9rem;
+        color: #555;
+        margin-bottom: 0.3rem;
+    }
+
+    .form-group input, .form-group select {
+        padding: 0.6rem;
+        border: 1px solid #ddd;
+        border-radius: 7px;
+        font-size: 0.9rem;
+        width: 100%;
+    }
+
+    .filter-section .form-group input[type="date"] {
+        width: 400px;
+    }
+
+    .input-with-prefix {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .input-with-prefix .prefix {
+        position: absolute;
+        left: 10px;
+        color: #555;
+    }
+
+    .input-with-prefix input {
+        padding-left: 30px;
+    }
+
+    /* Register Payment Form Inputs */
+    .register-payment-form .form-group {
+        min-width: 120px; /* Reduced minimum width for form fields */
+    }
+
+    .register-payment-form .form-group select,
+    .register-payment-form .form-group input {
+        padding: 0.4rem; /* Reduced padding for smaller input fields */
+        font-size: 0.85rem; /* Slightly smaller font size */
+        width: 100%; /* Ensure full width within the smaller container */
+        box-sizing: border-box; /* Prevent padding from increasing width */
+    }
+
+    .register-payment-form .form-group input[type="date"] {
+        width: 100%; /* Override any fixed width for date input */
+    }
+
+    .register-payment-form .input-with-prefix .prefix {
+        left: 8px; /* Adjusted for smaller input */
+        font-size: 0.85rem; /* Match font size */
+    }
+
+    .register-payment-form .input-with-prefix input {
+        padding-left: 25px; /* Adjusted for smaller prefix */
+    }
+
+    /* Buttons */
+    .btn {
+        padding: 0.6rem 1.2rem;
+        border: none;
+        border-radius: 7px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .btn-primary {
+        background: #2e7d32;
+        color: #fff;
+    }
+
+    .btn-primary:hover {
+        background: #1b5e20;
+        transition: background 0.2s ease;
+    }
+
+    .btn-success {
+        background: #388e3c;
+        color: #fff;
+    }
+
+    .btn-success:hover {
+        background: #2e7d32;
+        transition: background 0.2s ease;
+    }
+
+    .btn-secondary {
+        background: #757575;
+        color: #fff;
+    }
+
+    .btn-secondary:hover {
+        background: #616161;
+        transition: background 0.2s ease;
+    }
+
+    /* Properties Section */
+    .properties-section {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 9px;
+        padding: 1.2rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .section-header h3 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: #333;
+    }
+
+    /* Table Styles */
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .property-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    .property-table th {
+        background: rgb(237, 235, 235);
+        padding: 0.8rem;
+        text-align: left;
+        font-weight: bold;
+        color: #333;
+        border-bottom: 2px solid #ddd;
+    }
+
+    .property-table td {
+        padding: 0.8rem;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .status-badge {
+        padding: 0.3rem 0.8rem;
+        border-radius: 14px;
+        font-size: 0.8rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .status-paid {
+        background: #c8e6c9;
+        color: #2e7d32;
+    }
+
+    .status-unpaid {
+        background: #ffcdd2;
+        color: #c62828;
+    }
+
+    .no-data {
+        text-align: center;
+        padding: 1.5rem;
+        color: #555;
+    }
+
+    /* Register Payment Form */
+    .register-payment-form {
+        background: #f5f5f5;
+        border: 1px solid #ddd;
+        border-radius: 9px;
+        padding: 1.2rem;
+        margin-bottom: 1rem;
+    }
+
+    .payment-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .form-buttons {
+        display: flex;
+        gap: 1rem;
+    }
+
+    /* Quick Links Section */
+    .quick-links {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 9px;
+        padding: 1.2rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .quick-links h3 {
+        margin: 0 0 1rem;
+        font-size: 1.2rem;
+        color: #333;
+    }
+
+    .links-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .quick-link-card {
+        flex: 1;
+        min-width: 180px;
+        background: transparent;
+        border: 1px solid #ddd;
+        border-radius: 9px;
+        padding: 1.5rem;
+        text-decoration: none;
+        color: #333;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .quick-link-card:hover {
+        background: #e8f5e9;
+        transition: background 0.2s ease;
+    }
+
+    .quick-link-card i {
+        font-size: 1.8rem;
+        color: #2e7d32;
+    }
+
+    /* Alert Styles */
+    .alert {
+        padding: 0.8rem;
+        border-radius: 7px;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .alert-info {
+        background: #e3f2fd;
+        color: #0277bd;
+    }
+
+    .alert.error {
+        background: #ffebee;
+        color: #c62828;
+    }
+
+    .alert.success {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .dashboard-header {
+            flex-direction: column;
+        }
+
+        .form-row {
+            flex-direction: column;
+        }
+
+        .form-group {
+            width: 100%;
+        }
+
+        .filter-section .form-group input[type="date"] {
+            width: 100%;
+        }
+
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+    }
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+{% endblock %}
