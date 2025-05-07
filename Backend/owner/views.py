@@ -364,7 +364,7 @@ class OwnerChartsView(LoginRequiredMixin, TemplateView):
             if total_revenue > 0:
                 revenue_by_property_type.append({
                     'property_type': prop_type if prop_type else 'Não Especificado',
-                    'revenue': float(total_revenue)  # Ensure it's a float for JS
+                    'revenue': int(total_revenue)  # Convertendo para inteiro para evitar problemas com decimais
                 })
         
         # If no property types with revenue, add default
@@ -374,8 +374,13 @@ class OwnerChartsView(LoginRequiredMixin, TemplateView):
                 'revenue': 0
             })
 
+        # Adicionar os dados JSON-safe ao contexto
         context.update({
             'revenue_data': revenue_data,
             'revenue_by_property_type': revenue_by_property_type,
+            # Adicione estes dados processados para JavaScript
+            'property_type_labels': [item['property_type'] for item in revenue_by_property_type],
+            'property_type_values': [item['revenue'] for item in revenue_by_property_type],
         })
+        
         return context

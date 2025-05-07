@@ -54,7 +54,7 @@
 
         <!-- Chart 3: Revenue Distribution by Property Type (Pie Chart) -->
         <div class="chart pie-chart-container">
-            <h3>Distribuição de Receita por Tipo de Propriedade</h3>
+            <h3>Distribuição de Receita por Tipo de Propriedade no Último Ano</h3>
             <canvas id="revenueByPropertyTypeChart"></canvas>
         </div>
     </div>
@@ -188,186 +188,199 @@
     });
     
     // Revenue by Property Type Chart (Pie Chart)
-    const revenueByPropertyTypeCtx = document.getElementById('revenueByPropertyTypeChart').getContext('2d');
-    new Chart(revenueByPropertyTypeCtx, {
-        type: 'pie',
-        data: {
-            labels: [{% for data in revenue_by_property_type %}"{{ data.property_type }}",{% endfor %}],
-            datasets: [{
-                label: 'Receita por Tipo de Propriedade (R$)',
-                data: [{% for data in revenue_by_property_type %}{{ data.revenue }},{% endfor %}],
-                backgroundColor: [
-                    '#FF6384',
-                    '#36A2EB',
-                    '#FFCE56',
-                    '#4BC0C0',
-                    '#9966FF'
-                ],
-                borderColor: '#fff',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'top'
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.label || '';
-                            if (label) {
-                                label += ': ';
-                            }
-                            const value = context.raw;
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = Math.round((value / total) * 100);
-                            label += `R$ ${value.toLocaleString('pt-BR', {minimumFractionDigits: 2})} (${percentage}%)`;
-                            return label;
+const revenueByPropertyTypeCtx = document.getElementById('revenueByPropertyTypeChart').getContext('2d');
+
+// Usar os dados pré-processados do backend
+const pieLabels = {{ property_type_labels|safe }};
+const pieData = {{ property_type_values|safe }};
+
+// Debug: Log the arrays
+console.log("Pie chart labels:", pieLabels);
+console.log("Pie chart data:", pieData);
+
+new Chart(revenueByPropertyTypeCtx, {
+    type: 'pie',
+    data: {
+        labels: pieLabels,
+        datasets: [{
+            label: 'Receita por Tipo de Propriedade (R$)',
+            data: pieData,
+            backgroundColor: [
+                '#FF6384', 
+                '#36A2EB', 
+                '#FFCE56', 
+                '#4BC0C0',
+                '#9966FF' 
+            ],
+            borderColor: '#fff',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                    font: { size: 14 },
+                    padding: 20
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        let label = context.label || '';
+                        if (label) {
+                            label += ': ';
                         }
+                        const value = context.raw;
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                        label += `R$ ${value.toLocaleString('pt-BR', {minimumFractionDigits: 2})} (${percentage}%)`;
+                        return label;
                     }
                 }
             }
         }
-    });
-    </script>
+    }
+});
+</script>
     
-    <style>
-        /* Dashboard Layout */
-        .dashboard-container {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
+<style>
+    /* Dashboard Layout */
+    .dashboard-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    /* Charts Section */
+    .charts-section {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 9px;
+        padding: 1.2rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .charts-section h2 {
+        font-size: 1.8rem;
+        color: #333;
+        margin: 0 0 1rem;
+        text-align: center;
+    }
+
+    .chart-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .chart {
+        flex: 1;
+        min-width: 0; /* Prevents flex items from overflowing */
+        margin-bottom: 2rem;
+        height: 350px; /* Fixed height for charts */
+    }
+
+    .chart-row .chart {
+        flex: 1 1 calc(50% - 0.75rem); /* Two charts side by side, accounting for gap */
+    }
+
+    .chart h3 {
+        font-size: 1.2rem;
+        color: #333;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+
+    /* Estilo específico para o gráfico de pizza */
+    .pie-chart-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 300px; /* Fixed height */
+    }
     
-        /* Charts Section */
-        .charts-section {
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 9px;
-            padding: 1.2rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
+    /* Estilo para a mensagem do mês atual */
+    .current-month-info {
+        background-color: #e8f5e9;
+        border-left: 4px solid #4CAF50;
+        padding: 10px 15px;
+        margin-bottom: 15px;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        color: #2E7D32;
+    }
     
-        .charts-section h2 {
-            font-size: 1.8rem;
-            color: #333;
-            margin: 0 0 1rem;
-            text-align: center;
-        }
+    .current-month-info p {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
     
-        .chart-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
+    .current-month-info i {
+        font-size: 1.1rem;
+    }
+
+    /* Quick Links Section */
+    .quick-links {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 9px;
+        padding: 1.2rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .quick-links h3 {
+        margin: 0 0 1rem;
+        font-size: 1.2rem;
+        color: #333;
+    }
+
+    .links-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .quick-link-card {
+        flex: 1;
+        min-width: 180px;
+        background: transparent;
+        border: 1px solid #ddd;
+        border-radius: 9px;
+        padding: 1.5rem;
+        text-decoration: none;
+        color: #333;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .quick-link-card:hover, .quick-link-card.active {
+        background: #e8f5e9;
+        transition: background 0.2s ease;
+    }
     
-        .chart {
-            flex: 1;
-            min-width: 0; /* Prevents flex items from overflowing */
-            margin-bottom: 2rem;
-            height: 350px; /* Fixed height for charts */
-        }
-    
-        .chart-row .chart {
-            flex: 1 1 calc(50% - 0.75rem); /* Two charts side by side, accounting for gap */
-        }
-    
-        .chart h3 {
-            font-size: 1.2rem;
-            color: #333;
-            margin-bottom: 1rem;
-            text-align: center;
-        }
-    
-        /* Estilo específico para o gráfico de pizza */
-        .pie-chart-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 300px; /* Fixed height */
-        }
-        
-        /* Estilo para a mensagem do mês atual */
-        .current-month-info {
-            background-color: #e8f5e9;
-            border-left: 4px solid #4CAF50;
-            padding: 10px 15px;
-            margin-bottom: 15px;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            color: #2E7D32;
-        }
-        
-        .current-month-info p {
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .current-month-info i {
-            font-size: 1.1rem;
-        }
-    
-        /* Quick Links Section */
-        .quick-links {
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 9px;
-            padding: 1.2rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-    
-        .quick-links h3 {
-            margin: 0 0 1rem;
-            font-size: 1.2rem;
-            color: #333;
-        }
-    
-        .links-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-    
-        .quick-link-card {
-            flex: 1;
-            min-width: 180px;
-            background: transparent;
-            border: 1px solid #ddd;
-            border-radius: 9px;
-            padding: 1.5rem;
-            text-decoration: none;
-            color: #333;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-        }
-    
-        .quick-link-card:hover, .quick-link-card.active {
-            background: #e8f5e9;
-            transition: background 0.2s ease;
-        }
-        
-        .quick-link-card.active {
-            border-color: #4CAF50;
-            box-shadow: 0 0 0 1px #4CAF50;
-        }
-    
-        .quick-link-card i {
-            font-size: 1.8rem;
-            color: #2e7d32;
-        }
-    
-        /* Responsivo para telas menores que 768px */
-@media (max-width: 768px) {
+    .quick-link-card.active {
+        border-color: #4CAF50;
+        box-shadow: 0 0 0 1px #4CAF50;
+    }
+
+    .quick-link-card i {
+        font-size: 1.8rem;
+        color: #2e7d32;
+    }
+
+    /* Responsivo para telas menores que 768px */
+    @media (max-width: 768px) {
     .chart-row {
         flex-direction: column;
     }
@@ -410,20 +423,20 @@
         height: 300px;
         width: 100%;
     }
-}
+    }
 
-/* Garantir que o canvas ocupe o tamanho do container */
-canvas {
+    /* Garantir que o canvas ocupe o tamanho do container */
+    canvas {
     width: 100% !important;
     height: auto !important;
-}
+    }
 
-.chart canvas {
+    .chart canvas {
     height: 100% !important;
     max-height: 300px;
-}
+    }
 
-    </style>
+</style>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 {% endblock %}
