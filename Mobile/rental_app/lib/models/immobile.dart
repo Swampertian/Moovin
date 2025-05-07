@@ -91,7 +91,7 @@ class Immobile {
       additionalRules: json['additional_rules'] as String?,
       status: json['status'] as String,
       createdAt: json['created_at'] as String,
-      photosBlob: (json['photos_blob'] as List<dynamic>? ?? [])
+      photosBlob: (json['photosBlob'] as List<dynamic>? ?? [])
           .map((e) => ImmobilePhoto.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
@@ -123,7 +123,7 @@ class Immobile {
       'additional_rules': additionalRules,
       'status': status,
       'created_at': createdAt,
-      'photos_blob': photosBlob.map((p) => p.toJson()).toList(),
+      'photosBlob': photosBlob.map((p) => p.toJson()).toList(),
     };
   }
 }

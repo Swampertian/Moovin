@@ -164,7 +164,7 @@ class DetailImmobileScreen extends StatelessWidget {
                                     Uri.parse('data:${photo.contentType};base64,${photo.imageBase64}').data!.contentAsBytes(),
                                     width: double.infinity,
                                     height: double.infinity,
-                                    fit: BoxFit.cover,
+                                    fit: BoxFit.contain,
                                   );
                                 }).toList()
                               : [
