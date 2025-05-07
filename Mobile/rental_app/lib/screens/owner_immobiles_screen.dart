@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/owner.dart'; // Immobile está dentro de owner.dart
 import '../services/api_service.dart';
 import 'edit_immobile_screen.dart';
-
+import '../models/owner.dart';
+import '../models/immobile.dart';
 class OwnerImmobilesScreen extends StatefulWidget {
   final int ownerId;
 

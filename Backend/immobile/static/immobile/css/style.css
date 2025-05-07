@@ -233,3 +233,43 @@
     cursor: pointer;
   }
     
+  .immobile-carousel {
+    overflow: hidden; /* Esconde as imagens que estão fora da largura do container */
+    position: relative; /* Para posicionar os controles de navegação */
+}
+
+.carousel-slide {
+    display: flex; /* Coloca as imagens em linha horizontalmente */
+    transition: transform 0.5s ease-in-out; /* Adiciona uma transição suave para o movimento */
+}
+
+.carousel-slide img {
+    min-width: 100%; /* Garante que cada imagem ocupe a largura total do container */
+    height: auto; /* Mantém a proporção da imagem */
+}
+
+.carousel-control {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 2em;
+    color: #333;
+    cursor: pointer;
+    padding: 10px;
+    opacity: 0.7;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.carousel-control:hover {
+    opacity: 1;
+}
+
+.prev {
+    left: 10px;
+}
+
+.next {
+    right: 10px;
+}

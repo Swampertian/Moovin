@@ -79,6 +79,7 @@
             margin-top: 20px;
         }
     </style>
+    <script src="{% static 'immobile/js/register.js' %}"></script>
 </head>
 <body>
     <header>
@@ -97,12 +98,18 @@
 
         <div>
             <h3>Fotos do Imóvel</h3>
-            <div class="immobile-photos">
-                {% for photo in immobile.photos_blob.all %}
-                    <img src="{% url 'serve_image_blob' photo.id %}" alt="Foto do Imóvel">
-                {% empty %}
-                    <p>Nenhuma foto cadastrada para este imóvel.</p>
-                {% endfor %}
+            <div class="immobile-carousel">
+                <div class="carousel-slide">
+                    {% for photo in immobile.photos_blob.all %}
+                        <img src="{% url 'serve_image_blob' photo.id %}" alt="Foto do Imóvel">
+                    {% empty %}
+                        <p>Nenhuma foto cadastrada para este imóvel.</p>
+                    {% endfor %}
+                </div>
+                {% if immobile.photos_blob.count > 1 %}
+                <button class="carousel-control prev">&#8249;</button>
+                <button class="carousel-control next">&#8250;</button>
+                {% endif %}
             </div>
         </div>
 
