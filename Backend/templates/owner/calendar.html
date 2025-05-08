@@ -77,7 +77,7 @@
         </div>
     </div>
 
-    <!-- Quick Links Section (unchanged, included for context) -->
+    <!-- Quick Links Section -->
     <div class="quick-links">
         <h3>Acesso as outras funcionalidades</h3>
         <div class="links-container">
@@ -97,7 +97,6 @@
     </div>
 </div>
 
-<!-- JavaScript (unchanged) -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const unpaidDays = document.querySelectorAll('.calendar-day.unpaid');
@@ -214,9 +213,9 @@
 
     .calendar-grid {
         display: grid;
-        grid-template-columns: repeat(7, minmax(50px, 1fr)); /* Ensure columns are at least 50px wide */
+        grid-template-columns: repeat(7, minmax(50px, 1fr));
         gap: 0.5rem;
-        min-width: 350px; /* Ensure grid has a minimum width to prevent excessive shrinking */
+        min-width: 350px; 
         max-width: 100%;
     }
 
@@ -402,8 +401,8 @@
 
         .calendar-grid {
             gap: 0.2rem;
-            grid-template-columns: repeat(7, minmax(40px, 1fr)); /* Smaller minimum width for mobile */
-            min-width: 300px; /* Slightly reduced for mobile */
+            grid-template-columns: repeat(7, minmax(40px, 1fr)); 
+            min-width: 300px; 
         }
 
         .calendar-header {
@@ -412,7 +411,7 @@
         }
 
         .calendar-day {
-            min-height: 50px; /* Further reduced for mobile */
+            min-height: 50px; 
             padding: 0.2rem;
         }
 

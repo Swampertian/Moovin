@@ -26,20 +26,10 @@
     <!-- Charts Section -->
     <div class="charts-section">
         <h2>Gráficos</h2>
-        
-        <!-- Confirmação de dados carregados para debug -->
-        <div class="debug-info" style="display: none;">
-            <p>Dados carregados: {{ revenue_data|length }} meses</p>
-            <ul>
-                {% for data in revenue_data %}
-                <li>{{ data.month }}: R$ {{ data.revenue }}</li>
-                {% endfor %}
-            </ul>
-        </div>
 
         <!-- Chart Row for First Two Charts -->
         <div class="chart-row">
-            <!-- Chart 1: Revenue Distribution (Histogram) -->
+            <!-- Chart 1: Revenue Distribution -->
             <div class="chart">
                 <h3>Distribuição da Receita Mensal</h3>
                 <canvas id="revenueDistributionChart"></canvas>
@@ -62,7 +52,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Revenue Distribution Chart (Histogram)
+    // Revenue Distribution Chart 
     const revenueDistCtx = document.getElementById('revenueDistributionChart').getContext('2d');
     new Chart(revenueDistCtx, {
         type: 'bar',
@@ -120,7 +110,6 @@
     const cumulativeRevenueCtx = document.getElementById('cumulativeRevenueChart').getContext('2d');
     let cumulativeData = [];
     let runningTotal = 0;
-    // Certifique-se de que os dados são convertidos para números
     const revenueValues = [{% for data in revenue_data %}parseFloat("{{ data.revenue }}"),{% endfor %}];
     
     revenueValues.forEach((revenue, index) => {
@@ -190,13 +179,8 @@
     // Revenue by Property Type Chart (Pie Chart)
 const revenueByPropertyTypeCtx = document.getElementById('revenueByPropertyTypeChart').getContext('2d');
 
-// Usar os dados pré-processados do backend
-const pieLabels = {{ property_type_labels|safe }};
-const pieData = {{ property_type_values|safe }};
-
-// Debug: Log the arrays
-console.log("Pie chart labels:", pieLabels);
-console.log("Pie chart data:", pieData);
+    const pieLabels = {{ property_type_labels|safe }};
+    const pieData = {{ property_type_values|safe }};
 
 new Chart(revenueByPropertyTypeCtx, {
     type: 'pie',
@@ -281,13 +265,13 @@ new Chart(revenueByPropertyTypeCtx, {
 
     .chart {
         flex: 1;
-        min-width: 0; /* Prevents flex items from overflowing */
+        min-width: 0; 
         margin-bottom: 2rem;
         height: 350px; /* Fixed height for charts */
     }
 
     .chart-row .chart {
-        flex: 1 1 calc(50% - 0.75rem); /* Two charts side by side, accounting for gap */
+        flex: 1 1 calc(50% - 0.75rem);
     }
 
     .chart h3 {

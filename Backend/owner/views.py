@@ -241,7 +241,7 @@ class OwnerCalendarView(LoginRequiredMixin, TemplateView):
                     
                     # Check if this day has any payments for properties that are not fully paid for the month
                     has_incomplete_payment = False
-                    if payment_count > 0:  # Only check days with payments
+                    if payment_count > 0:  
                         for payment in day_payments:
                             property_id = payment.immobile.id_immobile
                             if not property_payment_totals[property_id]['is_fully_paid']:
@@ -343,7 +343,7 @@ class OwnerChartsView(LoginRequiredMixin, TemplateView):
             # Add to revenue data
             revenue_data.append({
                 'month': month_start.strftime('%b %Y'),
-                'revenue': float(total)  # Ensure it's a float for JS
+                'revenue': float(total)
             })
 
         # Revenue distribution by property type for the same period
