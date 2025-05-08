@@ -51,7 +51,7 @@ class OwnerStatisticsView(LoginRequiredMixin, TemplateView):
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             try:
-                user = User.objects.get(id=1)
+                user = User.objects.get(id=3)
                 login(request, user, backend='django.contrib.auth.backends.ModelBackend')
                 messages.info(request, "Logged in as user ID 1 for testing purposes.")
             except User.DoesNotExist:
@@ -150,7 +150,7 @@ class OwnerCalendarView(LoginRequiredMixin, TemplateView):
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             try:
-                user = User.objects.get(id=1)
+                user = User.objects.get(id=3)
                 login(request, user, backend='django.contrib.auth.backends.ModelBackend')
                 messages.info(request, "Logged in as user ID 1 for testing purposes.")
             except User.DoesNotExist:
@@ -287,7 +287,7 @@ class OwnerChartsView(LoginRequiredMixin, TemplateView):
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             try:
-                user = User.objects.get(id=1)
+                user = User.objects.get(id=3)
                 login(request, user, backend='django.contrib.auth.backends.ModelBackend')
                 messages.info(request, "Logged in as user ID 1 for testing purposes.")
             except User.DoesNotExist:
