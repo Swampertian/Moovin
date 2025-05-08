@@ -41,7 +41,7 @@
         <div class="chart-row">
             <!-- Chart 1: Revenue Distribution (Histogram) -->
             <div class="chart">
-                <h3>Distribuição de Receita Mensal</h3>
+                <h3>Distribuição da Receita Mensal</h3>
                 <canvas id="revenueDistributionChart"></canvas>
             </div>
 
@@ -54,7 +54,7 @@
 
         <!-- Chart 3: Revenue Distribution by Property Type (Pie Chart) -->
         <div class="chart pie-chart-container">
-            <h3>Distribuição de Receita por Tipo de Propriedade no Último Ano</h3>
+            <h3>Distribuição da Receita por Tipo de Propriedade no Último Ano</h3>
             <canvas id="revenueByPropertyTypeChart"></canvas>
         </div>
     </div>
@@ -67,10 +67,10 @@
     new Chart(revenueDistCtx, {
         type: 'bar',
         data: {
-            labels: [{% for data in revenue_data %}"{{ data.month }}",{% endfor %}],
+            labels: [{% for data in revenue_data %}"{{ data.month }}"{% if not forloop.last %},{% endif %}{% endfor %}],
             datasets: [{
                 label: 'Receita Mensal (R$)',
-                data: [{% for data in revenue_data %}{{ data.revenue }},{% endfor %}],
+                data: [{% for data in revenue_data %}parseFloat("{{ data.revenue|floatformat:2 }}"){% if not forloop.last %},{% endif %}{% endfor %}],
                 backgroundColor: [{% for data in revenue_data %}
                     {% if forloop.last %}"#4CAF50"{% else %}"#42a5f5"{% endif %},
                 {% endfor %}],

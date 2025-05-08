@@ -350,7 +350,7 @@ class OwnerChartsView(LoginRequiredMixin, TemplateView):
         property_types = properties.values_list('property_type', flat=True).distinct()
         revenue_by_property_type = []
         for prop_type in property_types:
-            if not prop_type:  # Skip if property type is None
+            if not prop_type: 
                 continue
                 
             prop_payments = Payment.objects.filter(
@@ -364,7 +364,7 @@ class OwnerChartsView(LoginRequiredMixin, TemplateView):
             if total_revenue > 0:
                 revenue_by_property_type.append({
                     'property_type': prop_type if prop_type else 'Não Especificado',
-                    'revenue': int(total_revenue)  # Convertendo para inteiro para evitar problemas com decimais
+                    'revenue': int(total_revenue)
                 })
         
         # If no property types with revenue, add default
@@ -378,7 +378,6 @@ class OwnerChartsView(LoginRequiredMixin, TemplateView):
         context.update({
             'revenue_data': revenue_data,
             'revenue_by_property_type': revenue_by_property_type,
-            # Adicione estes dados processados para JavaScript
             'property_type_labels': [item['property_type'] for item in revenue_by_property_type],
             'property_type_values': [item['revenue'] for item in revenue_by_property_type],
         })
