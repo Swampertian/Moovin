@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/tenant.dart';
 import '../models/owner.dart';
 import '../config.dart';
+import '../models/immobile.dart';
 
 class ApiService {
   final String _tenantBase = '$apiBase/tenants';
@@ -117,4 +118,52 @@ class ApiService {
       throw Exception('Failed to update immobile');
     }
   }
+
+  Future<List<Immobile>> fetchImmobile({
+  String? type,
+  int? bedrooms,
+  int? bathrooms,
+  int? garage,
+  int? rentValue,
+  int? areaSize,
+  int? distance,
+  DateTime? date,
+  bool? wifi,
+  bool? airConditioning,
+  bool? petFriendly,
+  bool? furnished,
+  bool? pool,
+  String? city,
+}) async {
+  final queryParams = <String, String>{
+    if (type != null) 'type': type,
+    if (bedrooms != null) 'bedrooms': bedrooms.toString(),
+    if (bathrooms != null) 'bathrooms': bathrooms.toString(),
+    if (garage != null) 'garage': garage.toString(),
+    if (rentValue != null) 'rentValue': rentValue.toString(),
+    if (areaSize != null) 'areaSize': areaSize.toString(),
+    if (distance != null) 'distance': distance.toString(),
+    if (date != null) 'date': date.toIso8601String(),
+    if (wifi != null) 'wifi': wifi.toString(),
+    if (airConditioning != null) 'airConditioning': airConditioning.toString(),
+    if (petFriendly != null) 'petFriendly': petFriendly.toString(),
+    if (furnished != null) 'furnished': furnished.toString(),
+    if (pool != null) 'pool': pool.toString(),
+    if (city!= null) 'city': city,
+  };
+
+  final uri = Uri.parse('$immobileBase').replace(queryParameters: queryParams);
+
+  final response = await http.get(uri);
+
+  if (response.statusCode == 200) {
+    final String decodedBody = utf8.decode(response.bodyBytes); 
+    final List<dynamic> data = jsonDecode(decodedBody);
+    return data.map((item) => Immobile.fromJson(item)).toList();
+  } else {
+    throw Exception('Erro ao buscar imóveis');
+  }
+
+}
+
 }
