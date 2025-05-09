@@ -1,8 +1,8 @@
 from django.db import models
 from django.utils import timezone
 from .consts import *
-
-
+from django.contrib.contenttypes.models import ContentType
+from review.models import Review, ReviewType
 class Immobile(models.Model):
     owner = models.ForeignKey('owner.Owner', related_name='properties', on_delete=models.CASCADE, null=True,blank=True)
 
@@ -38,6 +38,12 @@ class Immobile(models.Model):
     def __str__(self):
         return f"{self.property_type} in {self.city} - {self.street}, {self.number or 'No number'}"
 
+    def get_reviews(self):
+        content_type = ContentType.objects.get_for_model(self)
+        return Review.objects.filter(content_type=content_type, object_id=self.id, type=ReviewType.PROPERTY)
+
+    def average_rating(self):
+        return Review.average_for_object(self)
 class ImmobilePhoto(models.Model):
     immobile = models.ForeignKey(Immobile, related_name='photos_blob', on_delete=models.CASCADE)
     image_blob = models.BinaryField(default=bytes)
@@ -46,3 +52,4 @@ class ImmobilePhoto(models.Model):
 
     def __str__(self):
         return f"Photo (BLOB) for {self.immobile}"
+

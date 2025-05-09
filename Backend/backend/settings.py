@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     'tenant',
     'owner',
     'users',
+    'review',
 
 ]
 AUTH_USER_MODEL = 'users.User'
