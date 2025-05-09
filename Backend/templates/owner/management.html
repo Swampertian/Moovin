@@ -1,0 +1,509 @@
+{% extends 'base.html' %}
+
+{% block title %}Gerenciamento de Imóveis{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+
+    <!-- Lista de Imóveis -->
+    <div class="properties-section">
+        <div class="section-header">
+            <h3>Seus Imóveis</h3>
+        </div>
+
+        {% if properties %}
+        <div class="property-card-container">
+            {% for prop in properties %}
+            <div class="property-card">
+                <div class="property-image">
+                    <img src="" alt="Imagem do Imóvel">
+                </div>
+                <div class="property-info">
+                    <p><strong>ID:</strong> {{ prop.id_immobile }}</p>
+                    <p><strong>Tipo:</strong> {{ prop.property_type }}</p>
+                    <p><strong>Endereço:</strong> {{ prop.street }} {{ prop.number }}, {{ prop.city }} - {{ prop.state }}</p>
+                    <p><strong>Valor do Aluguel:</strong> R$ {{ prop.rent|floatformat:2 }}</p>
+                    <p>
+                        <strong>Status:</strong> 
+                        <span class="status-badge 
+                            {% if prop.status == 'Available' %}status-active
+                            {% elif prop.status == 'Rented' %}status-rented
+                            {% else %}status-inactive{% endif %}">
+                            {{ prop.status }}
+                        </span>
+                    </p>
+                </div>
+                <div class="property-actions">
+                    <a href="{% url 'owner-management-property-detail' prop.id_immobile %}"><button class="btn-details">Informações Detalhadas</button></a>
+                    {% if prop.status == "Available" %}
+                    <a href="#"><button class="btn-details">Agendar Visita</button></a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> Nenhum imóvel cadastrado.
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Calendar Section -->
+    <div class="calendar-section">
+        <div class="section-header">
+            <h3>Calendário de Pagamentos</h3>
+        </div>
+        <div class="calendar-container">
+            <div class="month-header">
+                <h2>
+                    <a href="?month={{ prev_month }}" class="month-nav">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    {{ month_name }} {{ year }}
+                    <a href="?month={{ next_month }}" class="month-nav">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </h2>
+                <div class="date-selector">
+                    <select id="month-select" onchange="navigateToMonth()">
+                        {% for month_num, month_name in months %}
+                            <option value="{{ month_num }}" {% if month_num == month %}selected{% endif %}>{{ month_name }}</option>
+                        {% endfor %}
+                    </select>
+                    <select id="year-select" onchange="navigateToMonth()">
+                        {% for y in years %}
+                            <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="calendar-grid">
+                <div class="calendar-header">Dom</div>
+                <div class="calendar-header">Seg</div>
+                <div class="calendar-header">Ter</div>
+                <div class="calendar-header">Qua</div>
+                <div class="calendar-header">Qui</div>
+                <div class="calendar-header">Sex</div>
+                <div class="calendar-header">Sáb</div>
+                
+                {% for week in calendar_weeks %}
+                    {% for day in week %}
+                        {% if day.day == 0 %}
+                            <div class="calendar-day empty"></div>
+                        {% else %}
+                            <div class="calendar-day {% if day.status == 'Não Pago' %}unpaid clickable{% elif day.today %}today{% endif %}"
+                                 {% if day.status == 'Não Pago' %}onclick="window.location.href='{% url 'owner_statistics' %}'"{% endif %}>
+                                <div class="day-number">{{ day.day }}</div>
+                                {% if day.payments %}
+                                    <div class="day-info">
+                                        <div class="payment-amount">R$ {{ day.payment_amount|floatformat:2 }}</div>
+                                        <div class="payment-properties">{{ day.payments }} imóvel(is)</div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+            </div>
+
+            <!-- Legend Section -->
+            <div class="calendar-legend">
+                <div class="legend-item">
+                    <span class="legend-color unpaid"></span>
+                    <span>Pagamento Pendente ou Incompleto</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color today"></span>
+                    <span>Hoje</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    a {
+        color: black;
+        text-decoration: none;
+    }
+    .dashboard-container {
+        padding: 1.5rem;
+    }
+
+    .section-header h3 {
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+        color: #2e7d32;
+    }
+
+    .property-card-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .property-card {
+        display: flex;
+        align-items: flex-start;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 1rem;
+        width: 100%;
+        max-width: 750px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        gap: 1rem;
+    }
+
+    .property-image img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        background-color: #eee;
+        border-radius: 8px;
+    }
+
+    .property-info {
+        flex: 1;
+    }
+
+    .property-info p {
+        margin: 0.3rem 0;
+    }
+
+    .status-badge {
+        padding: 0.3rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        color: #fff;
+    }
+
+    .status-active {
+        background-color: #4caf50;
+    }
+
+    .status-rented {
+        background-color: #f44336;
+    }
+
+    .status-inactive {
+        background-color: #ffeb3b;
+        color: #000;
+    }
+
+    .property-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .property-actions button {
+        padding: 0.5rem 1rem;
+        border: none;
+        background-color: #f5f5f5;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background-color 0.3s;
+    }
+
+    .property-actions button:hover {
+        background-color: #e0e0e0;
+    }
+
+    .alert {
+        margin-top: 1rem;
+        padding: 1rem;
+        background-color: #eaf4fc;
+        border: 1px solid #bcdff1;
+        border-radius: 6px;
+        color: #31708f;
+    }
+
+    /* Calendar Styles */
+    .calendar-section {
+        margin-top: 2rem;
+    }
+
+    .calendar-container {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 1.2rem;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        max-width: 100%;
+        overflow-x: auto;
+        box-sizing: border-box;
+    }
+
+    .month-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 1rem;
+        gap: 0.5rem;
+    }
+
+    .month-header h2 {
+        font-size: 1.8rem;
+        color: #333;
+        margin: 0;
+        text-transform: capitalize;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .month-nav {
+        background: none;
+        border: none;
+        color: #607d8b;
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 0.2rem 0.5rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .month-nav:hover {
+        color: #455a64;
+    }
+
+    .date-selector {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .date-selector select {
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 0.9rem;
+        color: #333;
+        background: #fff;
+        cursor: pointer;
+    }
+
+    .date-selector select:focus {
+        outline: none;
+        border-color: #2e7d32;
+    }
+
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(50px, 1fr));
+        gap: 0.5rem;
+        min-width: 350px;
+        max-width: 100%;
+    }
+
+    .calendar-header {
+        text-align: center;
+        font-weight: bold;
+        padding: 0.8rem;
+        background: #fff;
+        border-radius: 7px;
+        font-size: 0.9rem;
+    }
+
+    .calendar-day {
+        min-height: 80px;
+        border: 1px solid #ddd;
+        border-radius: 7px;
+        padding: 0.5rem;
+        position: relative;
+        background: #fff;
+        box-sizing: border-box;
+    }
+
+    .calendar-day.empty {
+        background: #f9f9f9;
+    }
+
+    .calendar-day.unpaid {
+        background: #ffcdd2;
+        color: #c62828;
+        border: 1px solid #ddd;
+    }
+
+    .calendar-day.today {
+        border: 2px solid #0277bd;
+        color: #0277bd;
+    }
+
+    .calendar-day.clickable {
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+
+    .calendar-day.clickable:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .day-number {
+        font-weight: bold;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .day-info {
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(255, 255, 255, 0.95);
+        padding: 0.8rem;
+        border-radius: 7px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        z-index: 10;
+        text-align: center;
+        min-width: 120px;
+    }
+
+    .day-info.show {
+        display: block;
+    }
+
+    .payment-amount {
+        font-weight: bold;
+        color: #2e7d32;
+        font-size: 1.1rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .payment-properties {
+        font-size: 0.85rem;
+        color: #555;
+    }
+
+    .calendar-legend {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .legend-color {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border-radius: 4px;
+        border: none;
+    }
+
+    .legend-color.unpaid {
+        background: #ffcdd2;
+    }
+
+    .legend-color.today {
+        background: #fff;
+        border: 2px solid #0277bd;
+        box-sizing: border-box;
+    }
+
+    @media (max-width: 768px) {
+        .month-header {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .month-header h2 {
+            width: 100%;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+
+        .date-selector {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .date-selector select {
+            width: 100%;
+            font-size: 0.8rem;
+        }
+
+        .calendar-grid {
+            gap: 0.2rem;
+            grid-template-columns: repeat(7, minmax(40px, 1fr));
+            min-width: 300px;
+        }
+
+        .calendar-header {
+            font-size: 0.7rem;
+            padding: 0.5rem;
+        }
+
+        .calendar-day {
+            min-height: 50px;
+            padding: 0.2rem;
+        }
+
+        .day-number {
+            font-size: 0.8rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .day-info {
+            min-width: 100px;
+            padding: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .payment-amount {
+            font-size: 0.9rem;
+        }
+
+        .payment-properties {
+            font-size: 0.7rem;
+        }
+
+        .calendar-legend {
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const unpaidDays = document.querySelectorAll('.calendar-day.unpaid');
+        unpaidDays.forEach(day => {
+            day.addEventListener('mouseenter', function() {
+                const dayInfo = this.querySelector('.day-info');
+                if (dayInfo) {
+                    dayInfo.classList.add('show');
+                }
+            });
+            
+            day.addEventListener('mouseleave', function() {
+                const dayInfo = this.querySelector('.day-info');
+                if (dayInfo) {
+                    dayInfo.classList.remove('show');
+                }
+            });
+        });
+
+        window.navigateToMonth = function() {
+            const month = document.getElementById('month-select').value;
+            const year = document.getElementById('year-select').value;
+            window.location.href = `?month=${year}-${month.padStart(2, '0')}`;
+        };
+    });
+</script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+{% endblock %}

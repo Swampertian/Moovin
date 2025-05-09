@@ -1,0 +1,410 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalhes do Imóvel{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+
+    <!-- Cabeçalho -->
+    <div class="section-header">
+        <h3>Bem-vindo, Usuário</h3>
+    </div>
+
+    <!-- Mensagens de Sucesso/Erro -->
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <p class="message {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Carrossel de Imagens -->
+    <div class="carousel-section">
+        <div class="carousel-container">
+            <div class="carousel-slide">
+                <div class="property-image"><img src="https://th.bing.com/th/id/OIP.J-xjy1VZ4XKitVUaEVpIBwHaFj?rs=1&pid=ImgDetMain" alt="Imagem 1"></div>
+            </div>
+            <div class="carousel-slide">
+                <div class="property-image"><img src="https://th.bing.com/th/id/OIP.J-xjy1VZ4XKitVUaEVpIBwHaFj?rs=1&pid=ImgDetMain" alt="Imagem 2"></div>
+            </div>
+            <div class="carousel-slide">
+                <div class="property-image"><img src="https://th.bing.com/th/id/OIP.J-xjy1VZ4XKitVUaEVpIBwHaFj?rs=1&pid=ImgDetMain" alt="Imagem 3"></div>
+            </div>
+        </div>
+        <div class="carousel-actions">
+            <button class="carousel-btn carousel-prev">←</button>
+            <button class="carousel-btn carousel-next">→</button>
+        </div>
+    </div>
+
+    <!-- Conteúdo Principal -->
+    <div class="content-section">
+        <!-- Informações Úteis -->
+        <div class="info-card">
+            <h4>Informações Úteis</h4>
+            <div class="info-content">
+                <p><strong>Área do Imóvel:</strong> {{ property.area|default:"Não informado" }}</p>
+                <p><strong>Número de:</strong></p>
+                <p>- Banheiros: {{ property.bathrooms|default:"Não informado" }}</p>
+                <p>- Quartos: {{ property.bedrooms|default:"Não informado" }}</p>
+                <p>- Ar Condicionado: {% if property and property.air_conditioning is not None %}{% if property.air_conditioning %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
+                <p>- Garagem: {% if property and property.garage is not None %}{% if property.garage %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
+                <p>- Mobilia: {% if property and property.furnished is not None %}{% if property.furnished %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
+                <p>- Piscina: {% if property and property.pool is not None %}{% if property.pool %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
+                <p><strong>Status:</strong> {% if property and property.is_active %} Ativo {% else %} Desativado {% endif %}</p>
+                <div class="action-buttons">
+                    <a href="{%url 'immobile_edit' property.id_immobile%}" class="action-btn edit-btn">Editar Imóvel</a>
+                    <form method="post" class="deactivate-form">
+                        {% csrf_token %}
+                        <button type="submit" name="deactivate" class="action-btn deactivate-btn" {% if not property.is_active %}disabled{% endif %}>
+                            Desativar Imóvel
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contato do Inquilino -->
+        <div class="info-card">
+            <h4>Contato do Inquilino</h4>
+            <div class="info-content">
+                {% if rental %}
+                    <p>- E-mail: {{ rental.tenant.user.email|default:"Não informado" }}</p>
+                    <p>- Telefone: {{ rental.tenant.phone|default:"Não informado" }}</p>
+                    <p>- Nome: {{ rental.tenant.name|default:"Não informado" }}</p>
+                {% else %}
+                    <p>Nenhum inquilino associado.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Documentos do Imóvel -->
+        <div class="info-card">
+            <h4>Documentos do Imóvel</h4>
+            <div class="info-content">
+                {% if documents %}
+                    <ul>
+                        {% for document in documents %}
+                            <li>
+                                <a href="" target="_blank">{{ document.file.name|cut:"documents/" }}</a>
+                                (Uploaded by {{ document.uploaded_by.username }} on {{ document.uploaded_at|date:"d/m/Y" }})
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>Nenhum documento disponível.</p>
+                {% endif %}
+                <form method="post" enctype="multipart/form-data" class="document-upload-form">
+                    {% csrf_token %}
+                    <input type="file" name="document" accept=".pdf,.jpg,.png" required>
+                    <button type="submit" class="upload-btn">Enviar Documento</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Informações Adicionais -->
+    <div class="additional-info">
+        <p><strong>Permite Animais:</strong> {% if property and property.pet_friendly is not None %}{% if property.pet_friendly %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
+        <p><strong>Serviço de Internet:</strong> {% if property and property.internet is not None %}{% if property.internet %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
+        <p><strong>Ônibus Próximo:</strong> {% if property and property.nearby_bus is not None %}{% if property.nearby_bus %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
+        <p><strong>Mercado Próximo:</strong> {% if property and property.nearby_market is not None %}{% if property.nearby_market %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
+    </div>
+    
+    <!-- Gráfico -->
+    <div class="chart-card">
+        <h4>Rendimento Estimado (em R$)</h4>
+        <div class="chart-placeholder">Gráfico de Rendimento Estimado (Placeholder)</div>
+    </div>
+    </div>
+
+    
+</div>
+
+<style>
+    a {
+        color: black;
+        text-decoration: none;
+    }
+    .dashboard-container {
+        padding: 1.5rem;
+    }
+
+    .section-header h3 {
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+        color: #2e7d32;
+        text-transform: uppercase;
+    }
+
+    /* Mensagens */
+    .messages {
+        margin-bottom: 1rem;
+    }
+    .message.success {
+        color: #2e7d32;
+        background-color: #e8f5e9;
+        padding: 0.5rem;
+        border-radius: 4px;
+    }
+    .message.error {
+        color: #d32f2f;
+        background-color: #ffebee;
+        padding: 0.5rem;
+        border-radius: 4px;
+    }
+    .message.warning {
+        color: #f57c00;
+        background-color: #fff3e0;
+        padding: 0.5rem;
+        border-radius: 4px;
+    }
+
+    /* Carrossel */
+.carousel-section {
+    margin-bottom: 1.5rem;
+    position: relative;
+    margin: 0 auto; /* Center the section horizontally */
+    max-width: 100%; /* Ensure it doesn't exceed the parent width */
+    display: flex; /* Use Flexbox to center content */
+    justify-content: center; /* Center horizontally */
+}
+
+.carousel-container {
+    display: flex;
+    overflow: hidden;
+    width: 500px; /* Keep fixed width, but can be adjusted */
+    max-width: 100%; /* Ensure responsiveness */
+    gap: 1rem;
+    justify-content: center; /* Center slides within container */
+    align-items: center; /* Center vertically if needed */
+}
+
+.carousel-slide {
+    min-width: 100%;
+    transition: transform 0.3s ease;
+    display: flex; /* Ensure slide content is centered */
+    justify-content: center; /* Center content horizontally */
+    align-items: center; /* Center content vertically */
+}
+
+.property-image {
+    width: 100%;
+    display: flex;
+    justify-content: center; /* Center the image */
+}
+
+.property-image img {
+    width: 100%;
+    max-width: 500px; /* Match container width or adjust as needed */
+    height: 200px;
+    object-fit: cover;
+    background-color: #eee;
+    border-radius: 8px;
+}
+
+.carousel-actions {
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    transform: translateY(-50%);
+}
+
+.carousel-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    background-color: #f5f5f5;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s;
+}
+
+.carousel-btn:hover {
+    background-color: #e0e0e0;
+}
+
+    /* Conteúdo Principal */
+    .content-section {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .info-card, .chart-card {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 1rem;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        flex: 1;
+        min-width: 250px;
+    }
+
+    .info-card h4, .chart-card h4 {
+        font-size: 1.2rem;
+        margin-bottom: 0.8rem;
+        color: #333;
+    }
+
+    .info-content p, .info-content ul {
+        margin: 0.3rem 0;
+    }
+
+    .info-content p strong {
+        color: #ff4d4d;
+    }
+
+    .info-content ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .info-content ul li {
+        margin: 0.5rem 0;
+    }
+
+    .info-content ul li a {
+        color: #2e7d32;
+        text-decoration: underline;
+    }
+
+    .info-content ul li a:hover {
+        color: #1b5e20;
+    }
+
+    .document-upload-form {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column; /* Stack elements vertically */
+    gap: 0.5rem;
+    width: 100%; /* Ensure form takes full width */
+}
+
+    .document-upload-form input[type="file"] {
+        width: 100%; /* Full width for consistency */
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box; /* Prevent padding from affecting width */
+    }
+
+    .upload-btn {
+    width: 100%; /* Match input width */
+    padding: 0.5rem 1rem;
+    background-color: #2e7d32;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+    .upload-btn:hover {
+        background-color: #1b5e20;
+    }
+
+    /* Botões de Ação */
+    .action-buttons {
+        margin-top: 1rem;
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .action-btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        transition: background-color 0.3s;
+    }
+
+    .edit-btn {
+        background-color: #0288d1;
+        color: white;
+    }
+
+    .edit-btn:hover {
+        background-color: #01579b;
+    }
+
+    .deactivate-btn {
+        background-color: #d32f2f;
+        color: white;
+    }
+
+    .deactivate-btn:hover:not(:disabled) {
+        background-color: #b71c1c;
+    }
+
+    .deactivate-btn:disabled {
+        background-color: #e57373;
+        cursor: not-allowed;
+    }
+
+    .deactivate-form {
+        display: inline;
+    }
+
+    .chart-card {
+        flex: 2;
+    }
+
+    .chart-placeholder {
+        width: 100%;
+        height: 200px;
+        background-color: #e0e0e0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #666;
+        border-radius: 8px;
+    }
+
+    /* Informações Adicionais */
+    .additional-info p {
+        margin: 0.3rem 0;
+        font-weight: 600;
+    }
+
+    .additional-info p strong {
+        color: #333;
+    }
+</style>
+
+<script>
+    // Script para o carrossel
+    const carouselContainer = document.querySelector('.carousel-container');
+    const slides = document.querySelectorAll('.carousel-slide');
+    const prevBtn = document.querySelector('.carousel-prev');
+    const nextBtn = document.querySelector('.carousel-next');
+    let currentIndex = 0;
+
+    function showSlide(index) {
+        if (index >= slides.length) {
+            currentIndex = 0;
+        } else if (index < 0) {
+            currentIndex = slides.length - 1;
+        } else {
+            currentIndex = index;
+        }
+        carouselContainer.style.transform = `translateX(${-currentIndex * 100}%)`;
+    }
+
+    prevBtn.addEventListener('click', () => {
+        showSlide(currentIndex - 1);
+    });
+
+    nextBtn.addEventListener('click', () => {
+        showSlide(currentIndex + 1);
+    });
+
+    showSlide(currentIndex);
+</script>
+{% endblock %}
