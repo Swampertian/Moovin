@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'screens/tenant_profile_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
+import 'screens/owner_dashboard_screen.dart';
 
 
 void main() {
@@ -30,7 +31,8 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
         '/tenant': (context) => const TenantProfileScreen(tenantId: 1),
-        '/owner' : (context) => const OwnerProfileScreen(ownerId: 3)
+        '/owner' : (context) => const OwnerProfileScreen(ownerId: 3),
+        '/owner_dashboard': (context) => const OwnerDashboardScreen(),
       },
     );
   }

@@ -37,6 +37,7 @@ dependencies:
   flutter_secure_storage: ^9.0.0
   google_fonts: ^6.1.0
   shared_preferences: ^2.0.17
+  url_launcher: ^6.1.10
   # webview_flutter: ^4.0.0
 
 
