@@ -9,6 +9,11 @@ Thumbs.db
 # ========== PYTHON / DJANGO ==========
 __pycache__/
 **/__pycache__/
+Backend/**/migrations/
+!Backend/**/migrations/__init__.py
+*.swo
+*.tmp
+
 **/*.pyc
 **/migrations/
 *.py[cod]
@@ -18,6 +23,7 @@ __pycache__/
 venv/
 .venv/
 db.sqlite3
+
 
 # ========== FLUTTER ==========
 # Flutter/Dart/Pub
