@@ -9,13 +9,12 @@ Thumbs.db
 # ========== PYTHON / DJANGO ==========
 __pycache__/
 **/__pycache__/
-Backend/**/migrations/
-!Backend/**/migrations/__init__.py
 *.swo
 *.tmp
-
-**/*.pyc
 **/migrations/
+!**/migrations/__init__.py
+**/*.pyc
+
 *.py[cod]
 *.sqlite3
 *.env
