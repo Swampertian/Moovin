@@ -76,14 +76,14 @@ build/
 node_modules/
 dist/
 .cache/
-*.log
+
 .env.local
 .env.production
 .env.development
 
 # ========== BACKUP / TEMP ==========
 *.bak
-*.tmp
+
 *.old
 *.orig
-*.swp
+
