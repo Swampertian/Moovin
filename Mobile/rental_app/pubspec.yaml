@@ -33,7 +33,7 @@ dependencies:
   http: ^1.2.2  # For making API requests
   provider: ^6.1.2  # For state management
   cupertino_icons: ^1.0.8
-  intl: ^0.18.1
+  intl: ^0.20.2
   flutter_secure_storage: ^9.0.0
   google_fonts: ^6.1.0
   shared_preferences: ^2.0.17

@@ -3,26 +3,27 @@ import 'package:http/http.dart' as http;
 import '../models/tenant.dart';
 import '../models/owner.dart';
 import '../config.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // import
 
 class ApiService {
   final String _tenantBase = '$apiBase/tenants';
   final String _ownerBase = '$apiBase/owners/owners';
   final String _immobileBase = '$apiBase/immobile';
-  final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
+  final FlutterSecureStorage _secureStorage = FlutterSecureStorage(); //cria a instância do secureStorage
   // ========================= TENANT =========================
 
   Future<Tenant> fetchTenant() async {
     final url = Uri.parse('$_tenantBase/profile/me/');
     print('🔎 Fetching Tenant: $url');
 
-    // Recupera o token do SecureStore
-  final token = await _secureStorage.read(key: 'jwt_token');
+    // Recupera o token do SecureStore. É armazenado ao fazer o login
+    final token = await _secureStorage.read(key: 'jwt_token');
 
   if (token == null) {
     throw Exception('Token JWT não encontrado.');
   }
 
+//  Adiciona o jwt no headers da requisição para que o backend receba e use como autenticação
   final response = await http.get(
     url,
     headers: {
