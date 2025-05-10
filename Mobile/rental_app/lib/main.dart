@@ -6,7 +6,7 @@ import 'screens/tenant_profile_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/owner_dashboard_screen.dart';
-
+import 'screens/search_immobile_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Rental App',
+      title: 'Moovin',
       theme: ThemeData(
         primarySwatch: Colors.green,
 
@@ -27,12 +27,14 @@ class MyApp extends StatelessWidget {
       home: const LoginScreen(),
       //home: const OwnerProfileScreen(ownerId: 1),
       //home: const TenantProfileScreen(tenantId: 1),
+      // home:SearchImmobileScreen(),
       routes: {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
         '/tenant': (context) => const TenantProfileScreen(),
         '/owner' : (context) => const OwnerProfileScreen(ownerId: 3),
         '/owner_dashboard': (context) => const OwnerDashboardScreen(),
+        '/search-immobile': (context) => SearchImmobileScreen(),
       },
     );
   }
