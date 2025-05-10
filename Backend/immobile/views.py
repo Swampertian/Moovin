@@ -9,17 +9,26 @@ from django.views.generic import DetailView
 from django.views import View
 # views.py (na sua app 'immobile')
 from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Immobile, ImmobilePhoto
 from .serializers import ImmobileSerializer, ImmobilePhotoSerializer
 from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 
 class ImmobileViewSet(viewsets.ModelViewSet):
     queryset = Immobile.objects.all()
     serializer_class = ImmobileSerializer
-
+    def get_queryset(self):
+        # Apenas imóveis criados pelo usuário logado
+        return Immobile.objects.filter(user=self.request.user)
+    @action(detail=False, methods=['get'], url_path='me')
+    def me(self, request):
+        immobiles = self.get_queryset()
+        serializer = self.get_serializer(immobiles, many=True)
+        return Response(serializer.data)
 class ImmobileListAPIView(APIView):
     """
     Lista todos os imóveis.

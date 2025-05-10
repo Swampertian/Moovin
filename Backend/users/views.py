@@ -7,13 +7,11 @@ from .serializers import UserSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
-
+from rest_framework.views import APIView
 class UserRegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
-
-
 # View para testar o uso do JWT,
 # deverá ser excluída juntamente com sua respectiva rota 
 class ProtectedView(APIView): 
