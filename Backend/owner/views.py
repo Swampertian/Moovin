@@ -392,7 +392,9 @@ class OwnerManagementView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         try:
-            owner = Owner.objects.get(id=1)  # or request.user.id
+            # owner = Owner.objects.get(user=self.request.user)  # or request.user.id
+            owner = Owner.objects.get(id=1)
+            context['owner']=owner
             context['properties'] = Immobile.objects.filter(owner=owner)
         except Owner.DoesNotExist:
             context['properties'] = []

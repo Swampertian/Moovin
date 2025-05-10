@@ -7,7 +7,7 @@
 
     <!-- Cabeçalho -->
     <div class="section-header">
-        <h3>Bem-vindo, Usuário</h3>
+        <h3>{{property.property_type}}, {{property.city}} - {{property.state}}</h3>
     </div>
 
     <!-- Mensagens de Sucesso/Erro -->
@@ -44,22 +44,23 @@
         <div class="info-card">
             <h4>Informações Úteis</h4>
             <div class="info-content">
-                <p><strong>Área do Imóvel:</strong> {{ property.area|default:"Não informado" }}</p>
-                <p><strong>Número de:</strong></p>
+                <p><strong class="strong">Área do Imóvel:</strong> {{ property.area|default:"Não informado" }}</p>
+                <p><strong class="strong">Número de:</strong></p>
                 <p>- Banheiros: {{ property.bathrooms|default:"Não informado" }}</p>
                 <p>- Quartos: {{ property.bedrooms|default:"Não informado" }}</p>
                 <p>- Ar Condicionado: {% if property and property.air_conditioning is not None %}{% if property.air_conditioning %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
                 <p>- Garagem: {% if property and property.garage is not None %}{% if property.garage %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
                 <p>- Mobilia: {% if property and property.furnished is not None %}{% if property.furnished %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
                 <p>- Piscina: {% if property and property.pool is not None %}{% if property.pool %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
-                <p><strong>Status:</strong> {% if property and property.is_active %} Ativo {% else %} Desativado {% endif %}</p>
+                <p><strong class="strong">Status:</strong> {% if property and property.is_active %} Ativo {% else %} Desativado {% endif %}</p>
                 <div class="action-buttons">
                     <a href="{%url 'immobile_edit' property.id_immobile%}" class="action-btn edit-btn">Editar Imóvel</a>
                     <form method="post" class="deactivate-form">
                         {% csrf_token %}
-                        <button type="submit" name="deactivate" class="action-btn deactivate-btn" {% if not property.is_active %}disabled{% endif %}>
+                        <button name="deactivate" class="action-btn deactivate-btn" {% if property.status == 'Available' %}disabled{% endif %}>
                             Desativar Imóvel
                         </button>
+
                     </form>
                 </div>
             </div>
@@ -70,9 +71,10 @@
             <h4>Contato do Inquilino</h4>
             <div class="info-content">
                 {% if rental %}
+                    <p>- Nome: {{ rental.tenant.name|default:"Não informado" }}</p>
                     <p>- E-mail: {{ rental.tenant.user.email|default:"Não informado" }}</p>
                     <p>- Telefone: {{ rental.tenant.phone|default:"Não informado" }}</p>
-                    <p>- Nome: {{ rental.tenant.name|default:"Não informado" }}</p>
+                  
                 {% else %}
                     <p>Nenhum inquilino associado.</p>
                 {% endif %}
@@ -105,10 +107,10 @@
 
         <!-- Informações Adicionais -->
     <div class="additional-info">
-        <p><strong>Permite Animais:</strong> {% if property and property.pet_friendly is not None %}{% if property.pet_friendly %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
-        <p><strong>Serviço de Internet:</strong> {% if property and property.internet is not None %}{% if property.internet %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
-        <p><strong>Ônibus Próximo:</strong> {% if property and property.nearby_bus is not None %}{% if property.nearby_bus %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
-        <p><strong>Mercado Próximo:</strong> {% if property and property.nearby_market is not None %}{% if property.nearby_market %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
+        <p><strong class="strong">Permite Animais:</strong> {% if property and property.pet_friendly is not None %}{% if property.pet_friendly %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
+        <p><strong class="strong">Serviço de Internet:</strong> {% if property and property.internet is not None %}{% if property.internet %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
+        <p><strong class="strong">Ônibus Próximo:</strong> {% if property and property.nearby_bus is not None %}{% if property.nearby_bus %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
+        <p><strong class="strong">Mercado Próximo:</strong> {% if property and property.nearby_market is not None %}{% if property.nearby_market %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
     </div>
     
     <!-- Gráfico -->
@@ -122,6 +124,7 @@
 </div>
 
 <style>
+    
     a {
         color: black;
         text-decoration: none;
@@ -164,39 +167,38 @@
 .carousel-section {
     margin-bottom: 1.5rem;
     position: relative;
-    margin: 0 auto; /* Center the section horizontally */
-    max-width: 100%; /* Ensure it doesn't exceed the parent width */
-    display: flex; /* Use Flexbox to center content */
-    justify-content: center; /* Center horizontally */
+    margin: 0 auto; 
+    max-width: 100%;
+    display: flex; 
+    justify-content: center; 
 }
 
 .carousel-container {
     display: flex;
     overflow: hidden;
-    width: 500px; /* Keep fixed width, but can be adjusted */
-    max-width: 100%; /* Ensure responsiveness */
-    gap: 1rem;
-    justify-content: center; /* Center slides within container */
-    align-items: center; /* Center vertically if needed */
+    width: 500px; 
+    max-width: 100%; 
+    justify-content: center; 
+    align-items: center;
 }
 
 .carousel-slide {
     min-width: 100%;
     transition: transform 0.3s ease;
-    display: flex; /* Ensure slide content is centered */
-    justify-content: center; /* Center content horizontally */
-    align-items: center; /* Center content vertically */
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
 }
 
 .property-image {
     width: 100%;
     display: flex;
-    justify-content: center; /* Center the image */
+    justify-content: center; 
 }
 
 .property-image img {
     width: 100%;
-    max-width: 500px; /* Match container width or adjust as needed */
+    max-width: 500px; 
     height: 200px;
     object-fit: cover;
     background-color: #eee;
@@ -255,7 +257,7 @@
     }
 
     .info-content p strong {
-        color: #ff4d4d;
+        color: #2e7d32;
     }
 
     .info-content ul {
@@ -279,9 +281,9 @@
     .document-upload-form {
     margin-top: 1rem;
     display: flex;
-    flex-direction: column; /* Stack elements vertically */
+    flex-direction: column; 
     gap: 0.5rem;
-    width: 100%; /* Ensure form takes full width */
+    width: 100%; 
 }
 
     .document-upload-form input[type="file"] {
@@ -289,11 +291,11 @@
         padding: 0.5rem;
         border: 1px solid #ddd;
         border-radius: 4px;
-        box-sizing: border-box; /* Prevent padding from affecting width */
+        box-sizing: border-box; 
     }
 
     .upload-btn {
-    width: 100%; /* Match input width */
+    width: 100%; 
     padding: 0.5rem 1rem;
     background-color: #2e7d32;
     color: white;
@@ -374,7 +376,10 @@
     }
 
     .additional-info p strong {
-        color: #333;
+        color: #2e7d32;
+    }
+    .chart-card h4{
+         color: #2e7d32;
     }
 </style>
 
