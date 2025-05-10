@@ -75,66 +75,69 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Image.asset(
-                'assets/images/logo.png',
-                height: 250,
-              ),
-              const Text(
-                'Dashboard do Proprietário',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2F6D3C),
+        child: Center( // Center widget to vertically and horizontally center the content
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center, // Center within the Column
+              crossAxisAlignment: CrossAxisAlignment.center, // Center horizontally
+              children: [
+                Image.asset(
+                  'assets/images/logo.png', // Replace with your actual image path
+                  height: 250,
                 ),
-              ),
-              const SizedBox(height: 32),
-              if (_isLoading)
-                const CircularProgressIndicator(
-                  color: Color(0xFF2F6D3C),
-                ),
-              if (!_isLoading && _errorMessage != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                  child: Text(
-                    _errorMessage!,
-                    style: const TextStyle(color: Colors.red, fontSize: 16),
-                    textAlign: TextAlign.center,
+                const Text(
+                  'Dashboard do Proprietário',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2F6D3C),
                   ),
                 ),
-              if (!_isLoading && _isOwner)
-                SizedBox(
-                  width: 320,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _launchStatisticsPage,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2F6D3C),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                const SizedBox(height: 32),
+                if (_isLoading)
+                  const CircularProgressIndicator(
+                    color: Color(0xFF2F6D3C),
+                  ),
+                if (!_isLoading && _errorMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16.0),
+                    child: Text(
+                      _errorMessage!,
+                      style: const TextStyle(color: Colors.red, fontSize: 16),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                if (!_isLoading && _isOwner)
+                  SizedBox(
+                    width: 320,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: _launchStatisticsPage,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2F6D3C),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      child: const Text(
+                        'Ver Estatísticas',
+                        style: TextStyle(fontSize: 20, color: Colors.white),
                       ),
                     ),
-                    child: const Text(
-                      'Ver Estatísticas',
-                      style: TextStyle(fontSize: 20, color: Colors.white),
+                  ),
+                const SizedBox(height: 20),
+                if (!_isLoading && _isOwner)
+                  const Text(
+                    'Clique acima para acessar as estatísticas financeiras.',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Color(0xFF999999),
                     ),
+                    textAlign: TextAlign.center,
                   ),
-                ),
-              const SizedBox(height: 20),
-              if (!_isLoading && _isOwner)
-                const Text(
-                  'Clique acima para acessar as estatísticas financeiras.',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF999999),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -405,29 +405,29 @@ class OwnerChartsView(LoginRequiredMixin, TemplateView):
 # from django.views.decorators.csrf import csrf_exempt
 # from rest_framework.decorators import action
 
-# class CsrfExemptSessionAuthentication(SessionAuthentication):
-#     def enforce_csrf(self, request):
-#         # não faz nada — vai pular a checagem de CSRF
-#         return
+# # class CsrfExemptSessionAuthentication(SessionAuthentication):
+# #     def enforce_csrf(self, request):
+# #         # não faz nada — vai pular a checagem de CSRF
+# #         return
     
-# class OwnerViewSet(ModelViewSet):
-#     queryset = Owner.objects.all()
-#     serializer_class = OwnerSerializer
-#     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
-#     permission_classes = (AllowAny,)
-
-# # API ViewSet for Owner
-# # class OwnerViewSet(viewsets.ModelViewSet):
+# # class OwnerViewSet(ModelViewSet):
 # #     queryset = Owner.objects.all()
 # #     serializer_class = OwnerSerializer
-# #     permission_classes = [IsAuthenticated]
+# #     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
+# #     permission_classes = (AllowAny,)
 
-# #     def get_queryset(self):
-# #         user = self.request.user
-# #         owner = getattr(user, 'owner_profile', None).first()
-# #         if owner:
-# #             return Owner.objects.filter(id=owner.id)
-# #         return Owner.objects.none()
+# # API ViewSet for Owner
+# class OwnerViewSet(viewsets.ModelViewSet):
+#     queryset = Owner.objects.all()
+#     serializer_class = OwnerSerializer
+#     permission_classes = [IsAuthenticated]
+
+#     def get_queryset(self):
+#         user = self.request.user
+#         owner = getattr(user, 'owner_profile', None).first()
+#         if owner:
+#             return Owner.objects.filter(id=owner.id)
+#         return Owner.objects.none()
 
 # # Statistics Page
 # class OwnerStatisticsView(LoginRequiredMixin, TemplateView):
