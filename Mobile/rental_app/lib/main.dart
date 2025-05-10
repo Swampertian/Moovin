@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
-        '/tenant': (context) => const TenantProfileScreen(tenantId: 1),
+        '/tenant': (context) => const TenantProfileScreen(),
         '/owner' : (context) => const OwnerProfileScreen(ownerId: 3),
         '/owner_dashboard': (context) => const OwnerDashboardScreen(),
       },
