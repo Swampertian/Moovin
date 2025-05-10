@@ -79,11 +79,11 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center, // Center within the Column
-              crossAxisAlignment: CrossAxisAlignment.center, // Center horizontally
+              mainAxisAlignment: MainAxisAlignment.center, 
+              crossAxisAlignment: CrossAxisAlignment.center, 
               children: [
                 Image.asset(
-                  'assets/images/logo.png', // Replace with your actual image path
+                  'assets/images/logo.png',
                   height: 250,
                 ),
                 const Text(
