@@ -13,13 +13,13 @@ class TenantProvider with ChangeNotifier {
 
   final ApiService _apiService = ApiService();
 
-  Future<void> fetchTenant(int id) async {
+  Future<void> fetchTenant() async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      _tenant = await _apiService.fetchTenant(id);
+      _tenant = await _apiService.fetchTenant();
     } catch (e) {
       _error = e.toString();
     } finally {

@@ -91,7 +91,7 @@ class Immobile {
       additionalRules: json['additional_rules'] as String?,
       status: json['status'] as String,
       createdAt: json['created_at'] as String,
-      photosBlob: (json['photos_blob'] as List<dynamic>? ?? [])
+      photosBlob: (json['photosBlob'] as List<dynamic>? ?? [])
           .map((e) => ImmobilePhoto.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
@@ -123,7 +123,7 @@ class Immobile {
       'additional_rules': additionalRules,
       'status': status,
       'created_at': createdAt,
-      'photos_blob': photosBlob.map((p) => p.toJson()).toList(),
+      'photosBlob': photosBlob.map((p) => p.toJson()).toList(),
     };
   }
 }
@@ -131,12 +131,14 @@ class Immobile {
 
 class ImmobilePhoto {
   final int id;
-  final String imageBase64;
-  final String contentType;
+  final int photoId; 
+  String imageBase64;
+  String contentType;
   final String uploadedAt;
 
   ImmobilePhoto({
     required this.id,
+    required this.photoId,
     required this.imageBase64,
     required this.contentType,
     required this.uploadedAt,
@@ -145,6 +147,7 @@ class ImmobilePhoto {
   factory ImmobilePhoto.fromJson(Map<String, dynamic> json) {
     return ImmobilePhoto(
       id: json['id'] as int,
+      photoId: json['id'] as int,
       imageBase64: json['image_blob'] as String,
       contentType: json['content_type'] as String,
       uploadedAt: json['uploaded_at'] as String,

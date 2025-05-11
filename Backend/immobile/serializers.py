@@ -14,7 +14,7 @@ class ImmobilePhotoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ImmobilePhoto
-        fields = ['id', 'image_url', 'content_type', 'uploaded_at']
+        fields = ['id', 'image_url','image_blob', 'content_type', 'uploaded_at']
 
     def get_image_url(self, obj):
         
@@ -24,7 +24,7 @@ class ImmobilePhotoSerializer(serializers.ModelSerializer):
         return None
 
 class ImmobileSerializer(serializers.ModelSerializer):
-    photos = ImmobilePhotoSerializer(many=True, read_only=True)
+    photosBlob = ImmobilePhotoSerializer(many=True, read_only=True,source='photos_blob')
 
     class Meta:
         model = Immobile
@@ -53,5 +53,5 @@ class ImmobileSerializer(serializers.ModelSerializer):
             'additional_rules',
             'status',
             'created_at',
-            'photos',
+            'photosBlob',
         ]

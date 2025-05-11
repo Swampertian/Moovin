@@ -1,0 +1,609 @@
+{% extends 'base.html' %}
+
+{% block title %}Gerenciamento de Imóveis{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="section-header">
+        <h3>Bem vindo, {{owner.name}}</h3>
+    </div>
+
+    <!-- Lista de Imóveis -->
+    <div class="properties-section">
+        <div class="section-header">
+            <h3>Seus Imóveis</h3>
+            <a href="{% url 'register_immobile_part1' %}" class="add-property-btn" aria-label="Adicionar um novo imóvel">
+                🏠 ➕ Adicionar Imóvel
+            </a>
+        </div>
+
+        {% if properties %}
+        <div class="property-card-container">
+            {% for prop in properties %}
+            <div class="property-card">
+                <div class="property-image">
+                    <img src="" alt="Imagem do Imóvel">
+                </div>
+                <div class="property-info">
+                    <p><strong>ID:</strong> {{ prop.id_immobile }}</p>
+                    <p><strong>Tipo:</strong> {{ prop.property_type }}</p>
+                    <p><strong>Endereço:</strong> {{ prop.street }} {{ prop.number }}, {{ prop.city }} - {{ prop.state }}</p>
+                    <p><strong>Valor do Aluguel:</strong> R$ {{ prop.rent|floatformat:2 }}</p>
+                    <p>
+                        <strong>Status:</strong> 
+                        <span class="status-badge 
+                            {% if prop.status == 'Available' %}status-active
+                            {% elif prop.status == 'Rented' %}status-rented
+                            {% else %}status-inactive{% endif %}">
+                            {{ prop.status }}
+                        </span>
+                    </p>
+                </div>
+                <div class="property-actions">
+                    <a href="{% url 'owner-management-property-detail' prop.id_immobile %}"><button class="btn-details">Informações Detalhadas</button></a>
+                    {% if prop.status == "Available" %}
+                    <a href="#"><button class="btn-details">Agendar Visita</button></a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> Nenhum imóvel cadastrado.
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Calendar Section -->
+    <div class="calendar-section">
+        <div class="section-header">
+            <h3>Calendário de Eventos</h3>
+        </div>
+        <div class="calendar-container">
+            <div class="month-header">
+                <h2>
+                    <button class="month-nav prev-month"><i class="fas fa-chevron-left"></i></button>
+                    Maio 2025
+                    <button class="month-nav next-month"><i class="fas fa-chevron-right"></i></button>
+                </h2>
+                <div class="date-selector">
+                    <select id="month-select">
+                        <option value="1">Janeiro</option>
+                        <option value="2">Fevereiro</option>
+                        <option value="3">Março</option>
+                        <option value="4">Abril</option>
+                        <option value="5" selected>Maio</option>
+                        <option value="6">Junho</option>
+                        <option value="7">Julho</option>
+                        <option value="8">Agosto</option>
+                        <option value="9">Setembro</option>
+                        <option value="10">Outubro</option>
+                        <option value="11">Novembro</option>
+                        <option value="12">Dezembro</option>
+                    </select>
+                    <select id="year-select">
+                        <option value="2023">2023</option>
+                        <option value="2024">2024</option>
+                        <option value="2025" selected>2025</option>
+                        <option value="2026">2026</option>
+                        <option value="2027">2027</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="calendar-grid">
+                <div class="calendar-header">Dom</div>
+                <div class="calendar-header">Seg</div>
+                <div class="calendar-header">Ter</div>
+                <div class="calendar-header">Qua</div>
+                <div class="calendar-header">Qui</div>
+                <div class="calendar-header">Sex</div>
+                <div class="calendar-header">Sáb</div>
+                
+                <div class="calendar-day empty"></div>
+                <div class="calendar-day empty"></div>
+                <div class="calendar-day empty"></div>
+                <div class="calendar-day empty"></div>
+                <div class="calendar-day"><div class="day-number">1</div></div>
+                <div class="calendar-day"><div class="day-number">2</div></div>
+                <div class="calendar-day"><div class="day-number">3</div></div>
+                
+                <div class="calendar-day"><div class="day-number">4</div></div>
+                <div class="calendar-day unpaid clickable">
+                    <div class="day-number">5</div>
+                    <div class="day-info">
+                        <div class="payment-amount">R$ 1.500,00</div>
+                        <div class="payment-properties">1 imóvel</div>
+                    </div>
+                </div>
+                <div class="calendar-day"><div class="day-number">6</div></div>
+                <div class="calendar-day today"><div class="day-number">7</div></div>
+                <div class="calendar-day"><div class="day-number">8</div></div>
+                <div class="calendar-day unpaid clickable">
+                    <div class="day-number">9</div>
+                    <div class="day-info">
+                        <div class="payment-amount">R$ 2.000,00</div>
+                        <div class="payment-properties">2 imóveis</div>
+                    </div>
+                </div>
+                <div class="calendar-day"><div class="day-number">10</div></div>
+                
+                <div class="calendar-day"><div class="day-number">11</div></div>
+                <div class="calendar-day"><div class="day-number">12</div></div>
+                <div class="calendar-day"><div class="day-number">13</div></div>
+                <div class="calendar-day"><div class="day-number">14</div></div>
+                <div class="calendar-day"><div class="day-number">15</div></div>
+                <div class="calendar-day"><div class="day-number">16</div></div>
+                <div class="calendar-day"><div class="day-number">17</div></div>
+                
+                <div class="calendar-day"><div class="day-number">18</div></div>
+                <div class="calendar-day"><div class="day-number">19</div></div>
+                <div class="calendar-day"><div class="day-number">20</div></div>
+                <div class="calendar-day"><div class="day-number">21</div></div>
+                <div class="calendar-day"><div class="day-number">22</div></div>
+                <div class="calendar-day"><div class="day-number">23</div></div>
+                <div class="calendar-day"><div class="day-number">24</div></div>
+                
+                <div class="calendar-day"><div class="day-number">25</div></div>
+                <div class="calendar-day"><div class="day-number">26</div></div>
+                <div class="calendar-day"><div class="day-number">27</div></div>
+                <div class="calendar-day"><div class="day-number">28</div></div>
+                <div class="calendar-day"><div class="day-number">29</div></div>
+                <div class="calendar-day"><div class="day-number">30</div></div>
+                <div class="calendar-day"><div class="day-number">31</div></div>
+            </div>
+
+            <!-- Legend Section -->
+            <div class="calendar-legend">
+                <div class="legend-item">
+                    <span class="legend-color unpaid"></span>
+                    <span>Pagamento Pendente</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color today"></span>
+                    <span>Hoje</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color visit"></span>
+                    <span>Visitas</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    a {
+        color: black;
+        text-decoration: none;
+    }
+    .dashboard-container {
+        padding: 1.5rem;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .section-header h3 {
+        font-size: 1.4rem;
+        color: #2e7d32;
+        margin: 0;
+    }
+
+    .add-property-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background-color: #2e7d32;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .add-property-btn:hover {
+        background-color: #1b5e20;
+        transform: translateY(-2px);
+    }
+
+    .add-property-btn:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.3);
+    }
+
+    .add-property-btn:active {
+        transform: translateY(0);
+    }
+
+    .property-card-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .property-card {
+        display: flex;
+        align-items: flex-start;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 1rem;
+        width: 100%;
+        max-width: 750px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        gap: 1rem;
+    }
+
+    .property-image img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        background-color: #eee;
+        border-radius: 8px;
+    }
+
+    .property-info {
+        flex: 1;
+    }
+
+    .property-info p {
+        margin: 0.3rem 0;
+    }
+
+    .status-badge {
+        padding: 0.3rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        color: #fff;
+    }
+
+    .status-active {
+        background-color: #4caf50;
+    }
+
+    .status-rented {
+        background-color: #f44336;
+    }
+
+    .status-inactive {
+        background-color: #ffeb3b;
+        color: #000;
+    }
+
+    .property-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .property-actions button {
+        padding: 0.5rem 1rem;
+        border: none;
+        background-color: #f5f5f5;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background-color 0.3s;
+    }
+
+    .property-actions button:hover {
+        background-color: #e0e0e0;
+    }
+
+    .alert {
+        margin-top: 1rem;
+        padding: 1rem;
+        background-color: #eaf4fc;
+        border: 1px solid #bcdff1;
+        border-radius: 6px;
+        color: #31708f;
+    }
+
+    /* Calendar Styles */
+    .calendar-section {
+        margin-top: 2rem;
+    }
+
+    .calendar-container {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        max-width: 100%;
+        overflow-x: auto;
+        box-sizing: border-box;
+    }
+
+    .month-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 1rem;
+        gap: 0.75rem;
+    }
+
+    .month-header h2 {
+        font-size: 1.6rem;
+        color: #333;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .month-nav {
+        background: none;
+        border: none;
+        color: #2e7d32;
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 0.3rem 0.6rem;
+        transition: color 0.2s ease;
+    }
+
+    .month-nav:hover {
+        color: #1b5e20;
+    }
+
+    .date-selector {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .date-selector select {
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        color: #333;
+        background: #fff;
+        cursor: pointer;
+        transition: border-color 0.2s ease;
+    }
+
+    .date-selector select:focus {
+        outline: none;
+        border-color: #2e7d32;
+    }
+
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(60px, 1fr));
+        gap: 0.5rem;
+        max-width: 100%;
+    }
+
+    .calendar-header {
+        text-align: center;
+        font-weight: 600;
+        padding: 0.5rem;
+        background: #f5f5f5;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        color: #333;
+    }
+
+    .calendar-day {
+        min-height: 70px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 0.5rem;
+        background: #fff;
+        position: relative;
+        transition: transform 0.2s ease;
+    }
+
+    .calendar-day.empty {
+        background: #fafafa;
+        border: none;
+    }
+
+    .calendar-day.unpaid {
+        background: #ffebee;
+        border-color: #ef5350;
+    }
+
+    .calendar-day.today {
+        border: 2px solid #2e7d32;
+        background: #e8f5e9;
+    }
+
+    .calendar-day.clickable {
+        cursor: pointer;
+    }
+
+    .calendar-day.clickable:hover {
+        transform: scale(1.03);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .day-number {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 0.3rem;
+        color: #333;
+    }
+
+    .day-info {
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #fff;
+        padding: 0.5rem;
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        z-index: 10;
+        text-align: center;
+        min-width: 100px;
+        border: 1px solid #ddd;
+    }
+
+    .calendar-day:hover .day-info {
+        display: block;
+    }
+
+    .payment-amount {
+        font-weight: 600;
+        color: #2e7d32;
+        font-size: 0.9rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .payment-properties {
+        font-size: 0.8rem;
+        color: #555;
+    }
+
+    .calendar-legend {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .legend-color {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border-radius: 3px;
+    }
+
+    .legend-color.unpaid {
+        background: #ffebee;
+        border: 1px solid #ef5350;
+    }
+
+    .legend-color.today {
+        background: #e8f5e9;
+        border: 2px solid #2e7d32;
+    }
+    .legend-color.visit {
+        background: #e8eff5a5;
+        border: 2px solid #2e597d;
+    }
+
+    @media (max-width: 768px) {
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .add-property-btn {
+            width: 100%;
+            text-align: center;
+            font-size: 0.85rem;
+            padding: 0.6rem;
+        }
+
+        .calendar-grid {
+            grid-template-columns: repeat(7, minmax(45px, 1fr));
+            gap: 0.3rem;
+        }
+
+        .calendar-header {
+            font-size: 0.8rem;
+            padding: 0.4rem;
+        }
+
+        .calendar-day {
+            min-height: 50px;
+            padding: 0.3rem;
+        }
+
+        .day-number {
+            font-size: 0.9rem;
+        }
+
+        .day-info {
+            min-width: 80px;
+            padding: 0.4rem;
+            font-size: 0.8rem;
+        }
+
+        .payment-amount {
+            font-size: 0.8rem;
+        }
+
+        .payment-properties {
+            font-size: 0.7rem;
+        }
+
+        .month-header h2 {
+            font-size: 1.4rem;
+        }
+
+        .date-selector {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .date-selector select {
+            width: 100%;
+            font-size: 0.8rem;
+        }
+
+        .calendar-legend {
+            flex-direction: column;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const unpaidDays = document.querySelectorAll('.calendar-day.unpaid.clickable');
+        unpaidDays.forEach(day => {
+            // Hover effect is handled via CSS (:hover .day-info)
+            // Placeholder click action
+            day.addEventListener('click', function() {
+                console.log('Clicked unpaid day: ' + day.querySelector('.day-number').textContent);
+            });
+        });
+
+        const prevBtn = document.querySelector('.month-nav.prev-month');
+        const nextBtn = document.querySelector('.month-nav.next-month');
+        const monthSelect = document.getElementById('month-select');
+        const yearSelect = document.getElementById('year-select');
+
+        prevBtn.addEventListener('click', function() {
+            console.log('Previous month clicked');
+        });
+
+        nextBtn.addEventListener('click', function() {
+            console.log('Next month clicked');
+        });
+
+        monthSelect.addEventListener('change', function() {
+            console.log('Month changed to: ' + monthSelect.value);
+        });
+
+        yearSelect.addEventListener('change', function() {
+            console.log('Year changed to: ' + yearSelect.value);
+        });
+    });
+</script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+{% endblock %}

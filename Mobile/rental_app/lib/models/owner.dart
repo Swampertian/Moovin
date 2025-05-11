@@ -1,5 +1,4 @@
 import 'immobile.dart';
-
 class Owner {
   final int id;
   final String name;
