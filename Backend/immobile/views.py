@@ -10,17 +10,23 @@ from django.views import View
 # views.py (na sua app 'immobile')
 from rest_framework.views import APIView
 from rest_framework import status
+from rest_framework.generics import ListAPIView
 from django.shortcuts import get_object_or_404
 from .models import Immobile, ImmobilePhoto
 from .serializers import ImmobileSerializer, ImmobilePhotoSerializer
 from rest_framework import viewsets
+
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
+from django.db.models import Q
+
+
 class ImmobileViewSet(viewsets.ModelViewSet):
     queryset = Immobile.objects.all()
     serializer_class = ImmobileSerializer
+
     def get_queryset(self):
         # Apenas imóveis criados pelo usuário logado
         return Immobile.objects.filter(user=self.request.user)
@@ -29,12 +35,60 @@ class ImmobileViewSet(viewsets.ModelViewSet):
         immobiles = self.get_queryset()
         serializer = self.get_serializer(immobiles, many=True)
         return Response(serializer.data)
+
 class ImmobileListAPIView(APIView):
     """
     Lista todos os imóveis.
     """
     def get(self, request, format=None):
         immobiles = Immobile.objects.all()
+
+        type = request.query_params.get('type')
+        bedrooms = request.query_params.get('bedrooms')
+        bathrooms = request.query_params.get('bathrooms')
+        garage = request.query_params.get('garage')
+        rentValue = request.query_params.get('rentValue')
+        areaSize = request.query_params.get('areaSize')
+        # distance = request.query_params.get('distance')
+        wifi = request.query_params.get('wifi')
+        airConditioning = request.query_params.get('airConditioning')
+        petFriendly = request.query_params.get('petFriendly')
+        furnished = request.query_params.get('furnished')
+        pool = request.query_params.get('pool')
+        city = request.query_params.get('city')
+        filters = Q()
+    
+        if type:
+            filters |= Q(property_type__icontains=type)
+        if bedrooms:
+            filters &= Q(bedrooms=bedrooms)
+        if bathrooms:
+            filters &= Q(bathrooms=bathrooms)
+        if garage:
+            filters &= Q(garage=garage)
+        if rentValue:
+            filters &= Q(rent__lte=rentValue)
+        if areaSize:
+            filters &= Q(area__gte=areaSize)
+        # if distance:
+        #     filters &= Q(distance__lte=distance)
+        if wifi:
+            filters &= Q(internet=wifi.lower() == 'true')
+        if airConditioning:
+            filters &= Q(air_conditioning=airConditioning.lower() == 'true')
+        if petFriendly:
+            filters &= Q(pet_friendly=petFriendly.lower() == 'true')
+        if furnished:
+            filters &= Q(furnished=furnished.lower() == 'true')
+        if pool:
+            filters &= Q(pool=pool.lower() == 'true')
+        if city:
+                filters &= Q(city__icontains=city)
+
+
+        immobiles = Immobile.objects.filter(filters)
+        
+
         serializer = ImmobileSerializer(immobiles, many=True, context={'request': request})
         return Response(serializer.data)
 

@@ -3,19 +3,35 @@ import 'package:http/http.dart' as http;
 import '../models/tenant.dart';
 import '../models/owner.dart';
 import '../config.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/immobile.dart';
+
 class ApiService {
   final String _tenantBase = '$apiBase/tenants';
   final String _ownerBase = '$apiBase/owners/owners';
   final String _immobileBase = '$apiBase/immobile';
+  final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
   final String _photoBlobBase = '$apiBase/photo/blob'; 
+
   // ========================= TENANT =========================
 
-  Future<Tenant> fetchTenant(int id) async {
-    final url = Uri.parse('$_tenantBase/profile/$id/');
+  Future<Tenant> fetchTenant() async {
+    final url = Uri.parse('$_tenantBase/profile/me/');
     print('🔎 Fetching Tenant: $url');
 
-    final response = await http.get(url);
+    final token = await _secureStorage.read(key: 'jwt_token');
+
+    if (token == null) {
+      throw Exception('Token JWT não encontrado.');
+    }
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
 
     print('📡 STATUS: ${response.statusCode}');
     print('📦 BODY: ${response.body}');
@@ -28,13 +44,22 @@ class ApiService {
     }
   }
 
-  Future<Tenant> updateTenant(int id, Map<String, dynamic> data) async {
-    final url = Uri.parse('$_tenantBase/profile/$id/update-profile/');
+  Future<Tenant> updateTenant(Map<String, dynamic> data) async {
+    final url = Uri.parse('$_tenantBase/profile/me/update-profile/');
     print('✏️ Updating Tenant: $url');
+
+    final token = await _secureStorage.read(key: 'jwt_token');
+
+    if (token == null) {
+      throw Exception('Token JWT não encontrado.');
+    }
 
     final response = await http.patch(
       url,
-      headers: {'Content-Type': 'application/json; charset=UTF-8'},
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
       body: jsonEncode(data),
     );
 
@@ -152,6 +177,7 @@ class ApiService {
       throw Exception('Failed to update immobile');
     }
   }
+
   Future<List<Immobile>> fetchImmobile({
   String? type,
   int? bedrooms,
@@ -198,6 +224,4 @@ class ApiService {
   }
 
 }
-
 }
-

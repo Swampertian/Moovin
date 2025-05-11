@@ -1,9 +1,12 @@
 from django.db import models
 from django.utils import timezone
 from .consts import *
+
 from django.contrib.contenttypes.models import ContentType
 from review.models import Review, ReviewType
 from users.models import User
+from tenant.models import Tenant
+
 class Immobile(models.Model):
     owner = models.ForeignKey('owner.Owner', related_name='properties', on_delete=models.CASCADE, null=True,blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -53,4 +56,22 @@ class ImmobilePhoto(models.Model):
 
     def __str__(self):
         return f"Photo (BLOB) for {self.immobile}"
+
+
+class Payment(models.Model):
+    immobile = models.ForeignKey(Immobile, related_name='payments', on_delete=models.CASCADE)
+    amount_received = models.DecimalField(max_digits=10, decimal_places=2)
+    date_received = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Payment of {self.amount_received} for {self.immobile} on {self.date_received}"
+
+class Rental(models.Model):
+    tenant = models.ForeignKey(Tenant,on_delete=models.CASCADE, blank=False,null=False)
+    immobile = models.ForeignKey(Immobile,on_delete=models.CASCADE, blank=False,null=False)
+    start_data = models.DateField(blank=False,null=False)
+    end_data = models.DateField(blank=False,null=False)
+    status =  models.CharField(max_length=15, choices=RENT_STATUS_CHOICES)
+    value = models.DecimalField(max_digits=10, decimal_places=2)
 
