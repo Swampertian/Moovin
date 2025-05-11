@@ -16,6 +16,7 @@ from django.shortcuts import get_object_or_404
 from .models import Immobile, ImmobilePhoto
 from .serializers import ImmobileSerializer, ImmobilePhotoSerializer
 from rest_framework import viewsets
+from django.db.models import Q
 
 class ImmobileViewSet(viewsets.ModelViewSet):
     queryset = Immobile.objects.all()
@@ -29,6 +30,53 @@ class ImmobileListAPIView(APIView):
     """
     def get(self, request, format=None):
         immobiles = Immobile.objects.all()
+
+        type = request.query_params.get('type')
+        bedrooms = request.query_params.get('bedrooms')
+        bathrooms = request.query_params.get('bathrooms')
+        garage = request.query_params.get('garage')
+        rentValue = request.query_params.get('rentValue')
+        areaSize = request.query_params.get('areaSize')
+        # distance = request.query_params.get('distance')
+        wifi = request.query_params.get('wifi')
+        airConditioning = request.query_params.get('airConditioning')
+        petFriendly = request.query_params.get('petFriendly')
+        furnished = request.query_params.get('furnished')
+        pool = request.query_params.get('pool')
+        city = request.query_params.get('city')
+        filters = Q()
+    
+        if type:
+            filters |= Q(property_type__icontains=type)
+        if bedrooms:
+            filters &= Q(bedrooms=bedrooms)
+        if bathrooms:
+            filters &= Q(bathrooms=bathrooms)
+        if garage:
+            filters &= Q(garage=garage)
+        if rentValue:
+            filters &= Q(rent__lte=rentValue)
+        if areaSize:
+            filters &= Q(area__gte=areaSize)
+        # if distance:
+        #     filters &= Q(distance__lte=distance)
+        if wifi:
+            filters &= Q(internet=wifi.lower() == 'true')
+        if airConditioning:
+            filters &= Q(air_conditioning=airConditioning.lower() == 'true')
+        if petFriendly:
+            filters &= Q(pet_friendly=petFriendly.lower() == 'true')
+        if furnished:
+            filters &= Q(furnished=furnished.lower() == 'true')
+        if pool:
+            filters &= Q(pool=pool.lower() == 'true')
+        if city:
+                filters &= Q(city__icontains=city)
+
+
+        immobiles = Immobile.objects.filter(filters)
+        
+
         serializer = ImmobileSerializer(immobiles, many=True, context={'request': request})
         return Response(serializer.data)
 
