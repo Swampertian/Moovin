@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moovin - {% block title %}Login{% endblock %}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        .navbar { background-color: #2e7d32; padding: 10px; display: flex; justify-content: space-between; align-items: center; color: white; }
+        .navbar a { color: white; text-decoration: none; margin: 0 15px; }
+        .navbar a:hover { text-decoration: underline; }
+        .container { padding: 20px; max-width: 1000px; margin: 0 auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        table, th, td { border: 1px solid #ddd; }
+        th, td { padding: 10px; text-align: left; }
+        .status-pago { background-color: #c8e6c9; }
+        .status-nao-pago { background-color: #ffcdd2; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; }
+        .form-group input { padding: 5px; width: 200px; }
+        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 20px; }
+        .calendar div { padding: 10px; text-align: center; border: 1px solid #ddd; }
+        .chart { margin-top: 20px; }
+        .alert { padding: 10px; margin-bottom: 15px; border-radius: 5px; }
+        .alert.error { background-color: #f8d7da; color: #721c24; }
+        .alert.success { background-color: #d4edda; color: #155724; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div>
+            <img src="/static/moovin-logo.png" alt="Moovin Logo" style="height: 50px;">
+        </div>
+        <div>
+            <a href="#">Sobre</a>
+            <a href="#">Serviços</a>
+            <a href="#">Contato</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'logout' %}">Sair</a>
+            {% else %}
+                <a href="{% url 'web-login' %}">Entrar</a>
+            {% endif %}
+            <a href="#"><img src="/static/icon-profile.png" alt="User" style="height: 30px; vertical-align: middle;"></a>
+        </div>
+    </div>
+    <div class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {% block content %}
+        {% endblock %}
+    </div>
+</body>
+</html>

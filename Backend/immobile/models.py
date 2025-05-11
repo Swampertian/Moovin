@@ -46,3 +46,12 @@ class ImmobilePhoto(models.Model):
 
     def __str__(self):
         return f"Photo (BLOB) for {self.immobile}"
+
+class Payment(models.Model):
+    immobile = models.ForeignKey(Immobile, related_name='payments', on_delete=models.CASCADE)
+    amount_received = models.DecimalField(max_digits=10, decimal_places=2)
+    date_received = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Payment of {self.amount_received} for {self.immobile} on {self.date_received}"
