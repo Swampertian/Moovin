@@ -1,5 +1,4 @@
-import '../models/immobile.dart';
-
+import 'immobile.dart';
 class Owner {
   final int id;
   final String name;
@@ -63,5 +62,4 @@ class Owner {
 
   }
 }
-
 

@@ -64,13 +64,14 @@ class _LoginScreenState extends State<LoginScreen> {
        
       }
 
-      String? userType = await _secureStorage.read(key: 'user_type');
-      print(userType);
-      if (userType == 'Inquilino') {
-        Navigator.pushReplacementNamed(context, '/tenant');
-      } else {
-        Navigator.pushReplacementNamed(context, '/owner');
-      }
+      // String? userType = await _secureStorage.read(key: 'user_type');
+      // print(userType);
+      // if (userType == 'Inquilino') {
+      //   Navigator.pushReplacementNamed(context, '/tenant');
+      // } else {
+      //   Navigator.pushReplacementNamed(context, '/owner');
+      // }
+      Navigator.pushReplacementNamed(context, '/search-immobile');
 // -------------     
 
     } else {
