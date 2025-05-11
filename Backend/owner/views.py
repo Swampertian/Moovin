@@ -47,7 +47,7 @@ class OwnerViewSet(viewsets.ModelViewSet):
 # Statistics Page
 class OwnerStatisticsView(LoginRequiredMixin, TemplateView):
     template_name = 'owner/statistics.html'
-    login_url = '/api/users/token/'
+    login_url = '/api/users/token'
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -146,7 +146,7 @@ class OwnerStatisticsView(LoginRequiredMixin, TemplateView):
 
 class OwnerCalendarView(LoginRequiredMixin, TemplateView):
     template_name = 'owner/calendar.html'
-    login_url = '/api/users/token/'
+    login_url = '/api/users/token'
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -283,7 +283,7 @@ class OwnerCalendarView(LoginRequiredMixin, TemplateView):
 # Charts Page
 class OwnerChartsView(LoginRequiredMixin, TemplateView):
     template_name = 'owner/charts.html'
-    login_url = '/api/users/token/'
+    login_url = '/api/users/token'
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -398,7 +398,6 @@ class OwnerManagementView(TemplateView):
             context['properties'] = Immobile.objects.filter(owner=owner)
         except Owner.DoesNotExist:
             context['properties'] = []
-            # Optionally log the error or add error message to context
             context['error'] = 'Owner not found'
         return context
 
