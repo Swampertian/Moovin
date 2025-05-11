@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../models/immobile.dart';
-
+import 'detail_immobile_screen.dart';
 
 class SearchImmobileScreen extends StatefulWidget {
   const SearchImmobileScreen({super.key});
@@ -599,16 +599,25 @@ Widget _buildCategoryButton(
                               itemCount: imoveis.length, 
                               itemBuilder: (context, index) {
                                 final imovel = imoveis[index];
-                                    return PropertyCard(
-                                                  imageUrl: 'https://th.bing.com/th/id/OIP.Dzz0pHitTq_-nEuYC0dgtQHaFC?rs=1&pid=ImgDetMain', //imagem padrão, depois é necesssário puxar do banco, 
-                                                  title: imovel.propertyType,
-                                                  location: '${imovel.city}, ${imovel.state}',
-                                                  beds: imovel.bedrooms,
-                                                  baths: imovel.bathrooms,
-                                                  size: 2, // tamanho padrão, alterar depois
-                                                  rating: 4.5, 
-                                                
-);
+                                    return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DetailImmobileScreen(immobileId: imovel.idImmobile), // Assumindo que 'imovel' tem um ID
+                  ),
+                );
+              },
+              child: PropertyCard(
+                imageUrl: 'https://th.bing.com/th/id/OIP.Dzz0pHitTq_-nEuYC0dgtQHaFC?rs=1&pid=ImgDetMain',
+                title: imovel.propertyType,
+                location: '${imovel.city}, ${imovel.state}',
+                beds: imovel.bedrooms,
+                baths: imovel.bathrooms,
+                size: 2,
+                rating: 4.5,
+              ),
+            );
 
                               },
   ),)
