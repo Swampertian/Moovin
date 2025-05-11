@@ -69,6 +69,18 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
       });
     }
   }
+  Future<void> _launchManagementPage() async {
+    String? token = await _secureStorage.read(key: 'jwt_token');
+    final url = Uri.parse('http://localhost:8000/api/owners/management/');
+
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      setState(() {
+        _errorMessage = 'Não foi possível abrir a página de gerenciamento.';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -122,6 +134,24 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                       ),
                       child: const Text(
                         'Ver Estatísticas',
+                        style: TextStyle(fontSize: 20, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 20),
+                SizedBox(
+                    width: 320,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: _launchManagementPage,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2F6D3C),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      child: const Text(
+                        'Ver Gerenciamento de imóveis',
                         style: TextStyle(fontSize: 20, color: Colors.white),
                       ),
                     ),
