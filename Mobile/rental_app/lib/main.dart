@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:rental_app/screens/owner_profile_screen.dart';
-import 'screens/owner_profile_screen.dart';
-import 'screens/tenant_profile_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
-import 'screens/review_screen.dart';
+import 'screens/tenant_profile_screen.dart';
+import 'screens/owner_profile_screen.dart';
+import 'screens/detail_immobile_screen.dart';
 import 'screens/owner_dashboard_screen.dart';
 import 'screens/search_immobile_screen.dart';
-import 'screens/detail_immobile_screen.dart';
+import 'screens/review_screen.dart';
 import 'screens/create_profile_screen.dart';
-
-
 
 void main() {
   runApp(const MyApp());
@@ -29,9 +26,6 @@ class MyApp extends StatelessWidget {
         textTheme: GoogleFonts.khulaTextTheme(),
       ),
       initialRoute: '/login',
-      //home: const OwnerProfileScreen(ownerId: 1),
-      //home: const TenantProfileScreen(tenantId: 1),
-      // home:SearchImmobileScreen(),
       routes: {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
@@ -40,10 +34,8 @@ class MyApp extends StatelessWidget {
         '/immobile_details': (context) => const DetailImmobileScreen(immobileId: 1),
         '/owner_dashboard': (context) => const OwnerDashboardScreen(),
         '/search-immobile': (context) => const SearchImmobileScreen(),
-
-
+        '/review': (context) => const ReviewScreen(),
       },
-
       onGenerateRoute: (settings) {
         if (settings.name == '/create-profile') {
           final args = settings.arguments as Map<String, dynamic>?;
