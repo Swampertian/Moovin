@@ -9,6 +9,7 @@ class ApiService {
   final String _ownerBase = '$apiBase/owners/owners';
   final String _immobileBase = '$apiBase/immobile';
   final String _photoBlobBase = '$apiBase/photo/blob'; 
+  final String _reviewBase = '/api/reviews/';
   // ========================= TENANT =========================
 
   Future<Tenant> fetchTenant(int id) async {
@@ -198,6 +199,62 @@ class ApiService {
   }
 
 }
+
+//====REVIEWS
+Future<List<Review>> fetchReviews({required String type, required int targetId}) async {
+    final url = Uri.parse('$_baseUrl$_reviewEndpoint?type=$type&object_id=$targetId');
+    print('🔎 Fetching Reviews: $url');
+
+    final response = await http.get(url);
+
+    print('📡 STATUS: ${response.statusCode}');
+    print('📦 BODY: ${response.body}');
+
+    if (response.statusCode == 200) {
+      final decodedBody = utf8.decode(response.bodyBytes);
+      final List<dynamic> jsonList = jsonDecode(decodedBody) as List<dynamic>;
+      return jsonList.map((json) => Review.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load reviews');
+    }
+  }
+
+  Future<Review> submitReview({
+    required int rating,
+    String? comment,
+    required String type,
+    required int targetId,
+    required int authorId,
+  }) async {
+    final url = Uri.parse('$_baseUrl$_reviewEndpoint');
+    print('📝 Submitting Review: $url');
+
+    final Map<String, dynamic> body = {
+      'rating': rating,
+      'comment': comment,
+      'type': type,
+      'object_id': targetId,
+      'author': authorId,
+    };
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(body),
+    );
+
+    print('📡 STATUS: ${response.statusCode}');
+    print('📦 BODY: ${response.body}');
+
+    if (response.statusCode == 201) {
+      final decodedBody = utf8.decode(response.bodyBytes);
+      return Review.fromJson(jsonDecode(decodedBody));
+    } else {
+      throw Exception('Failed to submit review');
+    }
+  }
+
+
 
 }
 
