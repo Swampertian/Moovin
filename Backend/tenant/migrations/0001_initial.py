@@ -32,6 +32,7 @@ class Migration(migrations.Migration):
                 ('favorited_properties', models.PositiveIntegerField(default=0)),
                 ('fast_responder', models.BooleanField(default=False)),
                 ('member_since', models.DateField(auto_now_add=True)),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tenant_profile', to=settings.AUTH_USER_MODEL)),
             ],
         ),
     ]

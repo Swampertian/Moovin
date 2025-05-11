@@ -10,8 +10,8 @@ class ApiService {
   final String _tenantBase = '$apiBase/tenants';
   final String _ownerBase = '$apiBase/owners/owners';
   final String _immobileBase = '$apiBase/immobile';
-
   final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
+  final String _photoBlobBase = '$apiBase/photo/blob'; 
 
   // ========================= TENANT =========================
 
@@ -124,6 +124,41 @@ class ApiService {
   }
 
   // ========================= IMMOBILE =========================
+  Future<Immobile> fetchOneImmobile(int id_immobile) async {
+    final url = Uri.parse('$_immobileBase/$id_immobile/'); //
+    print('🔎 Fetching Immobile: $url');
+
+    final response = await http.get(url);
+
+    print('📡 STATUS: ${response.statusCode}');
+    print('📦 IMMOBILE BODY: ${response.body}');
+
+    if (response.statusCode == 200) {
+      final decodedBody = utf8.decode(response.bodyBytes);
+      return Immobile.fromJson(jsonDecode(decodedBody));
+    } else if (response.statusCode == 404) {
+      throw Exception('Immobile not found');
+    } else {
+      throw Exception('Failed to load immobile details');
+    }
+  }
+
+ Future<Map<String, dynamic>> fetchImageBlob(int photoId) async {
+    final url = Uri.parse('$_photoBlobBase/$photoId/');
+    print('🔎 Fetching Image Blob: $url');
+
+    final response = await http.get(url);
+
+    print('📡 STATUS: ${response.statusCode}');
+    print('📦 IMAGE BLOB BODY: ${response.body}');
+
+    if (response.statusCode == 200) {
+      final decodedBody = utf8.decode(response.bodyBytes);
+      return jsonDecode(decodedBody);
+    } else {
+      throw Exception('Failed to load image blob for photo ID: $photoId');
+    }
+  }
 
   Future<void> updateImmobile(int id, Map<String, dynamic> data) async {
     final url = Uri.parse('$_immobileBase/$id/');
@@ -189,5 +224,4 @@ class ApiService {
   }
 
 }
-
 }

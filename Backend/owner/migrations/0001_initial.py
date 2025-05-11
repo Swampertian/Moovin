@@ -25,6 +25,7 @@ class Migration(migrations.Migration):
                 ('rated_by_tenants', models.PositiveIntegerField(default=0)),
                 ('recommended_by_tenants', models.PositiveIntegerField(default=0)),
                 ('fast_responder', models.BooleanField(default=False)),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='owner_profile', to=settings.AUTH_USER_MODEL)),
             ],
         ),
     ]
