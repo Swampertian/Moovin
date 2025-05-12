@@ -426,24 +426,54 @@ Widget _buildCategoryButton(
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        backgroundColor: Color.fromRGBO(76, 228, 99, 100),
-        selectedItemColor: Colors.green,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.explore),
-            label: 'Explore',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bookmark),
-            label: 'Saved',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.update),
-            label: 'Updates',
-          ),
-        ],
-      ),
+  items: const [
+    BottomNavigationBarItem(
+      icon: Icon(Icons.search),
+      label: 'Pesquisar',
+      backgroundColor: Colors.green,
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.chat),
+      label: 'Chat',
+      backgroundColor: Colors.green,
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.favorite),
+      label: 'Favoritos',
+      backgroundColor: Colors.green,
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.person),
+      label: 'Perfil',
+      
+      backgroundColor: Colors.green,
+    ),
+  ],
+  backgroundColor: Colors.green[600],
+  selectedItemColor: Colors.white,
+  unselectedItemColor: Colors.white70,
+  currentIndex: 3, // Esta linha pode ser ajustada dinamicamente conforme o índice da rota
+  onTap: (index) {
+    // Handle navigation
+    switch (index) {
+      case 0:
+        Navigator.pushNamed(context, '/search-immobile');  // Rota para "Pesquisar"
+        break;
+      case 1:
+        Navigator.pushNamed(context, '/chat');  // Rota para "Chat"
+        break;
+      case 2:
+        Navigator.pushNamed(context, '/favorites');  // Rota para "Favoritos"
+        break;
+      case 3:
+        Navigator.pushNamed(context, '/tenant');  // Rota para "Perfil"
+        break;
+      default:
+        break;
+    }
+  },
+),
+
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: ListView(
