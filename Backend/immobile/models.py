@@ -1,12 +1,15 @@
 from django.db import models
 from django.utils import timezone
 from .consts import *
-from tenant.models import Tenant
 
+from django.contrib.contenttypes.models import ContentType
+from review.models import Review, ReviewType
+from users.models import User
+from tenant.models import Tenant
 
 class Immobile(models.Model):
     owner = models.ForeignKey('owner.Owner', related_name='properties', on_delete=models.CASCADE, null=True,blank=True)
-
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     id_immobile = models.AutoField(primary_key=True)
     property_type = models.CharField(max_length=20, choices=PROPERTY_TYPE_CHOICES,default='House')
     zip_code = models.CharField(max_length=9)
@@ -39,6 +42,12 @@ class Immobile(models.Model):
     def __str__(self):
         return f"{self.property_type} in {self.city} - {self.street}, {self.number or 'No number'}"
 
+    def get_reviews(self):
+        content_type = ContentType.objects.get_for_model(self)
+        return Review.objects.filter(content_type=content_type, object_id=self.id, type=ReviewType.PROPERTY)
+
+    def average_rating(self):
+        return Review.average_for_object(self)
 class ImmobilePhoto(models.Model):
     immobile = models.ForeignKey(Immobile, related_name='photos_blob', on_delete=models.CASCADE)
     image_blob = models.BinaryField(default=bytes)
@@ -47,6 +56,7 @@ class ImmobilePhoto(models.Model):
 
     def __str__(self):
         return f"Photo (BLOB) for {self.immobile}"
+
 
 class Payment(models.Model):
     immobile = models.ForeignKey(Immobile, related_name='payments', on_delete=models.CASCADE)
@@ -64,3 +74,4 @@ class Rental(models.Model):
     end_data = models.DateField(blank=False,null=False)
     status =  models.CharField(max_length=15, choices=RENT_STATUS_CHOICES)
     value = models.DecimalField(max_digits=10, decimal_places=2)
+
