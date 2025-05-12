@@ -1,9 +1,8 @@
 import 'dart:convert';
-import '../services/api_service_users.dart'; 
+import '../services/api_service_users.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-//Tela de Registro
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -12,7 +11,7 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _formKey = GlobalKey<FormState>(); 
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -26,29 +25,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
           child: Form(
-            key: _formKey, 
+            key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-
                 Image.asset(
-                  'assets/images/logo.png', 
+                  'assets/images/logo.png',
                   height: 180,
                 ),
-
                 const SizedBox(height: 20),
-
                 const Text(
                   'Cadastro',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF2F6D3C), 
+                    color: Color(0xFF2F6D3C),
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
                 _buildTextField(
                   controller: _nameController,
                   label: 'Nome',
@@ -59,9 +53,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return null;
                   },
                 ),
-
                 const SizedBox(height: 16),
-
                 _buildTextField(
                   controller: _emailController,
                   label: 'E-mail',
@@ -69,16 +61,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Por favor, insira o e-mail';
                     }
-                    if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zAZ0-9.-]+\.[a-zA-Z]{2,4}$")
-                        .hasMatch(value)) {
+                    if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$").hasMatch(value)) {
                       return 'Por favor, insira um e-mail válido';
                     }
                     return null;
                   },
                 ),
-
                 const SizedBox(height: 16),
-
                 _buildTextField(
                   controller: _passwordController,
                   label: 'Senha',
@@ -93,9 +82,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return null;
                   },
                 ),
-
                 const SizedBox(height: 16),
-
                 _buildTextField(
                   controller: _confirmPasswordController,
                   label: 'Confirmar Senha',
@@ -110,82 +97,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return null;
                   },
                 ),
-
                 const SizedBox(height: 40),
 
-              _buildSubmitButton(
-                text: 'Cadastrar-se como locatário',
-                onPressed: () async {
-                  if (_formKey.currentState?.validate() ?? false) {
-                    final userData = {
-                      'name': _nameController.text,
-                      'email': _emailController.text,
-                      'username': _emailController.text,
-                      'password': _passwordController.text,
-                      'user_type': 'Proprietario',
-                    };
+                _buildSubmitButton(
+                  text: 'Cadastrar-se como locatário',
+                  onPressed: () async {
+                    await _handleRegistration(isOwner: false);
+                  },
+                ),
 
-                    final apiService = ApiService(baseUrl: 'http://localhost:8000/api');
+                const SizedBox(height: 16),
 
-                    try {
-                      await apiService.registerUser(userData);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Cadastro realizado com sucesso!'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Erro no cadastro: $e'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  }
-                },
-              ),
-
-              const SizedBox(height: 16),
-
-              _buildSubmitButton(
-                text: 'Cadastrar-se como inquilino',
-                outlined: true,
-                onPressed: () async {
-                  if (_formKey.currentState?.validate() ?? false) {
-                    final userData = {
-                      'name': _nameController.text,
-                      'email': _emailController.text,
-                      'username': _emailController.text,
-                      'password': _passwordController.text,
-                      'user_type': 'Inquilino',
-                    };
-
-                    final apiService = ApiService(baseUrl: 'http://localhost:8000/api');
-
-                    try {
-                      await apiService.registerUser(userData);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Cadastro realizado com sucesso!'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Erro no cadastro: $e'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  }
-                },
-              ),
+                _buildSubmitButton(
+                  text: 'Cadastrar-se como inquilino',
+                  outlined: true,
+                  onPressed: () async {
+                    await _handleRegistration(isOwner: true);
+                  },
+                ),
 
                 const SizedBox(height: 30),
-
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -221,7 +152,52 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // Função para criar os campos de texto reutilizáveis
+  Future<void> _handleRegistration({required bool isOwner}) async {
+    if (_formKey.currentState?.validate() ?? false) {
+      final userType = isOwner ? 'Proprietario' : 'Inquilino';
+
+      final userData = {
+        'name': _nameController.text,
+        'email': _emailController.text,
+        'username': _emailController.text,
+        'password': _passwordController.text,
+        'user_type': userType,
+      };
+
+      final apiService = ApiService(baseUrl: 'http://localhost:8000/api');
+
+      try {
+        final response = await apiService.registerUser(userData);
+        final responseData = response;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Cadastro realizado com sucesso!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        Navigator.pushNamed(
+          context,
+          '/create-profile',
+          arguments: {
+            'userId': responseData['id'].toString(),
+            'name': responseData['name'],
+            'email': responseData['email'],
+            'isOwner': isOwner,
+          },
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro no cadastro: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -257,7 +233,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // Função para criar o botão de submit
   Widget _buildSubmitButton({
     required String text,
     required void Function() onPressed,
