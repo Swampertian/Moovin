@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'providers/review_provider.dart'; 
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/tenant_profile_screen.dart';
@@ -35,7 +37,20 @@ class MyApp extends StatelessWidget {
         '/immobile_details': (context) => const DetailImmobileScreen(immobileId: 1),
         '/owner_dashboard': (context) => const OwnerDashboardScreen(),
         '/search-immobile': (context) => const SearchImmobileScreen(),
-        '/review': (context) => const ReviewsScreen(reviewType:  'PROPERTY', targetId: 1),
+        '/review': (context) => ChangeNotifierProvider( // Ou Provider
+  create: (_) => ReviewProvider(),
+  child: Builder(
+    builder: (newContext) {
+      final args = ModalRoute.of(newContext)?.settings.arguments as Map<String, dynamic>?;
+      final reviewType = args?['reviewType'] as String? ?? 'PROPERTY';
+      final targetId = args?['targetId'] as int? ?? 1;
+      return ReviewsScreen(
+        reviewType: reviewType,
+        targetId: targetId,
+      );
+    },
+  ),
+),
         // '/review': (context) => const ReviewScreen(),
       },
       onGenerateRoute: (settings) {
