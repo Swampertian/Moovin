@@ -9,7 +9,8 @@ import 'screens/owner_dashboard_screen.dart';
 import 'screens/search_immobile_screen.dart';
 import 'screens/review_screen.dart';
 import 'screens/create_profile_screen.dart';
-
+import 'screens/create_review_screen.dart';
+import 'screens/review_screen.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -34,7 +35,7 @@ class MyApp extends StatelessWidget {
         '/immobile_details': (context) => const DetailImmobileScreen(immobileId: 1),
         '/owner_dashboard': (context) => const OwnerDashboardScreen(),
         '/search-immobile': (context) => const SearchImmobileScreen(),
-
+        '/review': (context) => const ReviewsScreen(reviewType:  'PROPERTY', targetId: 1),
         // '/review': (context) => const ReviewScreen(),
       },
       onGenerateRoute: (settings) {
