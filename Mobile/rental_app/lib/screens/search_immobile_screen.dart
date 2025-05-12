@@ -445,6 +445,7 @@ Widget _buildCategoryButton(
     BottomNavigationBarItem(
       icon: Icon(Icons.person),
       label: 'Perfil',
+      
       backgroundColor: Colors.green,
     ),
   ],
