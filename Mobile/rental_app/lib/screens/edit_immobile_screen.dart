@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/owner.dart';
+import '../models/immobile.dart';
 import '../services/api_service.dart';
-
+import '../models/owner.dart';
+import '../models/immobile.dart';
 class EditImmobileScreen extends StatefulWidget {
   final Immobile immobile;
 

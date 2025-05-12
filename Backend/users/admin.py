@@ -1,9 +1,11 @@
 from django.contrib import admin
-
+from rest_framework.permissions import IsAdminUser
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import User
-
+from users .serializers import UserSerializer
+from rest_framework.response import Response
+from rest_framework.views import APIView
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     ordering = ['email']
@@ -21,3 +23,13 @@ class UserAdmin(BaseUserAdmin):
         ),
     )
     search_fields = ('email', 'name')
+
+
+# Essa classe serve para controlar a permissao de todos os usuarios. apenas admins conseguem acessar os dados de todos os usuarios.
+class UserListView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        users = User.objects.all()
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data)

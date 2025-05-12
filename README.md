@@ -31,44 +31,6 @@ Universidade: Universidade Federal do Tocantins
 - Apresentações ou relatórios: [link aqui]
 
 ---
-
-## 🏃‍♂️ Sprints
-
-### 📅 Sprint 1 – Modelagem do Banco e Funcionalidades Básicas
-📆 **Período:** 07/04 a 21/04  
-📋 **Objetivo:** Modelar o banco de dados e fornecer funcionalidades básicas para o usuário.  
-🎯 **Valor da Sprint:** Permitir registro, autenticação, criação de perfis e gerenciamento de imóveis.
-
-#### ✅ Requisitos da Sprint:
-
-1. **Criar o banco de dados e tabelas**
-   - **Responsáveis:** Mayconn, Ana Julia, Victhor, Pedro Lucas e João Vitor
-   - **Descrição:** Criar o banco de dados e tabelas no modelo relacional
-   - **Revisores:** Todos os responsáveis
-
-2. **Implementar operações CRUD para usuários**
-   - **Responsável:** Victhor
-   - **Descrição:** Criar API para cadastro, atualização, remoção e listagem de usuários
-   - **Revisores:** Pedro Lucas e Mayconn
-
-3. **Desenvolver login e registro de usuários (frontend e backend)**
-   - **Responsáveis:** Ana Júlia e Victhor
-   - **Descrição:** Formulários com autenticação JWT
-   - **Revisor:** João Vitor
-
-4. **Criar e visualizar perfis de inquilino e proprietário (frontend e backend)**
-   - **Responsáveis:** Pedro e Mayconn
-   - **Descrição:** Edição e exibição de perfil com foto e informações. Inclui protótipo da tela "Criar perfil"
-   - **Revisora:** Ana Julia
-
-5. **Implementar operações CRUD para os imóveis**
-   - **Responsável:** João Vitor
-   - **Descrição:** API para adicionar, editar, excluir e visualizar imóveis
-   - **Revisor:** Victhor
-
-
----
-
 ## 🎯 Escopo
 
 ### 📝 Introdução
@@ -138,8 +100,85 @@ Criar um ambiente confiável para que locatários e inquilinos possam interagir,
 ### 🧩 Observações Finais
 O escopo poderá ser ajustado ao longo do projeto conforme necessário, mantendo o foco em segurança, transparência e eficiência como fundamentos do aplicativo Moviin.
 
+---
+
+## 🏃‍♂️ Sprints
+
+### 📅 Sprint 1 – Modelagem do Banco e Funcionalidades Básicas
+📆 **Período:** 07/04 a 21/04  
+📋 **Objetivo:** Modelar o banco de dados e fornecer funcionalidades básicas para o usuário.  
+🎯 **Valor da Sprint:** Permitir registro, autenticação, criação de perfis e gerenciamento de imóveis.
+
+#### ✅ Requisitos da Sprint:
+
+1. **Criar o banco de dados e tabelas**
+   - **Responsáveis:** Mayconn, Ana Julia, Victhor, Pedro Lucas e João Vitor
+   - **Descrição:** Criar o banco de dados e tabelas no modelo relacional
+   - **Revisores:** Todos os responsáveis
+
+2. **Implementar operações CRUD para usuários**
+   - **Responsável:** Victhor
+   - **Descrição:** Criar API para cadastro, atualização, remoção e listagem de usuários
+   - **Revisores:** Pedro Lucas e Mayconn
+
+3. **Desenvolver login e registro de usuários (frontend e backend)**
+   - **Responsáveis:** Ana Júlia e Victhor
+   - **Descrição:** Formulários com autenticação JWT
+   - **Revisor:** João Vitor
+
+4. **Criar e visualizar perfis de inquilino e proprietário (frontend e backend)**
+   - **Responsáveis:** Pedro e Mayconn
+   - **Descrição:** Edição e exibição de perfil com foto e informações. Inclui protótipo da tela "Criar perfil"
+   - **Revisora:** Ana Julia
+
+5. **Implementar operações CRUD para os imóveis**
+   - **Responsável:** João Vitor
+   - **Descrição:** API para adicionar, editar, excluir e visualizar imóveis
+   - **Revisor:** Victhor
 
 
+### 📅 Sprint 2 – Gerenciamento e detalhamento de Imóveis, Criação de Perfis e Avaliações   
+📆 **Período:** 28/04 a 11/05  
+📋 **Objetivo:** Desenvolver a tela de detalhes do imóvel, criar a tela de criação de perfil, estabelecer um sistema de avaliação de usuários e imóveis e permitir o gerenciamento de imóveis para proprietários.  
+🎯 **Valor da Sprint:**  
+Permitir que os usuários personalizem seus perfis com informações pessoais, promovendo uma experiência mais personalizada e segura. Também facilitará a tomada de decisão dos usuários, fornecendo detalhes completos sobre os imóveis anunciados e implementando um sistema de avaliações de imóveis e usuários, aumentando a confiabilidade da plataforma. Além disso, os proprietários terão acesso a ferramentas de gerenciamento e relatórios, otimizando a administração de seus imóveis anunciados.
+
+---
+
+#### 🗓️ Cronograma:
+- **Início:** 28/04  
+- **Primeira Revisão:** 05/05  
+- **Segunda Revisão:** 09/05  
+- **Entrega Final:** 10/05  
+
+---
+
+#### ✅ Requisitos da Sprint:
+
+1. **Gerenciamento avançado de imóveis pelo proprietário**  
+   - **Responsável:** Victhor  
+   - **Descrição:** Desenvolver o Frontend e Backend do gerenciamento de imóveis, permitindo edição, visualização e exclusão pelos proprietários.  
+   - **Revisor:** Mayconn  
+
+2. **Geração de relatórios sobre imóveis alugados e anunciados**  
+   - **Responsável:** Mayconn  
+   - **Descrição:** Desenvolver o Frontend e Backend para o gerenciamento dos dados de imóveis alugados e anunciados, incluindo geração de relatórios detalhados.  
+   - **Revisor:** Victhor  
+
+3. **Sistema de avaliação para inquilinos, locatários e imóveis**  
+   - **Responsáveis:** Pedro Lucas e João Vitor  
+   - **Descrição:** Desenvolver o Frontend e Backend para as funcionalidades de avaliar usuários e imóveis, bem como exibir avaliações já realizadas.  
+   - **Revisores:** Victhor 
+
+4. **Perfil detalhado dos imóveis cadastrados**  
+   - **Responsável:** João Vitor  
+   - **Descrição:** Desenvolver o Frontend da tela de detalhes do imóvel no aplicativo mobile, exibindo todas as características e informações relevantes do imóvel selecionado.  
+   - **Revisora:** Ana Júlia  
+
+5. **Desenvolver tela “Criar Perfil” para os usuários**  
+   - **Responsável:** Ana Júlia  
+   - **Descrição:** Desenvolver o Frontend da tela de criação de perfil no aplicativo mobile, com integração ao Backend via requisição API.  
+   - **Revisor:** João Vitor  
 ---
 
 ## 🚀 MVP (Produto Mínimo Viável)

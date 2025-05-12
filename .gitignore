@@ -8,6 +8,13 @@ Thumbs.db
 
 # ========== PYTHON / DJANGO ==========
 __pycache__/
+**/__pycache__/
+*.swo
+*.tmp
+**/migrations/
+!**/migrations/__init__.py
+**/*.pyc
+
 *.py[cod]
 *.sqlite3
 *.env
@@ -15,6 +22,7 @@ __pycache__/
 venv/
 .venv/
 db.sqlite3
+
 
 # ========== FLUTTER ==========
 # Flutter/Dart/Pub
@@ -67,14 +75,14 @@ build/
 node_modules/
 dist/
 .cache/
-*.log
+
 .env.local
 .env.production
 .env.development
 
 # ========== BACKUP / TEMP ==========
 *.bak
-*.tmp
+
 *.old
 *.orig
-*.swp
+

@@ -2,7 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from immobile.models import Immobile
 from django.conf import settings
-
+from django.contrib.contenttypes.models import ContentType
+from review.models import Review, ReviewType
 
 
 class Owner(models.Model):
@@ -33,3 +34,10 @@ class Owner(models.Model):
     @property
     def properties(self):
         return self.immobile_set.all().order_by('-created_at')
+
+    def get_reviews(self):
+        content_type = ContentType.objects.get_for_model(self)
+        return Review.objects.filter(content_type=content_type, object_id=self.id, type=ReviewType.PROPERTY)
+
+    def average_rating(self):
+        return Review.average_for_object(self)

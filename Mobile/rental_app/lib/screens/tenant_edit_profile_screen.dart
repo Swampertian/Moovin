@@ -3,10 +3,9 @@ import '../models/tenant.dart';
 import '../services/api_service.dart';
 
 class TenantEditProfileScreen extends StatefulWidget {
-  final int tenantId;
   final Tenant tenant;
 
-  const TenantEditProfileScreen({super.key, required this.tenantId, required this.tenant});
+  const TenantEditProfileScreen({super.key, required this.tenant});
 
   @override
   TenantEditProfileScreenState createState() => TenantEditProfileScreenState();
@@ -73,7 +72,7 @@ class TenantEditProfileScreenState extends State<TenantEditProfileScreen> {
 
       try {
         final apiService = ApiService();
-        await apiService.updateTenant(widget.tenantId, data);
+        await apiService.updateTenant(data);
         if (!mounted) return;
         Navigator.pop(context, true);
         ScaffoldMessenger.of(context).showSnackBar(
