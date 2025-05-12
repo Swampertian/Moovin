@@ -9,7 +9,7 @@ import 'screens/owner_dashboard_screen.dart';
 import 'screens/search_immobile_screen.dart';
 import 'screens/review_screen.dart';
 import 'screens/create_profile_screen.dart';
-import 'screens/create_review_screen.dart';
+import 'screens/review_create_screen.dart';
 import 'screens/review_screen.dart';
 void main() {
   runApp(const MyApp());
