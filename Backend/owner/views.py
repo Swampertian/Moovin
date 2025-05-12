@@ -24,19 +24,19 @@ from rest_framework import authentication
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 
-class OwnerViewSet(ModelViewSet):
-    queryset = Owner.objects.all()
-    serializer_class = OwnerSerializer
-    permission_classes = [IsAuthenticated]
+# class OwnerViewSet(ModelViewSet):
+#     queryset = Owner.objects.all()
+#     serializer_class = OwnerSerializer
+#     permission_classes = [IsAuthenticated]
     
-    def get_queryset(self):
-        return Owner.objects.filter(user=self.request.user)
+#     def get_queryset(self):
+#         return Owner.objects.filter(user=self.request.user)
 
-    @action(detail=False, methods=['get'], url_path='me')
-    def me(self, request):
-        owner = get_object_or_404(Owner, user=request.user)
-        serializer = self.get_serializer(owner)
-        return Response(serializer.data)
+#     @action(detail=False, methods=['get'], url_path='me')
+#     def me(self, request):
+#         owner = get_object_or_404(Owner, user=request.user)
+#         serializer = self.get_serializer(owner)
+#         return Response(serializer.data)
 
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
@@ -61,6 +61,12 @@ class OwnerViewSet(viewsets.ModelViewSet):
         if owner:
             return Owner.objects.filter(id=owner.id)
         return Owner.objects.none()
+    
+    @action(detail=False, methods=['get'], url_path='me')
+    def me(self, request):
+        owner = get_object_or_404(Owner, user=request.user)
+        serializer = self.get_serializer(owner)
+        return Response(serializer.data)
 
 # Statistics Page
 class OwnerStatisticsView(LoginRequiredMixin, TemplateView):
@@ -70,7 +76,7 @@ class OwnerStatisticsView(LoginRequiredMixin, TemplateView):
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             try:
-                user = User.objects.get(id=3)
+                user = User.objects.get(id=4)
                 login(request, user, backend='django.contrib.auth.backends.ModelBackend')
                 messages.info(request, "Logged in as user ID 1 for testing purposes.")
             except User.DoesNotExist:
