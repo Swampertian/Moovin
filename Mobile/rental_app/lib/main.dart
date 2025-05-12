@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
         '/immobile_details': (context) => const DetailImmobileScreen(immobileId: 1),
         '/owner_dashboard': (context) => const OwnerDashboardScreen(),
         '/search-immobile': (context) => const SearchImmobileScreen(),
-        '/review': (context) => const ReviewScreen(),
+        //'/review': (context) => const ReviewScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/create-profile') {
