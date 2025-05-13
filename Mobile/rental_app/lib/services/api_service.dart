@@ -291,7 +291,7 @@ Future<List<Review>> fetchReviews({required String type, required int targetId})
       url = Uri.parse('$baseUrl/$id/');
     } else if (type == 'PROPERTY') {
       baseUrl = '$apiBase/immobile'; // Ajuste se a URL base for diferente
-      url = Uri.parse('$baseUrl/3/');
+      url = Uri.parse('$baseUrl/$id/');
     }
 
     if (url == null) {
