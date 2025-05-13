@@ -13,6 +13,7 @@ import 'screens/review_screen.dart';
 import 'screens/create_profile_screen.dart';
 import 'screens/review_create_screen.dart';
 import 'screens/review_screen.dart';
+import 'screens/review_create_screen.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -34,10 +35,29 @@ class MyApp extends StatelessWidget {
         '/register': (context) => const RegisterScreen(),
         '/tenant': (context) => const TenantProfileScreen(),
         '/owner': (context) => const OwnerProfileScreen(ownerId: 1),
-        '/immobile_details': (context) => const DetailImmobileScreen(immobileId: 1),
+        '/immobile_details': (context) => ChangeNotifierProvider(
+  create: (context) => ReviewProvider(), // Forneça o ReviewProvider aqui
+  child: const DetailImmobileScreen(immobileId: 3),
+),
         '/owner_dashboard': (context) => const OwnerDashboardScreen(),
         '/search-immobile': (context) => const SearchImmobileScreen(),
-        '/review': (context) => ChangeNotifierProvider( // Ou Provider
+        '/create_review': (context) => ChangeNotifierProvider( // Forneça o ReviewProvider aqui
+  create: (_) => ReviewProvider(),
+  child: Builder(
+    builder: (newContext) {
+      final args = ModalRoute.of(newContext)?.settings.arguments as Map<String, dynamic>?;
+      final reviewType = args?['reviewType'] as String? ?? 'PROPERTY';
+      final targetId = args?['targetId'] as int? ?? 3;
+      final targetName = args?['targetName'] as String? ?? 'admin'; // Pegue o targetName também
+      return CreateReviewScreen(
+        reviewType: reviewType,
+        targetId: targetId,
+        targetName: targetName,
+      );
+    },
+  ),
+),
+'/review': (context) => ChangeNotifierProvider( // Ou Provider
   create: (_) => ReviewProvider(),
   child: Builder(
     builder: (newContext) {
@@ -49,8 +69,8 @@ class MyApp extends StatelessWidget {
         targetId: targetId,
       );
     },
-  ),
-),
+  )
+)
         // '/review': (context) => const ReviewScreen(),
       },
       onGenerateRoute: (settings) {

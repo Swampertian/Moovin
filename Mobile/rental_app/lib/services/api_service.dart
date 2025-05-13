@@ -226,22 +226,22 @@ class ApiService {
 }
 //====== reviews
 Future<List<Review>> fetchReviews({required String type, required int targetId}) async {
-    final url = Uri.parse('$_reviewBase/$targetId/');
-    print('🔎 Fetching Reviews: $url');
+  final url = Uri.parse('$_reviewBase/reviews/$targetId/');
+  print('🔎 Fetching Reviews: $url');
 
-    final response = await http.get(url);
+  final response = await http.get(url);
 
-    print('📡 STATUS: ${response.statusCode}');
-    print('📦 BODY: ${response.body}');
+  print('📡 STATUS: ${response.statusCode}');
+  print('📦 BODY: ${response.body}');
 
-    if (response.statusCode == 200) {
-      final decodedBody = utf8.decode(response.bodyBytes);
-      final List<dynamic> jsonList = jsonDecode(decodedBody) as List<dynamic>;
-      return jsonList.map((json) => Review.fromJson(json)).toList();
-    } else {
-      throw Exception('Failed to load reviews');
-    }
+  if (response.statusCode == 200) {
+    final decodedBody = utf8.decode(response.bodyBytes);
+    final Map<String, dynamic> jsonMap = jsonDecode(decodedBody) as Map<String, dynamic>;
+    return [Review.fromJson(jsonMap)]; // Retorna uma lista sempre
+  } else {
+    throw Exception('Failed to load reviews');
   }
+}
 
   Future<Review> submitReview({
     required int rating,
@@ -250,7 +250,7 @@ Future<List<Review>> fetchReviews({required String type, required int targetId})
     required int targetId,
     required int authorId,
   }) async {
-    final url = Uri.parse('$_reviewBase/$targetId/');
+    final url = Uri.parse('$_reviewBase/reviews/');
     print('📝 Submitting Review: $url');
 
     final Map<String, dynamic> body = {
@@ -260,6 +260,8 @@ Future<List<Review>> fetchReviews({required String type, required int targetId})
       'object_id': targetId,
       'author': authorId,
     };
+
+    print('📤 Sending Body: ${jsonEncode(body)}');
 
     final response = await http.post(
       url,
@@ -275,6 +277,45 @@ Future<List<Review>> fetchReviews({required String type, required int targetId})
       return Review.fromJson(jsonDecode(decodedBody));
     } else {
       throw Exception('Failed to submit review');
+    }
+  }
+   Future<Map<String, dynamic>> fetchTargetDetails({required String type, required int id}) async {
+    Uri? url;
+    String baseUrl;
+
+    if (type == 'TENANT') {
+      baseUrl = '$apiBase/tenants';
+      url = Uri.parse('$baseUrl/$id/');
+    } else if (type == 'OWNER') {
+      baseUrl = '$apiBase/owners'; // Ajuste se a URL base for diferente
+      url = Uri.parse('$baseUrl/$id/');
+    } else if (type == 'PROPERTY') {
+      baseUrl = '$apiBase/immobile'; // Ajuste se a URL base for diferente
+      url = Uri.parse('$baseUrl/3/');
+    }
+
+    if (url == null) {
+      print('Tipo de objeto inválido para buscar detalhes.');
+      return {};
+    }
+
+    print('🔎 Fetching Target Details: $url');
+
+    try {
+      final response = await http.get(url);
+      print('📡 Target Details STATUS: ${response.statusCode}');
+      print('📦 Target Details BODY: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        return jsonDecode(decodedBody) as Map<String, dynamic>;
+      } else {
+        print('Falha ao carregar os detalhes do objeto: ${response.statusCode}');
+        return {};
+      }
+    } catch (e) {
+      print('Erro de conexão ao carregar os detalhes do objeto: $e');
+      return {};
     }
   }
 

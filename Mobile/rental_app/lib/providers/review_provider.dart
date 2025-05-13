@@ -29,6 +29,10 @@ class ReviewProvider with ChangeNotifier {
     }
   }
 
+   Future<Map<String, dynamic>> fetchTargetDetails({required String type, required int id}) async {
+    return await _apiService.fetchTargetDetails(type: type, id: id);
+  }
+
   // Submit a new review
   Future<void> submitReview({
     required int rating,

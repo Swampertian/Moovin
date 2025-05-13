@@ -20,11 +20,30 @@ class ReviewsScreen extends StatefulWidget {
 }
 
 class _ReviewsScreenState extends State<ReviewsScreen> {
+  String? _targetName;
+
   @override
   void initState() {
     super.initState();
-    Provider.of<ReviewProvider>(context, listen: false)
-        .fetchReviews(type: widget.reviewType, targetId: widget.targetId);
+    final reviewProvider = Provider.of<ReviewProvider>(context, listen: false);
+    Future.wait([
+      reviewProvider.fetchReviews(type: widget.reviewType, targetId: widget.targetId),
+      _fetchTargetDetails(reviewProvider),
+    ]);
+  }
+
+  Future<void> _fetchTargetDetails(ReviewProvider reviewProvider) async {
+    final details = await reviewProvider.fetchTargetDetails(
+      type: widget.reviewType,
+      id: widget.targetId,
+    );
+    setState(() {
+      if (widget.reviewType == 'TENANT' || widget.reviewType == 'OWNER') {
+        _targetName = details['name'] as String?;
+      } else if (widget.reviewType == 'PROPERTY') {
+        _targetName = details['property_type'] as String?;
+      }
+    });
   }
 
   Widget _buildRatingStars(int rating) {
@@ -44,7 +63,11 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.title}'),
+        title: Center(
+          child: Text(
+            _targetName ?? widget.title,
+          ),
+        ),
       ),
       body: Consumer<ReviewProvider>(
         builder: (context, reviewProvider, child) {

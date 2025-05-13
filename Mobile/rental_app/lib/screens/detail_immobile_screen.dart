@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/immobile_provider.dart';
+import '../providers/review_provider.dart';
 import '../models/immobile.dart';
 
 class DetailImmobileScreen extends StatelessWidget {
@@ -109,7 +110,7 @@ class DetailImmobileScreen extends StatelessWidget {
     );
   }
 
-  @override
+@override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => ImmobileProvider()..fetchImmobile(immobileId),
@@ -117,7 +118,7 @@ class DetailImmobileScreen extends StatelessWidget {
         appBar: AppBar(
           title: Consumer<ImmobileProvider>(
             builder: (context, provider, child) {
-              return Text('Detalhes do imóvel');
+              return const Text('Detalhes do imóvel');
             },
           ),
           backgroundColor: Colors.green,
@@ -141,6 +142,9 @@ class DetailImmobileScreen extends StatelessWidget {
             if (immobile == null) {
               return const Center(child: Text('Erro ao carregar detalhes do imóvel.'));
             }
+
+            // Simulação da média de avaliação - REMOVER QUANDO INTEGRADO COM A API
+            final double averageRating = 4.2;
 
             return SingleChildScrollView(
               child: Column(
@@ -220,11 +224,11 @@ class DetailImmobileScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                                immobile.propertyType == 'house'? 'Casa'
-                                : immobile.propertyType == 'apartment'? 'Apartamento'
-                                : immobile.propertyType, // tradução
-                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                                ),
+                              immobile.propertyType == 'house' ? 'Casa'
+                                  : immobile.propertyType == 'apartment' ? 'Apartamento'
+                                  : immobile.propertyType, // tradução
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
                             Text(
                               'R\$ ${immobile.rent.toStringAsFixed(2)}/mês',
                               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
@@ -249,7 +253,7 @@ class DetailImmobileScreen extends StatelessWidget {
                             _buildDetailChip(Icons.zoom_out_map, '${immobile.area} m²'),
                             _buildDetailChip(Icons.bed, '${immobile.bedrooms}'),
                             _buildDetailChip(Icons.bathtub, '${immobile.bathrooms}'),
-                            if (immobile.airConditioning) //esse IF é ´para que so mostre se o dado nao for null
+                            if (immobile.airConditioning)
                               _buildDetailChip(Icons.ac_unit, 'Ar Cond.'),
                             if (immobile.garage)
                               _buildDetailChip(Icons.garage_outlined, 'Garagem'),
@@ -267,7 +271,48 @@ class DetailImmobileScreen extends StatelessWidget {
                               _buildDetailChip(Icons.wifi, 'Internet'),
                           ],
                         ),
-                                            
+                        const SizedBox(height: 16),
+                        Consumer<ReviewProvider>(
+                          builder: (context, reviewProvider, child) {
+                            // Disparar a busca de reviews assim que tivermos o immobileId
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              reviewProvider.fetchReviews(type: 'PROPERTY', targetId: immobile.idImmobile);
+                            });
+
+                            if (reviewProvider.isLoading) {
+                              return const CircularProgressIndicator();
+                            }
+
+                            final reviews = reviewProvider.reviews;
+                            double averageRating = 0;
+
+                            if (reviews.isNotEmpty) {
+                              final totalRating = reviews.fold<double>(0, (sum, review) => sum + review.rating);
+                              averageRating = totalRating / reviews.length;
+                            }
+
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  '/reviews',
+                                  arguments: {
+                                    'reviewType': 'PROPERTY',
+                                    'targetId': immobile.idImmobile,
+                                    'targetName': immobile.propertyType,
+                                  },
+                                );
+                              },
+                              child: Row(
+                                children: [
+                                  StarRating(rating: averageRating, starSize: 20),
+                                  const SizedBox(width: 8),
+                                  Text('(${reviews.length} avaliações)', style: const TextStyle(color: Colors.grey)),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
                         const SizedBox(height: 16),
                         const Text(
                           'Detalhes',
@@ -313,6 +358,38 @@ class DetailImmobileScreen extends StatelessWidget {
           unselectedItemColor: Colors.grey,
         ),
       ),
+    );
+  }
+}
+
+// Crie um widget separado para a exibição das estrelas
+class StarRating extends StatelessWidget {
+  final double rating;
+  final double starSize;
+  final Color color;
+
+  const StarRating({
+    super.key,
+    required this.rating,
+    this.starSize = 18,
+    this.color = Colors.amber,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(5, (index) {
+        return Icon(
+          index < rating.floor()
+              ? Icons.star
+              : index < rating
+                  ? Icons.star_half
+                  : Icons.star_border,
+          color: color,
+          size: starSize,
+        );
+      }),
     );
   }
 }
