@@ -62,7 +62,7 @@ class MyApp extends StatelessWidget {
   child: Builder(
     builder: (newContext) {
       final args = ModalRoute.of(newContext)?.settings.arguments as Map<String, dynamic>?;
-      final reviewType = args?['reviewType'] as String? ?? 'PROPERTY';
+      final reviewType = args?['reviewType'] as String? ?? 'immobile';
       final targetId = args?['targetId'] as int? ?? 1;
       return ReviewsScreen(
         reviewType: reviewType,

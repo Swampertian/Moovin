@@ -6,7 +6,6 @@ import '../models/immobile.dart';
 
 class DetailImmobileScreen extends StatelessWidget {
   final int immobileId;
-
   const DetailImmobileScreen({super.key, required this.immobileId});
 
   Widget _buildThumbnail(String? imageBase64, String contentType) {
@@ -144,8 +143,8 @@ class DetailImmobileScreen extends StatelessWidget {
             }
 
             // Simulação da média de avaliação - REMOVER QUANDO INTEGRADO COM A API
-            final double averageRating = 4.2;
-
+            double averageRating = 4.2;
+            bool hasFetchedReviews = false;
             return SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -274,45 +273,95 @@ class DetailImmobileScreen extends StatelessWidget {
                         const SizedBox(height: 16),
                         Consumer<ReviewProvider>(
                           builder: (context, reviewProvider, child) {
-                            // Disparar a busca de reviews assim que tivermos o immobileId
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              reviewProvider.fetchReviews(type: 'PROPERTY', targetId: immobile.idImmobile);
-                            });
-
+                            if (!hasFetchedReviews) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                reviewProvider.fetchReviews(type: 'immobile', targetId: immobile.idImmobile);
+                                hasFetchedReviews = true;
+                              });
+                            }
+                              
                             if (reviewProvider.isLoading) {
                               return const CircularProgressIndicator();
                             }
-
+                            print('Reviews: ${reviewProvider.reviews}');
                             final reviews = reviewProvider.reviews;
                             double averageRating = 0;
 
                             if (reviews.isNotEmpty) {
-                              final totalRating = reviews.fold<double>(0, (sum, review) => sum + review.rating);
-                              averageRating = totalRating / reviews.length;
-                            }
+            final totalRating = reviews.fold<double>(0, (sum, review) => sum + review.rating);
+            final averageRating = totalRating / reviews.length;
 
-                            return GestureDetector(
-                              onTap: () {
-                                Navigator.pushNamed(
-                                  context,
-                                  '/reviews',
-                                  arguments: {
-                                    'reviewType': 'PROPERTY',
-                                    'targetId': immobile.idImmobile,
-                                    'targetName': immobile.propertyType,
-                                  },
-                                );
-                              },
-                              child: Row(
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ReviewsScreen(
+                          reviewType: 'PROPERTY',
+                          targetId: immobile.idImmobile,
+                          title: 'Avaliações do Imóvel',
+                        ),
+                      ),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      StarRating(rating: averageRating, starSize: 20),
+                      const SizedBox(width: 8),
+                      Text('(${reviews.length} avaliações)', style: const TextStyle(color: Colors.grey)),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                                    onPressed: () {
+                                      Navigator.pushNamed(
+                                        context,
+                                        '/review',
+                                        arguments: {
+                                          'reviewType': 'immobile',
+                                          'targetId': immobile.idImmobile,
+                                          'targetName': immobile.propertyType,
+                                        },
+                                      );
+                                    },
+                                    child: const Text('Ver avaliações'),
+                                  ),
+                ),
+              ],
+            );
+          } else {
+                              // Sem avaliações
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  StarRating(rating: averageRating, starSize: 20),
-                                  const SizedBox(width: 8),
-                                  Text('(${reviews.length} avaliações)', style: const TextStyle(color: Colors.grey)),
+                                  const Text('Sem avaliações ainda.', style: TextStyle(color: Colors.grey)),
+                                  const SizedBox(height: 4),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pushNamed(
+                                        context,
+                                        '/review',
+                                        arguments: {
+                                          'reviewType': 'immobile',
+                                          'targetId': immobile.idImmobile,
+                                          'targetName': immobile.propertyType,
+                                        },
+                                      );
+                                    },
+                                    child: const Text('Ver avaliações'),
+                                  ),
                                 ],
-                              ),
-                            );
+                              );
+                            }
                           },
                         ),
+                        
                         const SizedBox(height: 16),
                         const Text(
                           'Detalhes',

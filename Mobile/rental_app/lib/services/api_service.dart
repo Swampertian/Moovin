@@ -226,18 +226,18 @@ class ApiService {
 }
 //====== reviews
 Future<List<Review>> fetchReviews({required String type, required int targetId}) async {
-  final url = Uri.parse('$_reviewBase/reviews/$targetId/');
-  print('🔎 Fetching Reviews: $url');
+  final url = Uri.parse('$_reviewBase/reviews/by_object/?type=${type.toLowerCase()}&id=$targetId');
+  print('🔎 Fetching Reviews for target (type: $type, id: $targetId): $url');
 
   final response = await http.get(url);
 
   print('📡 STATUS: ${response.statusCode}');
   print('📦 BODY: ${response.body}');
-
   if (response.statusCode == 200) {
     final decodedBody = utf8.decode(response.bodyBytes);
-    final Map<String, dynamic> jsonMap = jsonDecode(decodedBody) as Map<String, dynamic>;
-    return [Review.fromJson(jsonMap)]; // Retorna uma lista sempre
+    final List<dynamic> jsonList = jsonDecode(decodedBody) as List<dynamic>; // Decodifique para List<dynamic>
+    print('✅ JSON List: $jsonList');
+    return jsonList.map((json) => Review.fromJson(json as Map<String, dynamic>)).toList();
   } else {
     throw Exception('Failed to load reviews');
   }
@@ -308,8 +308,16 @@ Future<List<Review>> fetchReviews({required String type, required int targetId})
 
       if (response.statusCode == 200) {
         final decodedBody = utf8.decode(response.bodyBytes);
-        return jsonDecode(decodedBody) as Map<String, dynamic>;
-      } else {
+        final dynamic responseJson = jsonDecode(decodedBody);
+        if (responseJson is List && responseJson.isNotEmpty) {
+          return responseJson.first as Map<String, dynamic>;
+        } else if (responseJson is Map<String, dynamic>) {
+          return responseJson;
+        } else {
+          print('Formato de resposta inesperado para detalhes do alvo.');
+          return {};
+        }
+      }else {
         print('Falha ao carregar os detalhes do objeto: ${response.statusCode}');
         return {};
       }

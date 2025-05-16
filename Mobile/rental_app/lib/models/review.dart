@@ -20,17 +20,17 @@ class Review {
   });
 
   factory Review.fromJson(Map<String, dynamic> json) {
-    return Review(
-      id: json['id'] ?? 0, // Adicionando um fallback para null
-      authorId: json['author'] ?? 0, 
-      rating: json['rating'],
-      comment: json['comment'] ?? '',
-      type: json['type'],
-      createdAt: DateTime.parse(json['created_at']),
-      targetObjectId: json['object_id'],
-      targetContentType: json['content_type_str'] ?? '', 
-    );
-  }
+  return Review(
+    id: json['id'] as int? ?? 0,
+    authorId: json['author'] as int? ?? 0,
+    rating: json['rating'] as int? ?? 0,
+    comment: json['comment'] as String? ?? '',
+    type: json['type'] as String? ?? '',
+    createdAt: DateTime.parse(json['created_at'] as String),
+    targetObjectId: json['object_id'] as int? ?? 0,
+    targetContentType: json['content_type_str'] as String? ?? '',
+  );
+}
 
  
   Map<String, dynamic> toJson() {
