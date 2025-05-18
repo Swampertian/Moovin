@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/immobile_provider.dart';
 import '../providers/review_provider.dart';
 import '../models/immobile.dart';
-
+import 'review_screen.dart';
 class DetailImmobileScreen extends StatelessWidget {
   final int immobileId;
   const DetailImmobileScreen({super.key, required this.immobileId});
@@ -318,7 +318,7 @@ class DetailImmobileScreen extends StatelessWidget {
                 const SizedBox(height: 8),
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: TextButton(
+                  child: ElevatedButton(
                                     onPressed: () {
                                       Navigator.pushNamed(
                                         context,
@@ -335,7 +335,7 @@ class DetailImmobileScreen extends StatelessWidget {
                 ),
               ],
             );
-          } else {
+          }       else{
                               // Sem avaliações
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,

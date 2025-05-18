@@ -19,6 +19,12 @@ class CreateReviewScreen extends StatefulWidget {
 }
 
 class _CreateReviewScreenState extends State<CreateReviewScreen> {
+  @override
+  void initState() {
+    super.initState();
+    print('CreateReviewScreen - targetId: ${widget.targetId}, reviewType: ${widget.reviewType}');
+    // ... outras inicializações
+  }
   int _rating = 0;
   final TextEditingController _commentController = TextEditingController();
 
@@ -40,7 +46,7 @@ class _CreateReviewScreenState extends State<CreateReviewScreen> {
   @override
   Widget build(BuildContext context) {
     final reviewProvider = Provider.of<ReviewProvider>(context, listen: false);
-    const int currentUserId = 1; // Replace with actual user ID retrieval
+    const int currentUserId = 1; 
 
     String titleText = '';
     if (widget.reviewType == 'OWNER') {
@@ -61,6 +67,7 @@ class _CreateReviewScreenState extends State<CreateReviewScreen> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
+            
             child: TextButton(
               onPressed: _rating > 0
                   ? () async {

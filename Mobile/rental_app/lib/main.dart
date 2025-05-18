@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
         '/owner': (context) => const OwnerProfileScreen(ownerId: 1),
         '/immobile_details': (context) => ChangeNotifierProvider(
   create: (context) => ReviewProvider(), // Forneça o ReviewProvider aqui
-  child: const DetailImmobileScreen(immobileId: 3),
+  child:  DetailImmobileScreen(immobileId: 3),
 ),
         '/owner_dashboard': (context) => const OwnerDashboardScreen(),
         '/search-immobile': (context) => const SearchImmobileScreen(),

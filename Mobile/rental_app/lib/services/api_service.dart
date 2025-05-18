@@ -229,7 +229,17 @@ Future<List<Review>> fetchReviews({required String type, required int targetId})
   final url = Uri.parse('$_reviewBase/reviews/by_object/?type=${type.toLowerCase()}&id=$targetId');
   print('🔎 Fetching Reviews for target (type: $type, id: $targetId): $url');
 
-  final response = await http.get(url);
+  final token = await _secureStorage.read(key: 'jwt_token');
+  if (token == null) {
+    throw Exception('Token JWT não encontrado para buscar as avaliações.');
+  }
+
+  final response = await http.get(
+    url,
+    headers: {
+      'Authorization': 'Bearer $token', // Adicione o header de autorização
+    },
+  );
 
   print('📡 STATUS: ${response.statusCode}');
   print('📦 BODY: ${response.body}');
@@ -248,24 +258,33 @@ Future<List<Review>> fetchReviews({required String type, required int targetId})
     String? comment,
     required String type,
     required int targetId,
-    required int authorId,
+    //required int authorId,
   }) async {
     final url = Uri.parse('$_reviewBase/reviews/');
     print('📝 Submitting Review: $url');
+    print('type: $type');
+
+    final token = await _secureStorage.read(key: 'jwt_token');
+  if (token == null) {
+    throw Exception('Token JWT não encontrado para criar a avaliação.');
+  }
 
     final Map<String, dynamic> body = {
       'rating': rating,
       'comment': comment,
-      'type': type,
+      'type': 'PROPERTY',
       'object_id': targetId,
-      'author': authorId,
+      //'author': authorId,
     };
 
     print('📤 Sending Body: ${jsonEncode(body)}');
 
     final response = await http.post(
       url,
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+      },
+      
       body: jsonEncode(body),
     );
 

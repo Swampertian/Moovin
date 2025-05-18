@@ -51,7 +51,7 @@ class ReviewProvider with ChangeNotifier {
         comment: comment,
         type: type,
         targetId: targetId,
-        authorId: authorId,
+        //authorId: authorId,
       );
       _reviews.add(newReview); // Optionally add the new review to the list
     } catch (e) {

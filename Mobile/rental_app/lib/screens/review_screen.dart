@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/review.dart';
 import '../providers/review_provider.dart';
+import '../screens/review_create_screen.dart'; // Importe a tela de criação
 
 class ReviewsScreen extends StatefulWidget {
   final String reviewType; // 'TENANT', 'OWNER', 'PROPERTY'
@@ -25,6 +26,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
   @override
   void initState() {
     super.initState();
+    print('ReviewsScreen - targetId: ${widget.targetId}, reviewType: ${widget.reviewType}');
     final reviewProvider = Provider.of<ReviewProvider>(context, listen: false);
     Future.wait([
       reviewProvider.fetchReviews(type: widget.reviewType, targetId: widget.targetId),
@@ -110,6 +112,35 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
             },
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        heroTag: 'create_review_button', // Opcional: tag única para o FAB
+        backgroundColor: Colors.green,
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ChangeNotifierProvider(
+                create: (_) => ReviewProvider(),
+                child: Builder(
+                  builder: (newContext) {
+                    final args = ModalRoute.of(newContext)?.settings.arguments as Map<String, dynamic>?;
+                    final reviewType = widget.reviewType; // Use o reviewType da tela atual
+                    final targetId = widget.targetId;     // Use o targetId da tela atual
+                    // Tente pegar o targetName, se disponível, senão use um padrão
+                    final targetName = _targetName ?? widget.title ?? 'Detalhe';
+                    return CreateReviewScreen(
+                      reviewType: 'PROPERTY',
+                      targetId: targetId,
+                      targetName: targetName,
+                    );
+                  },
+                ),
+              ),
+            ),
+          );
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
