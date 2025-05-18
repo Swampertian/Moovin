@@ -164,7 +164,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         'user_type': userType,
       };
 
-      final apiService = ApiService(baseUrl: 'http://localhost:8000/api');
+      final apiService = ApiService(baseUrl: 'http://10.0.2.2:8000/api'); //url de emulador
 
       try {
         final response = await apiService.registerUser(userData);

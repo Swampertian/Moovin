@@ -467,7 +467,7 @@ Widget _buildCategoryButton(
         Navigator.pushNamed(context, '/favorites');  // Rota para "Favoritos"
         break;
       case 3:
-        Navigator.pushNamed(context, '/tenant');  // Rota para "Perfil"
+        Navigator.pushNamed(context, '/owner');  // Rota para "Perfil"
         break;
       default:
         break;

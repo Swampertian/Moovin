@@ -87,41 +87,60 @@ class ApiService {
 
   // ========================= OWNER =========================
 
-  Future<Owner> fetchOwner(int id) async {
-    final url = Uri.parse('$_ownerBase/$id/');
-    print('🔎 Fetching Owner: $url');
+  Future<Owner> fetchCurrentOwner() async {
+    final url = Uri.parse('$_ownerBase/me/');
+    print('🔎 Fetching Owner (self): $url');
 
-    final response = await http.get(url);
+    final token = await _secureStorage.read(key: 'jwt_token');
 
-    print('📡 STATUS: ${response.statusCode}');
-    print('📦 BODY: ${response.body}');
-
-    if (response.statusCode == 200) {
-      return Owner.fromJson(jsonDecode(response.body));
-    } else {
-      throw Exception('Failed to load owner profile');
+    if (token == null) {
+      throw Exception('Token JWT não encontrado.');
     }
-  }
 
-  Future<Owner> updateOwner(int id, Map<String, dynamic> data) async {
-    final url = Uri.parse('$_ownerBase/$id/');
-    print('✏️ Updating Owner: $url');
-
-    final response = await http.patch(
+    final response = await http.get(
       url,
-      headers: {'Content-Type': 'application/json; charset=UTF-8'},
-      body: jsonEncode(data),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
     );
 
     print('📡 STATUS: ${response.statusCode}');
     print('📦 BODY: ${response.body}');
 
     if (response.statusCode == 200) {
-      return Owner.fromJson(jsonDecode(response.body));
+      final decodedBody = utf8.decode(response.bodyBytes);
+      return Owner.fromJson(jsonDecode(decodedBody));
     } else {
-      throw Exception('Failed to update owner profile');
+      throw Exception('Failed to load owner profile');
     }
   }
+
+  Future<Owner> updateCurrentOwner(Map<String, dynamic> data) async {
+    final token = await _secureStorage.read(key: 'jwt_token');
+    if (token == null) throw Exception('Token JWT não encontrado.');
+
+    final response = await http.patch(
+      Uri.parse('$_ownerBase/me/update-profile/'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(data),
+    );
+
+    print('📡 STATUS: ${response.statusCode}');
+    print('📦 BODY: ${response.body}');
+
+
+    if (response.statusCode == 200) {
+      final decoded = utf8.decode(response.bodyBytes);
+      return Owner.fromJson(jsonDecode(decoded));
+    } else {
+      throw Exception('Erro ao atualizar dados do proprietário');
+    }
+  }
+
 
   // ========================= IMMOBILE =========================
   Future<Immobile> fetchOneImmobile(int id_immobile) async {
@@ -160,23 +179,31 @@ class ApiService {
     }
   }
 
-  Future<void> updateImmobile(int id, Map<String, dynamic> data) async {
-    final url = Uri.parse('$_immobileBase/$id/');
-    print('✏️ Updating Immobile: $url');
+  Future<Immobile> updateImmobile(Map<String, dynamic> data) async {
+    final token = await _secureStorage.read(key: 'jwt_token');
+    if (token == null) throw Exception('Token JWT não encontrado.');
 
     final response = await http.patch(
-      url,
-      headers: {'Content-Type': 'application/json; charset=UTF-8'},
+      Uri.parse('$_ownerBase/me/update-profile/'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
       body: jsonEncode(data),
     );
 
     print('📡 STATUS: ${response.statusCode}');
     print('📦 BODY: ${response.body}');
 
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw Exception('Failed to update immobile');
+
+    if (response.statusCode == 200) {
+      final decoded = utf8.decode(response.bodyBytes);
+      return Immobile.fromJson(jsonDecode(decoded));
+    } else {
+      throw Exception('Erro ao atualizar dados do proprietário');
     }
   }
+
 
   Future<List<Immobile>> fetchImmobile({
   String? type,

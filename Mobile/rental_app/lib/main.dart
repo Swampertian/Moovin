@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
         '/tenant': (context) => const TenantProfileScreen(),
-        '/owner': (context) => const OwnerProfileScreen(ownerId: 1),
+        '/owner': (context) => const OwnerProfileScreen(),
         '/immobile_details': (context) => ChangeNotifierProvider(
   create: (context) => ReviewProvider(), // Forneça o ReviewProvider aqui
   child:  DetailImmobileScreen(immobileId: 3),

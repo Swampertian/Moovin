@@ -9,4 +9,11 @@ class UserSerializer(serializers.ModelSerializer):
     
     def create(self,validated_data):
         user = User.objects.create_user(**validated_data)
+
+        user_type = validated_data.get('user_type')
+        if user_type == 'Inquilino':
+            Tenant.objects.create(user=user)
+        elif user_type == 'Proprietario':
+            Owner.objects.create(user=user)
+
         return user
