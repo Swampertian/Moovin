@@ -29,7 +29,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
 
     try {
       String? userType = await _secureStorage.read(key: 'user_type');
-      String? token = await _secureStorage.read(key: 'jwt_token');
+      String? token = await _secureStorage.read(key: 'access_token');
 
       if (token == null) {
         setState(() {

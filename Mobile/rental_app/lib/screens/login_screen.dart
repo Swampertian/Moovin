@@ -37,7 +37,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (result['access'] != null) {
 
-      await _secureStorage.write(key: 'jwt_token', value: result['access']);
+      await _secureStorage.write(key: 'access_token', value: result['access']);
+      await _secureStorage.write(key: 'refresh_token', value: result['refresh']);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -47,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       
 // Lógica para direcionar para o perfil. Precisa ser refatorada depois. Não excluir o comentário até a refatoração  
-      String? token = await _secureStorage.read(key: 'jwt_token');
+      String? token = await _secureStorage.read(key: 'access_token');
       
      
       if (token != null) {

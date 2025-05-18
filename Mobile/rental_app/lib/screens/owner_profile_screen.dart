@@ -6,16 +6,63 @@ import '../models/owner.dart';
 import 'edit_owner_profile_screen.dart';
 import 'owner_immobiles_screen.dart';
 import 'edit_immobile_screen.dart';
-
-class OwnerProfileScreen extends StatelessWidget {
+import '../services/auth_service.dart';
+class OwnerProfileScreen extends StatefulWidget {
   final int ownerId;
 
   const OwnerProfileScreen({super.key, required this.ownerId});
 
   @override
+  _OwnerProfileScreenState createState() => _OwnerProfileScreenState();
+}
+
+class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAccess();
+  }
+
+  Widget _buildItem(String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        children: [
+          const Icon(Icons.circle, size: 8, color: Colors.black),
+          const SizedBox(width: 8),
+          Expanded(child: Text(text)),
+        ],
+      ),
+    );
+  }
+  
+  void _checkAccess() async {
+    // Placeholder: Replace with your actual authentication service
+    final authService = AuthService(); // Inject or initialize your auth service
+    bool loggedIn = await authService.isLoggedIn();
+    bool isOwner = await authService.isOwner();
+
+    if (!loggedIn) {
+      Navigator.of(context).pushReplacementNamed('/login');
+      return;
+    } else if (!isOwner) {
+      Navigator.of(context).pushReplacementNamed('/erro-screen');
+      return;
+    }
+
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+
+  @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => OwnerProvider()..fetchOwner(ownerId),
+      create: (_) => OwnerProvider()..fetchOwner(widget.ownerId),
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Perfil'),
@@ -34,7 +81,7 @@ class OwnerProfileScreen extends StatelessWidget {
                   ),
                 );
                 if (updated == true) {
-                  provider.fetchOwner(ownerId);
+                  provider.fetchOwner(widget.ownerId);
                 }
               },
             ),
@@ -45,7 +92,7 @@ class OwnerProfileScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => OwnerImmobilesScreen(ownerId: ownerId),
+                    builder: (_) => OwnerImmobilesScreen(ownerId: widget.ownerId),
                   ),
                 );
               },
@@ -78,7 +125,7 @@ class OwnerProfileScreen extends StatelessWidget {
                         ),
                       );
                       if (updated == true) {
-                        provider.fetchOwner(ownerId);
+                        provider.fetchOwner(widget.ownerId);
                       }
                     },
                     child: Card(
@@ -171,7 +218,7 @@ class OwnerProfileScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => OwnerImmobilesScreen(ownerId: ownerId),
+                            builder: (_) => OwnerImmobilesScreen(ownerId: widget.ownerId),
                           ),
                         );
                       },
@@ -257,19 +304,6 @@ class OwnerProfileScreen extends StatelessWidget {
             BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildItem(String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        children: [
-          const Icon(Icons.circle, size: 8, color: Colors.black),
-          const SizedBox(width: 8),
-          Expanded(child: Text(text)),
-        ],
       ),
     );
   }
