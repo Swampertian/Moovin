@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/tenant_profile_screen.dart';
@@ -9,9 +10,19 @@ import 'screens/owner_dashboard_screen.dart';
 import 'screens/search_immobile_screen.dart';
 import 'screens/review_screen.dart';
 import 'screens/create_profile_screen.dart';
+import 'screens/notification_screen.dart';
+import '../providers/notification_provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
+        // Outros providers
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -34,6 +45,7 @@ class MyApp extends StatelessWidget {
         '/immobile_details': (context) => const DetailImmobileScreen(immobileId: 1),
         '/owner_dashboard': (context) => const OwnerDashboardScreen(),
         '/search-immobile': (context) => const SearchImmobileScreen(),
+        '/notifications': (context) => const NotificationScreen(),
 
         // '/review': (context) => const ReviewScreen(),
       },
