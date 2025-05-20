@@ -4,7 +4,8 @@ from .views import (
     NotificationMarkReadView,
     NotificationCreateView,
     NotificationDeleteView,
-    mark_all_as_read
+    mark_all_as_read,
+    SendNotificationView
 )
 
 urlpatterns = [
@@ -13,4 +14,5 @@ urlpatterns = [
     path('create/', NotificationCreateView.as_view(), name='notification-create'),
     path('<int:pk>/', NotificationDeleteView.as_view(), name='notification-delete'),
     path('mark-all-read/', mark_all_as_read, name='notification-mark-all-read'),
+    path('send/', SendNotificationView.as_view(), name='notification-send'),
 ]

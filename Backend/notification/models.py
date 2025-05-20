@@ -4,7 +4,7 @@ from users.models import User
 
 class Notification(models.Model):
     TYPE_CHOICES = [
-        ('RENTAL_REQUEST', 'Solicitação de Aluguel'),
+        ('RENTED_CONFIRMATION', 'Confirmação de Aluguel'),
         ('PAYMENT_RECEIVED', 'Pagamento Recebido'),
         ('REVIEW_PENDING', 'Revisão Pendente'),
         ('GENERAL', 'Geral'),

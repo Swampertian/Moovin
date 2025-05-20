@@ -3,6 +3,13 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from .models import Notification
 from .serializers import NotificationSerializer
+from django.contrib.auth import get_user_model
+from rest_framework.views import APIView
+from tenant.models import Tenant
+from owner.models import Owner
+from immobile.models import Rental
+
+User = get_user_model()
 
 class NotificationListView(generics.ListAPIView):
     serializer_class = NotificationSerializer
@@ -40,3 +47,45 @@ def mark_all_as_read(request):
     notifications = Notification.objects.filter(user=request.user, is_read=False)
     notifications.update(is_read=True)
     return Response({"message": "Todas as notificações foram marcadas como lidas"}, status=status.HTTP_200_OK)
+
+class SendNotificationView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        try:
+            owner = Owner.objects.get(user=request.user)
+        except Owner.DoesNotExist:
+            return Response(
+                {"detail": "Somente proprietários podem enviar notificações."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        title = request.data.get('title')
+        message = request.data.get('message')
+        email = request.data.get('email')
+
+        if not title or not message or not email:
+            return Response(
+                {"detail": "Título, mensagem e e-mail são obrigatórios."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            target_user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "Usuário com este e-mail não encontrado."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        Notification.objects.create(
+            user=target_user,
+            title=title,
+            message=message,
+            type='GENERAL',
+        )
+
+        return Response(
+            {"message": f"Notificação enviada para {target_user.email}."},
+            status=status.HTTP_201_CREATED
+        )
