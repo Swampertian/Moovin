@@ -2,11 +2,46 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/immobile_provider.dart';
 import '../models/immobile.dart';
-
-class DetailImmobileScreen extends StatelessWidget {
+import '../services/auth_service.dart';
+class DetailImmobileScreen extends StatefulWidget {
   final int immobileId;
 
   const DetailImmobileScreen({super.key, required this.immobileId});
+
+  @override
+  _DetailImmobileScreenState createState() => _DetailImmobileScreenState();
+}
+
+class _DetailImmobileScreenState extends State<DetailImmobileScreen> {
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAccess();
+  }
+
+  void _checkAccess() async {
+    // Placeholder: Replace with your actual authentication service
+    final authService = AuthService(); // Inject or initialize your auth service
+    bool loggedIn = await authService.isLoggedIn();
+    bool isOwner = await authService.isOwner();
+
+    if (!loggedIn) {
+      // Navigator.of(context).pushReplacementNamed('/login');
+      Navigator.of(context).pushReplacementNamed('/erro-screen');
+      return;
+    }
+
+    // if (!isOwner) {
+    //   
+    //   return;
+    // }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
 
   Widget _buildThumbnail(String? imageBase64, String contentType) {
     if (imageBase64 == null || imageBase64.isEmpty) {
@@ -111,8 +146,14 @@ class DetailImmobileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return ChangeNotifierProvider(
-      create: (context) => ImmobileProvider()..fetchImmobile(immobileId),
+      create: (context) => ImmobileProvider()..fetchImmobile(widget.immobileId),
       child: Scaffold(
         appBar: AppBar(
           title: Consumer<ImmobileProvider>(
@@ -220,11 +261,13 @@ class DetailImmobileScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                                immobile.propertyType == 'house'? 'Casa'
-                                : immobile.propertyType == 'apartment'? 'Apartamento'
-                                : immobile.propertyType, // tradução
-                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                                ),
+                              immobile.propertyType == 'house'
+                                  ? 'Casa'
+                                  : immobile.propertyType == 'apartment'
+                                      ? 'Apartamento'
+                                      : immobile.propertyType,
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
                             Text(
                               'R\$ ${immobile.rent.toStringAsFixed(2)}/mês',
                               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
@@ -249,25 +292,16 @@ class DetailImmobileScreen extends StatelessWidget {
                             _buildDetailChip(Icons.zoom_out_map, '${immobile.area} m²'),
                             _buildDetailChip(Icons.bed, '${immobile.bedrooms}'),
                             _buildDetailChip(Icons.bathtub, '${immobile.bathrooms}'),
-                            if (immobile.airConditioning) //esse IF é ´para que so mostre se o dado nao for null
-                              _buildDetailChip(Icons.ac_unit, 'Ar Cond.'),
-                            if (immobile.garage)
-                              _buildDetailChip(Icons.garage_outlined, 'Garagem'),
-                            if (immobile.pool)
-                              _buildDetailChip(Icons.pool, 'Piscina'),
-                            if (immobile.furnished)
-                              _buildDetailChip(Icons.chair, 'Mobiliado'),
-                            if (immobile.petFriendly)
-                              _buildDetailChip(Icons.pets, 'Pet Friendly'),
-                            if (immobile.nearbyMarket)
-                              _buildDetailChip(Icons.shopping_cart, 'Mercado P.'),
-                            if (immobile.nearbyBus)
-                              _buildDetailChip(Icons.directions_bus, 'Ônibus P.'),
-                            if (immobile.internet)
-                              _buildDetailChip(Icons.wifi, 'Internet'),
+                            if (immobile.airConditioning) _buildDetailChip(Icons.ac_unit, 'Ar Cond.'),
+                            if (immobile.garage) _buildDetailChip(Icons.garage_outlined, 'Garagem'),
+                            if (immobile.pool) _buildDetailChip(Icons.pool, 'Piscina'),
+                            if (immobile.furnished) _buildDetailChip(Icons.chair, 'Mobiliado'),
+                            if (immobile.petFriendly) _buildDetailChip(Icons.pets, 'Pet Friendly'),
+                            if (immobile.nearbyMarket) _buildDetailChip(Icons.shopping_cart, 'Mercado P.'),
+                            if (immobile.nearbyBus) _buildDetailChip(Icons.directions_bus, 'Ônibus P.'),
+                            if (immobile.internet) _buildDetailChip(Icons.wifi, 'Internet'),
                           ],
                         ),
-                                            
                         const SizedBox(height: 16),
                         const Text(
                           'Detalhes',

@@ -34,8 +34,8 @@ class ImmobileProvider with ChangeNotifier {
 
       print('Imagem recebida: $imageData');
 
-      photo.imageBase64 = imageData['image_blob'];
-      photo.contentType = imageData['content_type'];
+      photo.imageBase64 = imageData.imageBase64;
+      photo.contentType = imageData.contentType;
     }
   } else {
     print('Nenhuma foto foi encontrada.');

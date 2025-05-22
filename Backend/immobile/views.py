@@ -41,7 +41,8 @@ class ImmobileListAPIView(APIView):
     """
     Lista todos os imóveis.
     """
-    permission_classes= [AllowAny]
+    permission_classes = [AllowAny]
+
     def get(self, request, format=None):
         immobiles = Immobile.objects.all()
 
@@ -98,7 +99,7 @@ class ImmobileDetailAPIView(APIView):
     """
     Retorna os detalhes de um imóvel.
     """
-    permission_classes=[AllowAny]
+    permission_classes = [IsAuthenticated]
     def get(self, request, id_immobile, format=None):
         immobile = get_object_or_404(Immobile, id_immobile=id_immobile)
         serializer = ImmobileSerializer(immobile, context={'request': request})
