@@ -151,8 +151,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
     );
   }
-
-  Future<void> _handleRegistration({required bool isOwner}) async {
+Future<void> _handleRegistration({required bool isOwner}) async {
     if (_formKey.currentState?.validate() ?? false) {
       final userType = isOwner ? 'Proprietario' : 'Inquilino';
 
@@ -197,6 +196,48 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
     }
   }
+ /*Future<void> _handleRegistration({required bool isOwner}) async {
+    if (_formKey.currentState?.validate() ?? false) {
+      final String email = _emailController.text;
+      final apiService = ApiService(baseUrl: 'http://localhost:8000/api');
+
+      try {
+        final response = await apiService.requestEmailVerification(email);
+        if (response['status'] == 'success') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Um código de verificação foi enviado para o seu e-mail.'),
+              backgroundColor: Colors.blue,
+            ),
+          );
+          Navigator.pushNamed(
+            context,
+            '/verify-email', // Nova rota para a tela de verificação
+            arguments: {
+              'name': _nameController.text,
+              'email': _emailController.text,
+              'password': _passwordController.text,
+              'isOwner': isOwner,
+            },
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Erro ao solicitar verificação: ${response['message'] ?? 'Tente novamente.'}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro de conexão: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }*/
 
   Widget _buildTextField({
     required TextEditingController controller,

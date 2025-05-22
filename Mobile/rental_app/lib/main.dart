@@ -9,6 +9,7 @@ import 'screens/owner_dashboard_screen.dart';
 import 'screens/search_immobile_screen.dart';
 import 'screens/review_screen.dart';
 import 'screens/create_profile_screen.dart';
+import 'screens/verify_email_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -30,6 +31,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
         '/tenant': (context) => const TenantProfileScreen(),
+        '/verify-email': (context) => const VerifyEmailScreen(), 
         '/owner': (context) => const OwnerProfileScreen(ownerId: 1),
         '/immobile_details': (context) => const DetailImmobileScreen(immobileId: 1),
         '/owner_dashboard': (context) => const OwnerDashboardScreen(),

@@ -99,6 +99,25 @@ class ApiService {
       throw Exception('Erro na requisição de obtenção: $e');
     }
   }
+   Future<Map<String, dynamic>> requestEmailVerification(String email) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/users/request-email-verification/'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data;
+      } else {
+        throw Exception('Falha ao solicitar verificação de e-mail: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Erro na requisição de verificação de e-mail: $e');
+    }
+  }
+
 
 
 }
