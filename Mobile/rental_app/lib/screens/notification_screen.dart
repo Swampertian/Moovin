@@ -18,7 +18,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   String _searchTitle = '';
   String? _userType;
   bool _isLoadingUserType = true;
-  final List<String> _filterOptions = ['Todas', 'Não lidas', 'Aluguel', 'Pagamento', 'Revisão', 'Geral'];
+  final List<String> _filterOptions = ['Todas', 'Não lidas', 'Aluguel', 'Pagamento', 'Avaliação Recebida', 'Geral'];
   final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   @override
@@ -81,8 +81,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
           case 'Pagamento':
             type = 'PAYMENT_RECEIVED';
             break;
-          case 'Revisão':
-            type = 'REVIEW_PENDING';
+          case 'Avaliação Recebida':
+            type = 'REVIEW_RECEIVED';
             break;
           case 'Geral':
             type = 'GENERAL';
@@ -101,7 +101,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         return Icons.home;
       case 'PAYMENT_RECEIVED':
         return Icons.attach_money;
-      case 'REVIEW_PENDING':
+      case 'REVIEW_RECEIVED':
         return Icons.star;
       default:
         return Icons.notifications;
@@ -114,7 +114,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         return Colors.blue[700]!;
       case 'PAYMENT_RECEIVED':
         return Colors.green[700]!;
-      case 'REVIEW_PENDING':
+      case 'REVIEW_RECEIVED':
         return Colors.amber[700]!;
       default:
         return Colors.grey[700]!;
@@ -127,8 +127,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
         return 'Confirmação de Aluguel';
       case 'PAYMENT_RECEIVED':
         return 'Pagamento Recebido';
-      case 'REVIEW_PENDING':
-        return 'Revisão Pendente';
+      case 'REVIEW_RECEIVED':
+        return 'Avaliação Recebida';
       default:
         return 'Notificação Geral';
     }

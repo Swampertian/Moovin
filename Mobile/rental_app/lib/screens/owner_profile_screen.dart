@@ -29,6 +29,13 @@ class OwnerProfileScreen extends StatelessWidget {
               ),
               actions: [
                 IconButton(
+                  icon: const Icon(Icons.notifications),
+                  tooltip: 'Notificações',
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/notifications');
+                  },
+                ),
+                IconButton(
                   icon: const Icon(Icons.edit),
                   tooltip: 'Editar Perfil',
                   onPressed: owner == null

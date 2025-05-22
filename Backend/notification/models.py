@@ -6,7 +6,7 @@ class Notification(models.Model):
     TYPE_CHOICES = [
         ('RENTED_CONFIRMATION', 'Confirmação de Aluguel'),
         ('PAYMENT_RECEIVED', 'Pagamento Recebido'),
-        ('REVIEW_PENDING', 'Revisão Pendente'),
+        ('REVIEW_RECEIVED', 'Avaliação Recebida'),
         ('GENERAL', 'Geral'),
     ]
 
