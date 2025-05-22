@@ -39,8 +39,7 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
   }
   
   void _checkAccess() async {
-    // Placeholder: Replace with your actual authentication service
-    final authService = AuthService(); // Inject or initialize your auth service
+    final authService = AuthService();
     bool loggedIn = await authService.isLoggedIn();
     bool isOwner = await authService.isOwner();
 

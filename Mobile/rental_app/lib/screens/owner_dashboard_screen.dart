@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../services/auth_service.dart';
 
 class OwnerDashboardScreen extends StatefulWidget {
   const OwnerDashboardScreen({super.key});
@@ -10,55 +10,33 @@ class OwnerDashboardScreen extends StatefulWidget {
 }
 
 class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
-  final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
-  bool _isLoading = true;
+  bool _isLoading = false;
   String? _errorMessage;
-  bool _isOwner = false;
+  bool? _isOwnerUser;
 
   @override
   void initState() {
     super.initState();
-    _checkUserType();
+    _checkAccess();
   }
 
-  Future<void> _checkUserType() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+  void _checkAccess() async {
+    final authService = AuthService();
+    bool loggedIn = await authService.isLoggedIn();
+    bool isOwner = await authService.isOwner();
 
-    try {
-      String? userType = await _secureStorage.read(key: 'user_type');
-      String? token = await _secureStorage.read(key: 'access_token');
-
-      if (token == null) {
-        setState(() {
-          _errorMessage = 'Você precisa estar logado para acessar esta página.';
-          _isLoading = false;
-        });
-        return;
-      }
-
-      if (userType == 'Proprietario') {
-        setState(() {
-          _isOwner = true;
-        });
-      } else {
-        setState(() {
-          _errorMessage = 'Apenas proprietários podem acessar as estatísticas.';
-        });
-      }
-    } catch (e) {
+    if (!loggedIn) {
+      Navigator.of(context).pushReplacementNamed('/login');
+    } else if (!isOwner) {
+      Navigator.of(context).pushReplacementNamed('/erro-screen');
+    } else {
       setState(() {
-        _errorMessage = 'Erro ao verificar tipo de usuário: $e';
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
+        _isOwnerUser = true;
       });
     }
   }
-    Future<void> _launchDashboardPage() async {
+
+  Future<void> _launchDashboardPage() async {
     final url = Uri.parse('http://localhost:8000/api/users/login-web/');
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
@@ -68,18 +46,18 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
       });
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Center( // Center widget to vertically and horizontally center the content
+        child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center, 
-              crossAxisAlignment: CrossAxisAlignment.center, 
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Image.asset(
                   'assets/images/logo.png',
@@ -107,7 +85,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                       textAlign: TextAlign.center,
                     ),
                   ),
-                if (!_isLoading && _isOwner)
+                if (!_isLoading && (_isOwnerUser == true))
                   SizedBox(
                     width: 320,
                     height: 50,
@@ -126,7 +104,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                     ),
                   ),
                 const SizedBox(height: 20),
-                if (!_isLoading && _isOwner)
+                if (!_isLoading && (_isOwnerUser == true))
                   const Text(
                     'Clique acima para acessar a interface web.',
                     style: TextStyle(

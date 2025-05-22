@@ -49,7 +49,7 @@ class UserRetriverView(generics.RetrieveAPIView):
         Sobrescreve o método get_object para buscar o usuário através do
         JWT (request.user), que já contém o pk do usuário autenticado.
         """
-        user = self.request.user  # O user é populado automaticamente com o JWT
+        user = self.request.user  
 
         if not user:
             raise NotFound("Usuário não encontrado.")
@@ -91,7 +91,7 @@ class LoginWebView(View):
             if next_url:
                 return redirect(next_url)
            
-            if user.has_perm('subscription.has_active_subscription'):
+            if user.has_perm('subscriptions.has_active_subscription'):
                 messages.success(request, "Bem vindo de volta!")
                 return redirect('owner-management')
             else:

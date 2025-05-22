@@ -9,6 +9,10 @@ class UnauthorizedScreen extends StatelessWidget {
       backgroundColor: Colors.red.shade50,
       appBar: AppBar(
         title: const Text('Acesso Negado'),
+        leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pop(context),
+          ),
         backgroundColor: Colors.red,
       ),
       body: Center(
