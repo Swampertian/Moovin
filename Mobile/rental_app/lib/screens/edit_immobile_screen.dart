@@ -75,16 +75,18 @@ class _EditImmobileScreenState extends State<EditImmobileScreen> {
         _isLoading = true;
       });
 
-      final data = {
-        'street': _streetController.text,
-        'number': _noNumber ? null : _numberController.text,
+      final data = <String, dynamic>{
+        'street': _streetController.text.isNotEmpty ? _streetController.text : '',
+        'number': _noNumber ? null : int.tryParse(_numberController.text),
         'no_number': _noNumber,
-        'city': _cityController.text,
-        'state': _stateController.text,
-        'zip_code': _zipCodeController.text,
-        'description': _descriptionController.text,
+        'city': _cityController.text.isNotEmpty ? _cityController.text : '',
+        'state': _stateController.text.isNotEmpty ? _stateController.text : '',
+        'zip_code': _zipCodeController.text.isNotEmpty ? _zipCodeController.text : '',
+        'description': _descriptionController.text.isNotEmpty ? _descriptionController.text : '',
+
         'area': double.tryParse(_areaController.text) ?? 0.0,
         'rent': double.tryParse(_rentController.text) ?? 0.0,
+
         'air_conditioning': _airConditioning,
         'garage': _garage,
         'pool': _pool,
@@ -97,7 +99,7 @@ class _EditImmobileScreenState extends State<EditImmobileScreen> {
 
       try {
         final apiService = ApiService();
-        await apiService.updateImmobile(widget.immobile.idImmobile, data);
+        await apiService.updateImmobile(data);
         if (!mounted) return;
         Navigator.pop(context, true);
         ScaffoldMessenger.of(context).showSnackBar(

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../models/immobile.dart';
 import 'detail_immobile_screen.dart';
-
+import 'package:provider/provider.dart';
+import '../providers/review_provider.dart'; 
 class SearchImmobileScreen extends StatefulWidget {
   const SearchImmobileScreen({super.key});
 
@@ -466,7 +467,7 @@ Widget _buildCategoryButton(
         Navigator.pushNamed(context, '/favorites');  // Rota para "Favoritos"
         break;
       case 3:
-        Navigator.pushNamed(context, '/tenant');  // Rota para "Perfil"
+        Navigator.pushNamed(context, '/owner');  // Rota para "Perfil"
         break;
       default:
         break;
@@ -634,7 +635,10 @@ Widget _buildCategoryButton(
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => DetailImmobileScreen(immobileId: imovel.idImmobile), // Assumindo que 'imovel' tem um ID
+                    builder: (context) => ChangeNotifierProvider(
+  create: (context) => ReviewProvider(), // Forneça o ReviewProvider aqui
+  child:  DetailImmobileScreen(immobileId: imovel.idImmobile),
+), // Assumindo que 'imovel' tem um ID
                   ),
                 );
               },

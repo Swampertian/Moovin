@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'providers/review_provider.dart'; 
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/tenant_profile_screen.dart';
@@ -12,6 +13,9 @@ import 'screens/review_screen.dart';
 import 'screens/create_profile_screen.dart';
 import 'screens/notification_screen.dart';
 import '../providers/notification_provider.dart';
+import 'screens/review_create_screen.dart';
+import 'screens/review_screen.dart';
+import 'screens/review_create_screen.dart';
 
 void main() {
   runApp(
@@ -41,12 +45,44 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
         '/tenant': (context) => const TenantProfileScreen(),
-        '/owner': (context) => const OwnerProfileScreen(ownerId: 1),
-        '/immobile_details': (context) => const DetailImmobileScreen(immobileId: 1),
+        '/owner': (context) => const OwnerProfileScreen(),
+        '/immobile_details': (context) => ChangeNotifierProvider(
+  create: (context) => ReviewProvider(), // Forneça o ReviewProvider aqui
+  child:  DetailImmobileScreen(immobileId: 3),
+),
         '/owner_dashboard': (context) => const OwnerDashboardScreen(),
         '/search-immobile': (context) => const SearchImmobileScreen(),
         '/notifications': (context) => const NotificationScreen(),
-
+        '/create_review': (context) => ChangeNotifierProvider( // Forneça o ReviewProvider aqui
+  create: (_) => ReviewProvider(),
+  child: Builder(
+    builder: (newContext) {
+      final args = ModalRoute.of(newContext)?.settings.arguments as Map<String, dynamic>?;
+      final reviewType = args?['reviewType'] as String? ?? 'PROPERTY';
+      final targetId = args?['targetId'] as int? ?? 3;
+      final targetName = args?['targetName'] as String? ?? 'admin'; // Pegue o targetName também
+      return CreateReviewScreen(
+        reviewType: reviewType,
+        targetId: targetId,
+        targetName: targetName,
+      );
+    },
+  ),
+),
+'/review': (context) => ChangeNotifierProvider( // Ou Provider
+  create: (_) => ReviewProvider(),
+  child: Builder(
+    builder: (newContext) {
+      final args = ModalRoute.of(newContext)?.settings.arguments as Map<String, dynamic>?;
+      final reviewType = args?['reviewType'] as String? ?? 'immobile';
+      final targetId = args?['targetId'] as int? ?? 1;
+      return ReviewsScreen(
+        reviewType: reviewType,
+        targetId: targetId,
+      );
+    },
+  )
+)
         // '/review': (context) => const ReviewScreen(),
       },
       onGenerateRoute: (settings) {

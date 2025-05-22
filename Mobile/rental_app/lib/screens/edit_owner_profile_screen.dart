@@ -56,7 +56,7 @@ class _EditOwnerProfileScreenState extends State<EditOwnerProfileScreen> {
 
       try {
         final apiService = ApiService();
-        await apiService.updateOwner(widget.owner.id, data);
+        await apiService.updateCurrentOwner(data);
         if (!mounted) return;
         Navigator.pop(context, true);
         ScaffoldMessenger.of(context).showSnackBar(
