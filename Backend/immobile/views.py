@@ -15,7 +15,7 @@ from django.shortcuts import get_object_or_404
 from .models import Immobile, ImmobilePhoto
 from .serializers import ImmobileSerializer, ImmobilePhotoSerializer
 from rest_framework import viewsets
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
@@ -26,6 +26,7 @@ from django.db.models import Q
 class ImmobileViewSet(viewsets.ModelViewSet):
     queryset = Immobile.objects.all()
     serializer_class = ImmobileSerializer
+    permission_classes=[IsAuthenticated]
 
     def get_queryset(self):
         # Apenas imóveis criados pelo usuário logado

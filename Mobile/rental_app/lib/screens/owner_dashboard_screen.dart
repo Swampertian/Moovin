@@ -58,30 +58,17 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
       });
     }
   }
-
-  Future<void> _launchStatisticsPage() async {
-    final url = Uri.parse('http://localhost:8000/api/owners/reports/statistics/');
+    Future<void> _launchDashboardPage() async {
+    final url = Uri.parse('http://localhost:8000/api/users/login-web/');
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
       setState(() {
-        _errorMessage = 'Não foi possível abrir a página de estatísticas.';
+        _errorMessage = 'Não foi possível abrir a página de dashboard.';
       });
     }
   }
-  Future<void> _launchManagementPage() async {
-    String? token = await _secureStorage.read(key: 'jwt_token');
-    final url = Uri.parse('http://localhost:8000/api/owners/management/');
-
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    } else {
-      setState(() {
-        _errorMessage = 'Não foi possível abrir a página de gerenciamento.';
-      });
-    }
-  }
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -125,7 +112,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                     width: 320,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: _launchStatisticsPage,
+                      onPressed: _launchDashboardPage,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF2F6D3C),
                         shape: RoundedRectangleBorder(
@@ -133,25 +120,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                         ),
                       ),
                       child: const Text(
-                        'Ver Estatísticas',
-                        style: TextStyle(fontSize: 20, color: Colors.white),
-                      ),
-                    ),
-                  ),
-                const SizedBox(height: 20),
-                SizedBox(
-                    width: 320,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: _launchManagementPage,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2F6D3C),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                      child: const Text(
-                        'Ver Gerenciamento de imóveis',
+                        'Acessar dashboard',
                         style: TextStyle(fontSize: 20, color: Colors.white),
                       ),
                     ),
@@ -159,7 +128,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                 const SizedBox(height: 20),
                 if (!_isLoading && _isOwner)
                   const Text(
-                    'Clique acima para acessar as estatísticas financeiras.',
+                    'Clique acima para acessar a interface web.',
                     style: TextStyle(
                       fontSize: 16,
                       color: Color(0xFF999999),
