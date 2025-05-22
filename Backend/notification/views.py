@@ -8,6 +8,8 @@ from rest_framework.views import APIView
 from tenant.models import Tenant
 from owner.models import Owner
 from immobile.models import Rental
+from django.core.mail import send_mail
+from django.conf import settings
 
 User = get_user_model()
 
@@ -84,6 +86,29 @@ class SendNotificationView(APIView):
             message=message,
             type='GENERAL',
         )
+
+        # Enviar e-mail para o usuário
+        if target_user.email:
+            try:
+                email_subject = title
+                sender_name = request.user.name
+                email_message = (
+                    f"Olá, {target_user.username},\n\n"
+                    f"Você recebeu uma nova notificação:\n\n"
+                    f"{message}\n\n"
+                    f"Atenciosamente,\n{sender_name}"
+                )
+                send_mail(
+                    subject=email_subject,
+                    message=email_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[target_user.email],
+                    fail_silently=False,
+                )
+            except Exception as e:
+                pass
+        else:
+            pass
 
         return Response(
             {"message": f"Notificação enviada para {target_user.email}."},

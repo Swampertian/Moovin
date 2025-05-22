@@ -1,5 +1,7 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.core.mail import send_mail
+from django.conf import settings
 from .models import Review
 from notification.models import Notification
 from django.contrib.contenttypes.models import ContentType
@@ -17,33 +19,52 @@ def create_review_notification(sender, instance, created, **kwargs):
 
         # Determinar o destinatário e a mensagem com base no tipo de avaliação
         if review_type == 'PROPERTY':
-            # Buscar o imóvel e seu proprietário
             try:
                 immobile = Immobile.objects.get(id_immobile=target_id)
-                recipient = immobile.owner.user  # Proprietário do imóvel
+                recipient = immobile.owner.user 
                 message = f"Seu imóvel '{immobile}' recebeu uma nova avaliação com nota {instance.rating}."
+                email_subject = "Nova Avaliação do Seu Imóvel"
+                email_message = (
+                    f"Olá, {recipient.username},\n\n"
+                    f"Seu imóvel '{immobile}' recebeu uma nova avaliação com nota {instance.rating}.\n"
+                    f"Comentário: {instance.comment or 'Nenhum comentário fornecido.'}\n\n"
+                    f"Atenciosamente, Moovin\nEquipe Imobiliária"
+                )
             except Immobile.DoesNotExist:
-                return  # Não criar notificação se o imóvel não for encontrado
+                return 
         elif review_type == 'TENANT':
             # Buscar o inquilino
             try:
                 tenant = Tenant.objects.get(id=target_id)
                 recipient = tenant.user
                 message = f"Você recebeu uma nova avaliação como inquilino com nota {instance.rating}."
+                email_subject = "Nova Avaliação como Inquilino"
+                email_message = (
+                    f"Olá, {recipient.username},\n\n"
+                    f"Você recebeu uma nova avaliação com nota {instance.rating}.\n"
+                    f"Comentário: {instance.comment or 'Nenhum comentário fornecido.'}\n\n"
+                    f"Atenciosamente, Moovin\nEquipe Imobiliária"
+                )
             except Tenant.DoesNotExist:
-                return  # Não criar notificação se o inquilino não for encontrado
+                return  
         elif review_type == 'OWNER':
             # Buscar o proprietário
             try:
                 owner = Owner.objects.get(id=target_id)
                 recipient = owner.user
                 message = f"Você recebeu uma nova avaliação como proprietário com nota {instance.rating}."
+                email_subject = "Nova Avaliação como Proprietário"
+                email_message = (
+                    f"Olá, {recipient.username},\n\n"
+                    f"Você recebeu uma nova avaliação com nota {instance.rating}.\n"
+                    f"Comentário: {instance.comment or 'Nenhum comentário fornecido.'}\n\n"
+                    f"Atenciosamente, Moovin\nEquipe Imobiliária"
+                )
             except Owner.DoesNotExist:
-                return  # Não criar notificação se o proprietário não for encontrado
+                return  
         else:
-            return  # Não criar notificação para tipos inválidos
+            return 
 
-        # Criar a notificação
         Notification.objects.create(
             user=recipient,
             title="Avaliação Recebida",
@@ -51,4 +72,13 @@ def create_review_notification(sender, instance, created, **kwargs):
             type="REVIEW_RECEIVED",
             related_object_id=instance.id,
             related_object_type="Review"
+        )
+
+        # Enviar e-mail para o destinatário
+        send_mail(
+            subject=email_subject,
+            message=email_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[recipient.email],
+            fail_silently=False,
         )
