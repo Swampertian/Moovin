@@ -12,5 +12,6 @@ urlpatterns = [
     path('all',UserListView.as_view(),name='user-list'),
     path('user',UserRetriverView.as_view(),name='get-user'),
     path('destroy/<str:pk>',UserDeleteView.as_view(),name='delete-user'),
-    path('request-email-verification/',RequestEmailVerification.as_view(),name='verify-email'),
+    path('request-email-verification/',RequestEmailVerification.as_view(),name='request-verify-email'),
+    path('verify-email-code/', VerifyEmailCode.as_view(), name='verify-email-code'),
 ]

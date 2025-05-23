@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../services/api_service_users.dart'; 
 
 class VerifyEmailScreen extends StatefulWidget {
   const VerifyEmailScreen({super.key, this.arguments});
@@ -14,6 +15,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   final TextEditingController _verificationCodeController = TextEditingController();
   bool _isLoading = false;
   String? _errorMessage;
+  final ApiService _apiService = ApiService(baseUrl: 'http://localhost:8000/api'); 
 
   Future<void> _verifyCode() async {
     setState(() {
@@ -22,46 +24,86 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
     });
 
     final code = _verificationCodeController.text;
-    final email = widget.arguments?['email'];
-    final name = widget.arguments?['name'];
-    final password = widget.arguments?['password'];
-    final isOwner = widget.arguments?['isOwner'];
+    final arguments = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final email = arguments?['email'];
+    final name = arguments?['name'];
+    final password = arguments?['password'];
+    final isOwner = arguments?['isOwner'];
 
-    
-    await Future.delayed(const Duration(seconds: 2));
+    print('Email para verificação: $email');
+    print('Código digitado: $code');
 
-    if (code == '123456') { // Simulação de código correto
+    if (email != null && code.isNotEmpty) {
+      final isCodeValid = await _apiService.verifyEmailCode(email, code);
+      print('Resultado da verificação da API: $isCodeValid');
       setState(() {
         _isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Email verificado com sucesso!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      // Navegar para a próxima tela (ex: tela de criação de perfil)
-      Navigator.pushReplacementNamed(
-        context,
-        '/create-profile',
-        arguments: {
+
+      if (isCodeValid) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Email verificado com sucesso!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Registrar o usuário AQUI
+        final userData = {
           'name': name,
           'email': email,
+          'username': email, // Assumindo que o username é o mesmo que o email
           'password': password,
-          'isOwner': isOwner,
-        },
-      );
+          'user_type': isOwner == true ? 'Proprietario' : 'Inquilino',
+        };
+
+        try {
+          final registerResponse = await _apiService.registerUser(userData);
+          final responseData = registerResponse;
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Cadastro realizado com sucesso!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+
+          // Navegar para a tela de criação de perfil
+          Navigator.pushReplacementNamed(
+            context,
+            '/create-profile',
+            arguments: {
+              'userId': responseData['id'].toString(),
+              'name': name,
+              'email': email,
+              'isOwner': isOwner,
+            },
+          );
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Erro no cadastro: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } else {
+        setState(() {
+          _errorMessage = 'Código de verificação inválido.';
+        });
+      }
     } else {
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Código de verificação inválido.';
+        _errorMessage = 'Por favor, insira o código.';
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final email = widget.arguments?['email'] ?? 'seu_email@exemplo.com';
+    final arguments = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final email = arguments?['email'] ?? 'seu_email@exemplo.com';
 
     return Scaffold(
       appBar: AppBar(
@@ -92,7 +134,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                'Um código de verificação foi enviado para:',
+                'Um código de verificação foi enviado para ',
                 style: GoogleFonts.khula(fontSize: 16, color: Colors.grey[700]),
               ),
               const SizedBox(height: 8),

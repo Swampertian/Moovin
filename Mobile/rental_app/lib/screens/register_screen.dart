@@ -151,7 +151,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
     );
   }
-Future<void> _handleRegistration({required bool isOwner}) async {
+/*Future<void> _handleRegistration({required bool isOwner}) async {
     if (_formKey.currentState?.validate() ?? false) {
       final userType = isOwner ? 'Proprietario' : 'Inquilino';
 
@@ -195,8 +195,8 @@ Future<void> _handleRegistration({required bool isOwner}) async {
         );
       }
     }
-  }
- /*Future<void> _handleRegistration({required bool isOwner}) async {
+  }*/
+ Future<void> _handleRegistration({required bool isOwner}) async {
     if (_formKey.currentState?.validate() ?? false) {
       final String email = _emailController.text;
       final apiService = ApiService(baseUrl: 'http://localhost:8000/api');
@@ -210,10 +210,12 @@ Future<void> _handleRegistration({required bool isOwner}) async {
               backgroundColor: Colors.blue,
             ),
           );
+          print('Email sendo passado para VerifyEmailScreen: ${_emailController.text}');
           Navigator.pushNamed(
             context,
             '/verify-email', // Nova rota para a tela de verificação
             arguments: {
+              'id': response['id'].toString(),
               'name': _nameController.text,
               'email': _emailController.text,
               'password': _passwordController.text,
@@ -237,7 +239,7 @@ Future<void> _handleRegistration({required bool isOwner}) async {
         );
       }
     }
-  }*/
+  }
 
   Widget _buildTextField({
     required TextEditingController controller,

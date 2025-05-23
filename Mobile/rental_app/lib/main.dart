@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
         '/tenant': (context) => const TenantProfileScreen(),
-        '/verify-email': (context) => const VerifyEmailScreen(), 
+        '/verify-email': (context) => const VerifyEmailScreen(),
         '/owner': (context) => const OwnerProfileScreen(ownerId: 1),
         '/immobile_details': (context) => const DetailImmobileScreen(immobileId: 1),
         '/owner_dashboard': (context) => const OwnerDashboardScreen(),

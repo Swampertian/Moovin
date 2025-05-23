@@ -9,7 +9,7 @@ from tenant.models import Tenant
 
 class Immobile(models.Model):
     owner = models.ForeignKey('owner.Owner', related_name='properties', on_delete=models.CASCADE, null=True,blank=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE,null=True)
     id_immobile = models.AutoField(primary_key=True)
     property_type = models.CharField(max_length=20, choices=PROPERTY_TYPE_CHOICES,default='House')
     zip_code = models.CharField(max_length=9)

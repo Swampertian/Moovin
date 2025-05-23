@@ -63,6 +63,7 @@ class UserDeleteView(generics.DestroyAPIView):
     permission_classes = [IsAdminUser]
 
 class RequestEmailVerification(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         email = request.data.get('email')
         if not email:
@@ -88,3 +89,29 @@ class RequestEmailVerification(APIView):
             return Response({'status': 'success', 'message': 'Código de verificação enviado para o seu e-mail.'}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'status': 'error', 'message': f'Erro ao enviar o e-mail: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class VerifyEmailCode(APIView):
+    permission_classes = [AllowAny]
+    def post(self, request):
+        email = request.data.get('email')
+        code = request.data.get('code')
+
+        if not email or not code:
+            return Response({'error': 'Email e código são obrigatórios.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            verification_entry = EmailVerificationCode.objects.get(email=email, code=code)
+            now = timezone.now()
+            expiration_time = verification_entry.created_at + datetime.timedelta(minutes=15)
+
+            print(f"Agora bim: {now}")
+            print(f"Criado em: {verification_entry.created_at}")
+            print(f"Expira em: {expiration_time}")
+
+            if not verification_entry.is_expired():
+                verification_entry.delete()
+                return Response({'status': 'success', 'message': 'Email verificado com sucesso.'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': 'Código de verificação expirou.'}, status=status.HTTP_400_BAD_REQUEST)
+        except EmailVerificationCode.DoesNotExist:
+            return Response({'error': 'Código de verificação inválido.'}, status=status.HTTP_400_BAD_REQUEST)
