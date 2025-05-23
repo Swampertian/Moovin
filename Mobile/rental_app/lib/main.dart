@@ -15,8 +15,8 @@ import 'screens/notification_screen.dart';
 import '../providers/notification_provider.dart';
 import 'screens/review_create_screen.dart';
 import 'screens/review_screen.dart';
+import 'screens/verify_email_screen.dart';
 import 'screens/review_create_screen.dart';
-
 void main() {
   runApp(
     MultiProvider(
@@ -46,10 +46,8 @@ class MyApp extends StatelessWidget {
         '/register': (context) => const RegisterScreen(),
         '/tenant': (context) => const TenantProfileScreen(),
         '/owner': (context) => const OwnerProfileScreen(),
-        '/immobile_details': (context) => ChangeNotifierProvider(
-  create: (context) => ReviewProvider(), // Forneça o ReviewProvider aqui
-  child:  DetailImmobileScreen(immobileId: 3),
-),
+        '/verify-email': (context) => const VerifyEmailScreen(),
+        '/immobile_details': (context) => const DetailImmobileScreen(immobileId: 1),
         '/owner_dashboard': (context) => const OwnerDashboardScreen(),
         '/search-immobile': (context) => const SearchImmobileScreen(),
         '/notifications': (context) => const NotificationScreen(),

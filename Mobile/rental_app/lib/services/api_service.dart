@@ -372,5 +372,4 @@ Future<List<Review>> fetchReviews({required String type, required int targetId})
       return {};
     }
   }
-
 }

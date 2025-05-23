@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart'; 
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:rental_app/models/owner.dart';
 import 'package:rental_app/models/tenant.dart';
+import '../services/api_service_users.dart';
+import '../widget/StateCitySelector.dart';
 
 class CreateProfileScreen extends StatefulWidget {
   final String userId;
@@ -23,11 +25,11 @@ class CreateProfileScreen extends StatefulWidget {
 
 class _CreateProfileScreenState extends State<CreateProfileScreen> {
   final _phoneController = TextEditingController();
-  final _cityController = TextEditingController();
-  final _stateController = TextEditingController();
   final _ageController = TextEditingController();
   final _jobController = TextEditingController();
   final _aboutMeController = TextEditingController();
+  String? _selectedCity;
+  String? _selectedState;
 
   final _formKey = GlobalKey<FormState>();
 
@@ -39,8 +41,8 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
         id: int.parse(widget.userId),
         name: widget.name,
         phone: _phoneController.text,
-        city: _cityController.text,
-        state: _stateController.text,
+        city: _selectedCity ?? '',
+        state: _selectedState ?? '',
         aboutMe: _aboutMeController.text,
         revenueGenerated: 0.0,
         rentedProperties: 0,
@@ -57,15 +59,14 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
       await prefs.setString('owner_city', owner.city);
       await prefs.setString('owner_state', owner.state);
       await prefs.setString('owner_aboutMe', owner.aboutMe);
-
     } else {
       final tenant = Tenant(
         id: int.parse(widget.userId),
         name: widget.name,
         age: int.parse(_ageController.text),
         job: _jobController.text,
-        city: _cityController.text,
-        state: _stateController.text,
+        city: _selectedCity ?? '',
+        state: _selectedState ?? '',
         aboutMe: _aboutMeController.text,
         prefersStudio: false,
         prefersApartment: false,
@@ -86,7 +87,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
       await prefs.setString('tenant_city', tenant.city);
       await prefs.setString('tenant_state', tenant.state);
       await prefs.setString('tenant_aboutMe', tenant.aboutMe);
-
     }
   }
 
@@ -111,7 +111,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
               children: [
                 Image.asset('assets/images/logo.png', height: 180),
                 const SizedBox(height: 20),
-
                 const Text(
                   'Criação de Perfil',
                   style: TextStyle(
@@ -121,7 +120,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-
                 _buildTextField(
                   controller: TextEditingController(text: widget.name),
                   label: 'Nome',
@@ -130,31 +128,33 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                   enabled: false,
                 ),
                 const SizedBox(height: 16),
-
                 _buildTextField(
                   controller: _phoneController,
                   label: 'Telefone',
-                  validator: (value) =>
-                      value == null || value.isEmpty ? 'Por favor, insira o telefone' : null,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Por favor, insira o telefone';
+                    }
+                    // Regex para validar telefones brasileiros (com ou sem DDD, com ou sem formatação)
+                    final phoneRegex = RegExp(r'^(\(?[0-9]{2}\)?\s?)?([9]{1}[0-9]{4}-?[0-9]{4}|[0-9]{4}-?[0-9]{4})$');
+                    if (!phoneRegex.hasMatch(value)) {
+                      return 'Por favor, insira um telefone válido';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 16),
-
-                _buildTextField(
-                  controller: _cityController,
-                  label: 'Cidade',
-                  validator: (value) =>
-                      value == null || value.isEmpty ? 'Por favor, insira a cidade' : null,
+                StateCitySelector(
+                  onStateChanged: (state) {
+                    _selectedState = state;
+                    print('Estado selecionado: $state');
+                  },
+                  onCityChanged: (city) {
+                    _selectedCity = city;
+                    print('Cidade selecionada: $city');
+                  },
                 ),
                 const SizedBox(height: 16),
-
-                _buildTextField(
-                  controller: _stateController,
-                  label: 'Estado',
-                  validator: (value) =>
-                      value == null || value.isEmpty ? 'Por favor, insira o estado' : null,
-                ),
-                const SizedBox(height: 16),
-
                 _buildTextField(
                   controller: _ageController,
                   label: 'Idade',
@@ -167,7 +167,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-
                 _buildTextField(
                   controller: _jobController,
                   label: 'Profissão',
@@ -175,7 +174,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                       value == null || value.isEmpty ? 'Por favor, insira sua profissão' : null,
                 ),
                 const SizedBox(height: 16),
-
                 _buildTextField(
                   controller: _aboutMeController,
                   label: 'Sobre mim',
@@ -183,7 +181,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                       value == null || value.isEmpty ? 'Por favor, insira uma descrição sobre você' : null,
                 ),
                 const SizedBox(height: 40),
-
                 _buildSubmitButton(
                   text: 'Salvar e Ir para Login',
                   onPressed: _goToLogin,
