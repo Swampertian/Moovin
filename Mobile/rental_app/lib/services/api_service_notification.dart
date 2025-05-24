@@ -10,7 +10,7 @@ class ApiService {
 
   Future<List<Notification>> fetchNotifications() async {
     final url = Uri.parse('$_notificationBase/');
-    final token = await _secureStorage.read(key: 'jwt_token');
+    final token = await _secureStorage.read(key: 'access_token');
 
     if (token == null) {
       throw Exception('Token JWT não encontrado.');
@@ -35,7 +35,7 @@ class ApiService {
 
   Future<void> markNotificationAsRead(int notificationId) async {
     final url = Uri.parse('$_notificationBase/$notificationId/read/');
-    final token = await _secureStorage.read(key: 'jwt_token');
+    final token = await _secureStorage.read(key: 'access_token');
 
     if (token == null) {
       throw Exception('Token JWT não encontrado.');
@@ -56,7 +56,7 @@ class ApiService {
 
   Future<void> deleteNotification(int notificationId) async {
     final url = Uri.parse('$_notificationBase/$notificationId/');
-    final token = await _secureStorage.read(key: 'jwt_token');
+    final token = await _secureStorage.read(key: 'access_token');
 
     if (token == null) {
       throw Exception('Token JWT não encontrado.');
@@ -77,7 +77,7 @@ class ApiService {
 
   Future<void> markAllAsRead() async {
     final url = Uri.parse('$_notificationBase/mark-all-read/');
-    final token = await _secureStorage.read(key: 'jwt_token');
+    final token = await _secureStorage.read(key: 'access_token');
 
     if (token == null) {
       throw Exception('Token JWT não encontrado.');
@@ -98,7 +98,7 @@ class ApiService {
 
   Future<void> sendNotification(String title, String message, String email) async {
     final url = Uri.parse('$_notificationBase/send/');
-    final token = await _secureStorage.read(key: 'jwt_token');
+    final token = await _secureStorage.read(key: 'access_token');
 
     if (token == null) {
       throw Exception('Token JWT não encontrado.');
