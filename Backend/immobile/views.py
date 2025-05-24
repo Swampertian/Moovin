@@ -37,6 +37,29 @@ class ImmobileViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(immobiles, many=True)
         return Response(serializer.data)
 
+    @action(detail=True, methods=['patch'], url_path='update-profile')
+    def update_profile(self, request, pk=None):
+        immobile = self.get_object()
+        serializer = self.get_serializer(immobile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['patch'], url_path='me/update-profile')
+    def update_me_profile(self, request):
+        try:
+            immobile = Immobile.objects.get(user=request.user)
+        except Immobile.DoesNotExist:
+            return Response({"detail": "Perfil não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.get_serializer(immobile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class ImmobileListAPIView(APIView):
     """
     Lista todos os imóveis.

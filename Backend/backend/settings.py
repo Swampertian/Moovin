@@ -67,7 +67,7 @@ INSTALLED_APPS = [
     'users',
     'review',
     'subscriptions',
-
+    'notification',
 ]
 AUTH_USER_MODEL = 'users.User'
 
@@ -123,6 +123,12 @@ DATABASES = {
 }
 
 
+EMAIL_HOST='smtp.gmail.com' 
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER='seuemail@gmail.com' # Gmail account used to send emails
+EMAIL_HOST_PASSWORD=''  # App Password for the Gmail account
+DEFAULT_FROM_EMAIL='seuemail@gmail.com' # Default 'From' address for outgoing emails
 
 
 # Password validation

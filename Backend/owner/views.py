@@ -12,6 +12,8 @@ from users.models import User
 from owner.models import Owner
 from rest_framework import viewsets
 from .models import Owner
+from rest_framework.response import Response
+from rest_framework.decorators import action
 from .serializers import OwnerSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
@@ -23,7 +25,8 @@ from rest_framework import authentication
 from subscriptions.mixins import DRFPermissionMixin
 from subscriptions.permissions import HasActiveSubscription
 from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
+from django.utils.decorators import method_decoratorfrom 
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 
@@ -60,16 +63,43 @@ class OwnerViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        owner = getattr(user, 'owner_profile', None).first()
-        if owner:
+        try:
+            owner = user.owner_profile
             return Owner.objects.filter(id=owner.id)
-        return Owner.objects.none()
-    
+        except Owner.DoesNotExist:
+            return Owner.objects.none()
+
+    @action(detail=True, methods=['patch'], url_path='update-profile')
+    def update_profile(self, request, pk=None):
+        owner = self.get_object()
+        serializer = self.get_serializer(owner, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     @action(detail=False, methods=['get'], url_path='me')
     def me(self, request):
-        owner = get_object_or_404(Owner, user=request.user)
-        serializer = self.get_serializer(owner)
+        try:
+            profile = Owner.objects.get(user=request.user)
+        except Owner.DoesNotExist:
+            return Response({"detail": "Perfil não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.get_serializer(profile)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['patch'], url_path='me/update-profile')
+    def update_me_profile(self, request):
+        try:
+            owner = Owner.objects.get(user=request.user)
+        except Owner.DoesNotExist:
+            return Response({"detail": "Perfil não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.get_serializer(owner, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # Statistics Page
 from django.views.generic import TemplateView

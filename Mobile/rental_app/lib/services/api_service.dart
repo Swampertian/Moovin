@@ -6,7 +6,7 @@ import '../config.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/immobile.dart';
 import 'package:dio/dio.dart';
-
+import '../models/review.dart';
 class ApiService {
   final String _tenantBase = '$apiBase/tenants';
   final String _ownerBase = '$apiBase/owners/owners';
@@ -72,7 +72,7 @@ class ApiService {
     return false;
   }
 
-
+  final String _reviewBase = '$apiBase/reviews';
   // ========================= TENANT =========================
 
   Future<Tenant> fetchTenant() async {
@@ -145,9 +145,15 @@ class ApiService {
 
   // ========================= OWNER =========================
 
-  Future<Owner> fetchOwner(int id) async {
-    final url = '$_ownerBase/$id/';
-    print('🔎 Fetching Owner: $url');
+  Future<Owner> fetchCurrentOwner() async {
+    final url ='$_ownerBase/me/';
+    print('🔎 Fetching Owner (self): $url');
+
+    final token = await _secureStorage.read(key: 'access_token');
+
+    if (token == null) {
+      throw Exception('Token JWT não encontrado.');
+    }
 
     final response = await dio.get(url);
 
@@ -161,12 +167,12 @@ class ApiService {
     }
   }
 
-  Future<Owner> updateOwner(int id, Map<String, dynamic> data) async {
-    final url = '$_ownerBase/$id/';
-    print('✏️ Updating Owner: $url');
+  Future<Owner> updateCurrentOwner(Map<String, dynamic> data) async {
+    final token = await _secureStorage.read(key: 'jwt_token');
+    if (token == null) throw Exception('Token JWT não encontrado.');
 
     final response = await dio.patch(
-      url,
+      '$_ownerBase/me/update-profile/',
       data: data,
     );
 
@@ -176,9 +182,10 @@ class ApiService {
     if (response.statusCode == 200) {
       return Owner.fromJson(response.data);
     } else {
-      throw Exception('Failed to update owner profile');
+      throw Exception('Erro ao atualizar dados do proprietário');
     }
   }
+
 
   // ========================= IMMOBILE =========================
  Future<Immobile> fetchOneImmobile(int idImmobile) async {
@@ -230,16 +237,19 @@ Future<ImmobilePhoto> fetchImageBlob(int photoId) async {
 
 
 
-  Future<void> updateImmobile(int id, Map<String, dynamic> data) async {
-  final url = '$_immobileBase/$id/';
-  print('✏️ Updating Immobile: $url');
+  Future<Immobile> updateImmobile(Map<String, dynamic> data) async {
+  final token = await _secureStorage.read(key: 'access_token');
+  if (token == null) throw Exception('Token JWT não encontrado.');
 
   try {
     final response = await dio.patch(
-      url,
-      data: data, // Dio já serializa JSON automaticamente
+      '$_ownerBase/me/update-profile/',
+      data: data,
       options: Options(
-        headers: {'Content-Type': 'application/json; charset=UTF-8'},
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $token',  // ✅ Enviando token no header
+        },
       ),
     );
 
@@ -247,13 +257,19 @@ Future<ImmobilePhoto> fetchImageBlob(int photoId) async {
     print('📦 BODY: ${response.data}');
 
     if (response.statusCode == null || response.statusCode! < 200 || response.statusCode! >= 300) {
-      throw Exception('Failed to update immobile');
+      throw Exception('Falha ao atualizar imóvel. Código: ${response.statusCode}');
     }
+
+    // ✅ Aqui você precisa converter response.data em Immobile.
+    // Supondo que exista Immobile.fromJson:
+    return Immobile.fromJson(response.data);
+    
   } on DioException catch (e) {
     print('❌ Erro ao atualizar imóvel: ${e.response?.data}');
     throw Exception('Erro na requisição: ${e.message}');
   }
 }
+
 
 Future<List<Immobile>> fetchImmobile({
   String? type,
@@ -291,7 +307,7 @@ Future<List<Immobile>> fetchImmobile({
   final uri = Uri.parse(_immobileBase).replace(queryParameters: queryParams);
   print('🔎 Fetching Immobiles: $uri');
 
-  try {
+ 
     final response = await dio.getUri(uri);
 
     if (response.statusCode == 200) {
@@ -299,11 +315,128 @@ Future<List<Immobile>> fetchImmobile({
       return data.map((item) => Immobile.fromJson(item)).toList();
     } else {
       throw Exception('Erro ao buscar imóveis');
-    }
-  } on DioException catch (e) {
-    print('❌ Erro ao buscar imóveis: ${e.response?.data}');
-    throw Exception('Erro na requisição: ${e.message}');
+  }}
+//====== reviews
+Future<List<Review>> fetchReviews({required String type, required int targetId}) async {
+  final url = Uri.parse('$_reviewBase/reviews/by_object/?type=${type.toLowerCase()}&id=$targetId');
+  print('🔎 Fetching Reviews for target (type: $type, id: $targetId): $url');
+
+  final token = await _secureStorage.read(key: 'jwt_token');
+  if (token == null) {
+    throw Exception('Token JWT não encontrado para buscar as avaliações.');
+  }
+
+  final response = await http.get(
+    url,
+    headers: {
+      'Authorization': 'Bearer $token', // Adicione o header de autorização
+    },
+  );
+
+  print('📡 STATUS: ${response.statusCode}');
+  print('📦 BODY: ${response.body}');
+  if (response.statusCode == 200) {
+    final decodedBody = utf8.decode(response.bodyBytes);
+    final List<dynamic> jsonList = jsonDecode(decodedBody) as List<dynamic>; // Decodifique para List<dynamic>
+    print('✅ JSON List: $jsonList');
+    return jsonList.map((json) => Review.fromJson(json as Map<String, dynamic>)).toList();
+  } else {
+    throw Exception('Failed to load reviews');
   }
 }
 
+  Future<Review> submitReview({
+    required int rating,
+    String? comment,
+    required String type,
+    required int targetId,
+    //required int authorId,
+  }) async {
+    final url = Uri.parse('$_reviewBase/reviews/');
+    print('📝 Submitting Review: $url');
+    print('type: $type');
+
+    final token = await _secureStorage.read(key: 'jwt_token');
+  if (token == null) {
+    throw Exception('Token JWT não encontrado para criar a avaliação.');
+  }
+
+    final Map<String, dynamic> body = {
+      'rating': rating,
+      'comment': comment,
+      'type': 'PROPERTY',
+      'object_id': targetId,
+      //'author': authorId,
+    };
+
+    print('📤 Sending Body: ${jsonEncode(body)}');
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+      },
+      
+      body: jsonEncode(body),
+    );
+
+    print('📡 STATUS: ${response.statusCode}');
+    print('📦 BODY: ${response.body}');
+
+    if (response.statusCode == 201) {
+      final decodedBody = utf8.decode(response.bodyBytes);
+      return Review.fromJson(jsonDecode(decodedBody));
+    } else {
+      throw Exception('Failed to submit review');
+    }
+  }
+   Future<Map<String, dynamic>> fetchTargetDetails({required String type, required int id}) async {
+    Uri? url;
+    String baseUrl;
+
+    if (type == 'TENANT') {
+      baseUrl = '$apiBase/tenants';
+      url = Uri.parse('$baseUrl/$id/');
+    } else if (type == 'OWNER') {
+      baseUrl = '$apiBase/owners'; // Ajuste se a URL base for diferente
+      url = Uri.parse('$baseUrl/$id/');
+    } else if (type == 'PROPERTY') {
+      baseUrl = '$apiBase/immobile'; // Ajuste se a URL base for diferente
+      url = Uri.parse('$baseUrl/$id/');
+    }
+
+    if (url == null) {
+      print('Tipo de objeto inválido para buscar detalhes.');
+      return {};
+    }
+
+    print('🔎 Fetching Target Details: $url');
+
+    try {
+      final response = await http.get(url);
+      print('📡 Target Details STATUS: ${response.statusCode}');
+      print('📦 Target Details BODY: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final dynamic responseJson = jsonDecode(decodedBody);
+        if (responseJson is List && responseJson.isNotEmpty) {
+          return responseJson.first as Map<String, dynamic>;
+        } else if (responseJson is Map<String, dynamic>) {
+          return responseJson;
+        } else {
+          print('Formato de resposta inesperado para detalhes do alvo.');
+          return {};
+        }
+      }else {
+        print('Falha ao carregar os detalhes do objeto: ${response.statusCode}');
+        return {};
+      }
+    } catch (e) {
+      print('Erro de conexão ao carregar os detalhes do objeto: $e');
+      return {};
+    }
+  }
+
 }
+

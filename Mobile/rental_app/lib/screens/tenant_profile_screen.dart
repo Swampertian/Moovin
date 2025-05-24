@@ -66,6 +66,12 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
             onPressed: () => Navigator.pop(context),
           ),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.notifications),
+              onPressed: () {
+                Navigator.pushNamed(context, '/notifications');
+              },
+            ),
             Consumer<TenantProvider>(
               builder: (context, provider, child) {
                 return IconButton(

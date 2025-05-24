@@ -10,6 +10,7 @@ urlpatterns = [
     path('api/owners/',include('owner.urls')),
     path('api/reviews/',include ('review.urls')),
     path('api/subscriptions/',include('subscriptions.urls')),
+    path('api/notifications/', include('notification.urls')),
     
 ]
 
