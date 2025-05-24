@@ -5,6 +5,7 @@ import '../models/owner.dart';
 import '../config.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/immobile.dart';
+import 'package:dio/dio.dart';
 import '../models/review.dart';
 class ApiService {
   final String _tenantBase = '$apiBase/tenants';
@@ -12,105 +13,155 @@ class ApiService {
   final String _immobileBase = '$apiBase/immobile';
   final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
   final String _photoBlobBase = '$apiBase/photo/blob'; 
+  late Dio dio;
+
+
+
+  ApiService() {
+    dio = Dio(BaseOptions(
+      baseUrl: 'http://127.0.0.1:8000/api', 
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
+      headers: {'Content-Type': 'application/json'},
+    ));
+
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        String? accessToken = await _secureStorage.read(key: 'access_token');
+        if (accessToken != null) {
+          options.headers['Authorization'] = 'Bearer $accessToken';
+        }
+        return handler.next(options);
+      },
+      onError: (DioException e, handler) async {
+        if (e.response?.statusCode == 401) {
+          final refreshed = await _refreshToken();
+
+          if (refreshed) {
+            final newToken = await _secureStorage.read(key: 'access_token');
+            e.requestOptions.headers['Authorization'] = 'Bearer $newToken';
+
+            try {
+              final retryResponse = await dio.fetch(e.requestOptions);
+              return handler.resolve(retryResponse);
+            } catch (e) {
+              return handler.reject(e as DioException);
+            }
+          }
+        }
+
+        return handler.next(e);
+      },
+    ));
+  }
+
+  Future<bool> _refreshToken() async {
+    final refresh = await _secureStorage.read(key: 'refresh_token');
+    if (refresh == null) return false;
+
+    try {
+      final response = await dio.post('/users/token/refresh/', data: {'refresh': refresh});
+      if (response.statusCode == 200) {
+        await _secureStorage.write(key: 'access_token', value: response.data['access']);
+        return true;
+      }
+    } catch (e) {
+      print('Erro ao renovar token: $e');
+    }
+
+    return false;
+  }
+
   final String _reviewBase = '$apiBase/reviews';
   // ========================= TENANT =========================
 
   Future<Tenant> fetchTenant() async {
-    final url = Uri.parse('$_tenantBase/profile/me/');
-    print('🔎 Fetching Tenant: $url');
+  final url = '$_tenantBase/profile/me/'; 
 
-    final token = await _secureStorage.read(key: 'jwt_token');
+  print('🔎 Fetching Tenant: $url');
 
-    if (token == null) {
-      throw Exception('Token JWT não encontrado.');
-    }
-
-    final response = await http.get(
-      url,
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
+  try {
+    final response = await dio.get(url); // token será adicionado pelo interceptor
 
     print('📡 STATUS: ${response.statusCode}');
-    print('📦 BODY: ${response.body}');
+    print('📦 BODY: ${response.data}');
 
     if (response.statusCode == 200) {
-      final decodedBody = utf8.decode(response.bodyBytes);
-      return Tenant.fromJson(jsonDecode(decodedBody));
+      return Tenant.fromJson(response.data); // Já vem decodificado em JSON
     } else {
-      throw Exception('Failed to load tenant profile');
+      throw Exception('Erro ao carregar perfil do tenant');
     }
+  } on DioException catch (e) {
+    print('❌ Erro na requisição: ${e.response?.data}');
+    throw Exception('Erro na requisição: ${e.message}');
   }
+  }
+
 
   Future<Tenant> updateTenant(Map<String, dynamic> data) async {
-    final url = Uri.parse('$_tenantBase/profile/me/update-profile/');
-    print('✏️ Updating Tenant: $url');
+  final url = '$_tenantBase/profile/me/update-profile/';
+  print('✏️ Updating Tenant: $url');
 
-    final token = await _secureStorage.read(key: 'jwt_token');
-
-    if (token == null) {
-      throw Exception('Token JWT não encontrado.');
-    }
-
-    final response = await http.patch(
+  try {
+    final response = await dio.patch(
       url,
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(data),
+      data: data, 
     );
 
     print('📡 STATUS: ${response.statusCode}');
-    print('📦 BODY: ${response.body}');
+    print('📦 BODY: ${response.data}');
 
     if (response.statusCode == 200) {
-      final decodedBody = utf8.decode(response.bodyBytes);
-      return Tenant.fromJson(jsonDecode(decodedBody));
+      return Tenant.fromJson(response.data); 
     } else {
-      throw Exception('Failed to update tenant profile');
+      throw Exception('Erro ao atualizar o perfil do tenant');
     }
+  } on DioException catch (e) {
+    print('❌ Erro na requisição: ${e.response?.data}');
+    throw Exception('Erro na requisição: ${e.message}');
   }
+}
+
 
   Future<void> favoriteProperty(int tenantId) async {
-    final url = Uri.parse('$_tenantBase/profile/$tenantId/favorite_property/');
-    print('⭐ Favoriting property for Tenant: $url');
+  final url = '$_tenantBase/profile/$tenantId/favorite_property/';
+  print('⭐ Favoriting property for Tenant: $url');
 
-    final response = await http.post(url);
+  try {
+    final response = await dio.post(url); 
+
+    print('📡 STATUS: ${response.statusCode}');
+    print('📦 BODY: ${response.data}');
 
     if (response.statusCode != 200) {
-      throw Exception('Failed to mark property as favorite');
+      throw Exception('Erro ao favoritar o imóvel');
     }
+  } on DioException catch (e) {
+    print('❌ Erro na requisição: ${e.response?.data}');
+    throw Exception('Erro ao favoritar o imóvel: ${e.message}');
   }
+}
+
 
   // ========================= OWNER =========================
 
   Future<Owner> fetchCurrentOwner() async {
-    final url = Uri.parse('$_ownerBase/me/');
+    final url ='$_ownerBase/me/';
     print('🔎 Fetching Owner (self): $url');
 
-    final token = await _secureStorage.read(key: 'jwt_token');
+    final token = await _secureStorage.read(key: 'access_token');
 
     if (token == null) {
       throw Exception('Token JWT não encontrado.');
     }
 
-    final response = await http.get(
-      url,
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
+    final response = await dio.get(url);
 
     print('📡 STATUS: ${response.statusCode}');
-    print('📦 BODY: ${response.body}');
+    print('📦 BODY: ${response.data}');
 
     if (response.statusCode == 200) {
-      final decodedBody = utf8.decode(response.bodyBytes);
-      return Owner.fromJson(jsonDecode(decodedBody));
+      return Owner.fromJson(response.data);
     } else {
       throw Exception('Failed to load owner profile');
     }
@@ -120,22 +171,16 @@ class ApiService {
     final token = await _secureStorage.read(key: 'jwt_token');
     if (token == null) throw Exception('Token JWT não encontrado.');
 
-    final response = await http.patch(
-      Uri.parse('$_ownerBase/me/update-profile/'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(data),
+    final response = await dio.patch(
+      '$_ownerBase/me/update-profile/',
+      data: data,
     );
 
     print('📡 STATUS: ${response.statusCode}');
-    print('📦 BODY: ${response.body}');
-
+    print('📦 BODY: ${response.data}');
 
     if (response.statusCode == 200) {
-      final decoded = utf8.decode(response.bodyBytes);
-      return Owner.fromJson(jsonDecode(decoded));
+      return Owner.fromJson(response.data);
     } else {
       throw Exception('Erro ao atualizar dados do proprietário');
     }
@@ -143,69 +188,90 @@ class ApiService {
 
 
   // ========================= IMMOBILE =========================
-  Future<Immobile> fetchOneImmobile(int id_immobile) async {
-    final url = Uri.parse('$_immobileBase/$id_immobile/'); //
-    print('🔎 Fetching Immobile: $url');
+ Future<Immobile> fetchOneImmobile(int idImmobile) async {
+  final url = '$_immobileBase/$idImmobile/';
+  print('🔎 Fetching Immobile: $url');
 
-    final response = await http.get(url);
+  try {
+    final response = await dio.get(url);
 
     print('📡 STATUS: ${response.statusCode}');
-    print('📦 IMMOBILE BODY: ${response.body}');
+    print('📦 IMMOBILE BODY: ${response.data}');
 
     if (response.statusCode == 200) {
-      final decodedBody = utf8.decode(response.bodyBytes);
-      return Immobile.fromJson(jsonDecode(decodedBody));
+      return Immobile.fromJson(response.data);
     } else if (response.statusCode == 404) {
-      throw Exception('Immobile not found');
+      throw Exception('Imóvel não encontrado');
     } else {
-      throw Exception('Failed to load immobile details');
+      throw Exception('Erro ao carregar os detalhes do imóvel');
     }
+  } on DioException catch (e) {
+    print('❌ Erro na requisição: ${e.response?.data}');
+    throw Exception('Erro na requisição: ${e.message}');
   }
+}
 
- Future<Map<String, dynamic>> fetchImageBlob(int photoId) async {
-    final url = Uri.parse('$_photoBlobBase/$photoId/');
-    print('🔎 Fetching Image Blob: $url');
 
-    final response = await http.get(url);
+Future<ImmobilePhoto> fetchImageBlob(int photoId) async {
+  final url = '$_photoBlobBase/$photoId/';
+  print('🔎 Fetching Image Blob: $url');
+
+  try {
+    final response = await dio.get(url);
 
     print('📡 STATUS: ${response.statusCode}');
-    print('📦 IMAGE BLOB BODY: ${response.body}');
+    print('📦 IMAGE BLOB BODY: ${response.data}');
 
     if (response.statusCode == 200) {
-      final decodedBody = utf8.decode(response.bodyBytes);
-      return jsonDecode(decodedBody);
+      return ImmobilePhoto.fromJson(response.data);
+    } else if (response.statusCode == 404) {
+      throw Exception('Foto não encontrada');
     } else {
-      throw Exception('Failed to load image blob for photo ID: $photoId');
+      throw Exception('Erro ao carregar blob da imagem com ID $photoId');
     }
+  } on DioException catch (e) {
+    print('❌ Erro na requisição: ${e.response?.data}');
+    throw Exception('Erro na requisição: ${e.message}');
   }
+}
+
+
 
   Future<Immobile> updateImmobile(Map<String, dynamic> data) async {
-    final token = await _secureStorage.read(key: 'jwt_token');
-    if (token == null) throw Exception('Token JWT não encontrado.');
+  final token = await _secureStorage.read(key: 'access_token');
+  if (token == null) throw Exception('Token JWT não encontrado.');
 
-    final response = await http.patch(
-      Uri.parse('$_ownerBase/me/update-profile/'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(data),
+  try {
+    final response = await dio.patch(
+      '$_ownerBase/me/update-profile/',
+      data: data,
+      options: Options(
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $token',  // ✅ Enviando token no header
+        },
+      ),
     );
 
     print('📡 STATUS: ${response.statusCode}');
-    print('📦 BODY: ${response.body}');
+    print('📦 BODY: ${response.data}');
 
-
-    if (response.statusCode == 200) {
-      final decoded = utf8.decode(response.bodyBytes);
-      return Immobile.fromJson(jsonDecode(decoded));
-    } else {
-      throw Exception('Erro ao atualizar dados do proprietário');
+    if (response.statusCode == null || response.statusCode! < 200 || response.statusCode! >= 300) {
+      throw Exception('Falha ao atualizar imóvel. Código: ${response.statusCode}');
     }
+
+    // ✅ Aqui você precisa converter response.data em Immobile.
+    // Supondo que exista Immobile.fromJson:
+    return Immobile.fromJson(response.data);
+    
+  } on DioException catch (e) {
+    print('❌ Erro ao atualizar imóvel: ${e.response?.data}');
+    throw Exception('Erro na requisição: ${e.message}');
   }
+}
 
 
-  Future<List<Immobile>> fetchImmobile({
+Future<List<Immobile>> fetchImmobile({
   String? type,
   int? bedrooms,
   int? bathrooms,
@@ -221,7 +287,7 @@ class ApiService {
   bool? pool,
   String? city,
 }) async {
-  final queryParams = <String, String>{
+  final queryParams = <String, dynamic>{
     if (type != null) 'type': type,
     if (bedrooms != null) 'bedrooms': bedrooms.toString(),
     if (bathrooms != null) 'bathrooms': bathrooms.toString(),
@@ -235,22 +301,21 @@ class ApiService {
     if (petFriendly != null) 'petFriendly': petFriendly.toString(),
     if (furnished != null) 'furnished': furnished.toString(),
     if (pool != null) 'pool': pool.toString(),
-    if (city!= null) 'city': city,
+    if (city != null) 'city': city,
   };
 
-  final uri = Uri.parse('$immobileBase').replace(queryParameters: queryParams);
+  final uri = Uri.parse(_immobileBase).replace(queryParameters: queryParams);
+  print('🔎 Fetching Immobiles: $uri');
 
-  final response = await http.get(uri);
+ 
+    final response = await dio.getUri(uri);
 
-  if (response.statusCode == 200) {
-    final String decodedBody = utf8.decode(response.bodyBytes); 
-    final List<dynamic> data = jsonDecode(decodedBody);
-    return data.map((item) => Immobile.fromJson(item)).toList();
-  } else {
-    throw Exception('Erro ao buscar imóveis');
-  }
-
-}
+    if (response.statusCode == 200) {
+      final List<dynamic> data = response.data;
+      return data.map((item) => Immobile.fromJson(item)).toList();
+    } else {
+      throw Exception('Erro ao buscar imóveis');
+  }}
 //====== reviews
 Future<List<Review>> fetchReviews({required String type, required int targetId}) async {
   final url = Uri.parse('$_reviewBase/reviews/by_object/?type=${type.toLowerCase()}&id=$targetId');
@@ -373,3 +438,4 @@ Future<List<Review>> fetchReviews({required String type, required int targetId})
     }
   }
 }
+

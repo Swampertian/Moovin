@@ -15,7 +15,7 @@ from django.shortcuts import get_object_or_404
 from .models import Immobile, ImmobilePhoto
 from .serializers import ImmobileSerializer, ImmobilePhotoSerializer
 from rest_framework import viewsets
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
@@ -26,6 +26,7 @@ from django.db.models import Q
 class ImmobileViewSet(viewsets.ModelViewSet):
     queryset = Immobile.objects.all()
     serializer_class = ImmobileSerializer
+    permission_classes=[IsAuthenticated]
 
     def get_queryset(self):
         # Apenas imóveis criados pelo usuário logado
@@ -63,7 +64,8 @@ class ImmobileListAPIView(APIView):
     """
     Lista todos os imóveis.
     """
-    permission_classes= [AllowAny]
+    permission_classes = [AllowAny]
+
     def get(self, request, format=None):
         immobiles = Immobile.objects.all()
 
@@ -120,7 +122,7 @@ class ImmobileDetailAPIView(APIView):
     """
     Retorna os detalhes de um imóvel.
     """
-    permission_classes=[AllowAny]
+    permission_classes = [IsAuthenticated]
     def get(self, request, id_immobile, format=None):
         immobile = get_object_or_404(Immobile, id_immobile=id_immobile)
         serializer = ImmobileSerializer(immobile, context={'request': request})
