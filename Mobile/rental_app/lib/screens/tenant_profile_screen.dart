@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/tenant_provider.dart';
 import '../services/api_service.dart';
 import './tenant_edit_profile_screen.dart';
-
+import 'search_immobile_screen.dart'; // Importe a tela de busca
 
 class TenantProfileScreen extends StatelessWidget {
   const TenantProfileScreen({super.key});
@@ -16,17 +16,25 @@ class TenantProfileScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         appBar: AppBar(
           backgroundColor: Colors.green,
-          title: const Text('Perfil'),
+          title: const Text(
+            'Perfil',
+            style: TextStyle(color: Colors.white), // Texto "Perfil" branco
+          ),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: const Icon(
+              Icons.arrow_back,
+              color: Colors.white, // Ícone da seta branco
+            ),
             onPressed: () => Navigator.pop(context),
           ),
           actions: [
-
             Consumer<TenantProvider>(
               builder: (context, provider, child) {
                 return IconButton(
-                  icon: const Icon(Icons.edit),
+                  icon: const Icon(
+                    Icons.edit,
+                    color: Colors.white, // Ícone de editar branco
+                  ),
                   onPressed: provider.tenant != null
                       ? () async {
                           final result = await Navigator.push(
@@ -42,7 +50,6 @@ class TenantProfileScreen extends StatelessWidget {
                           }
                         }
                       : null,
-
                 );
               },
             ),
@@ -63,8 +70,6 @@ class TenantProfileScreen extends StatelessWidget {
             return SingleChildScrollView(
               child: Column(
                 children: [
-
-
                   Stack(
                     children: [
                       Container(
@@ -235,7 +240,6 @@ class TenantProfileScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-
                         const SizedBox(height: 24),
                         const Text(
                           'Histórico na plataforma',
@@ -320,39 +324,43 @@ class TenantProfileScreen extends StatelessWidget {
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.search),
-              label: 'Pesquisar',
-
+              label: 'Buscar',
               backgroundColor: Colors.green,
-
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.chat),
-              label: 'Chat',
-
+              icon: Icon(Icons.notifications),
+              label: 'Notificações',
               backgroundColor: Colors.green,
-
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.favorite),
-              label: 'Favoritos',
-
+              icon: Icon(Icons.chat_bubble_outline),
+              label: 'Conversas',
               backgroundColor: Colors.green,
-
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person),
               label: 'Perfil',
-
               backgroundColor: Colors.green,
             ),
           ],
           backgroundColor: Colors.green[600],
-
           selectedItemColor: Colors.white,
           unselectedItemColor: Colors.white70,
-          currentIndex: 3,
+          currentIndex: 3, // Mantido 3, pois Perfil é o último item (índice 3)
           onTap: (index) {
-            // Handle navigation
+            // Lógica de navegação
+            if (index == 0) {
+              // Redireciona para a tela de busca (SearchImmobileScreen)
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const SearchImmobileScreen()));
+            } else if (index == 1) {
+              // Lógica para Notificações (ainda não implementada)
+              // Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationsScreen()));
+            } else if (index == 2) {
+              // Lógica para Conversas (ainda não implementada)
+              // Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen()));
+            } else if (index == 3) {
+              // Já está na tela de perfil, talvez fazer nada ou rolar para o topo
+            }
           },
         ),
       ),

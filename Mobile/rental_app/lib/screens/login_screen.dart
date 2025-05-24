@@ -25,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
       _errorMessage = null; 
     });
 
-    final apiService = ApiService(baseUrl: 'http://10.0.2.2:8000/api'); //url de emulador
+    final apiService = ApiService(baseUrl: 'http://127.0.0.1:8000/api'); //url de emulador
 
     try {
     String email = _emailController.text;
@@ -53,9 +53,8 @@ class _LoginScreenState extends State<LoginScreen> {
       if (token != null) {
         final userData = await apiService.getUser(token); 
         
-        String userType = userData['user_type']; // Acessando diretamente o 'user_type'
-
-        // Armazenando o 'user_type' no Flutter Secure Storage
+        String userType = userData['user_type']; 
+        
         await _secureStorage.write(key: 'user_type', value: userType);
 
       } else {

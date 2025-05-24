@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'providers/review_provider.dart'; 
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
@@ -12,14 +13,20 @@ import 'screens/search_immobile_screen.dart';
 import 'screens/review_screen.dart';
 import 'screens/create_profile_screen.dart';
 import 'screens/review_create_screen.dart';
-import 'screens/review_screen.dart';
-import 'screens/review_create_screen.dart';
-void main() {
-  runApp(const MyApp());
+import 'screens/onboarding_screen.dart'; // Adicionado
+
+void main() async { // Modificado para async
+  WidgetsFlutterBinding.ensureInitialized(); // Adicionado
+  final prefs = await SharedPreferences.getInstance(); // Adicionado
+  final bool hasCompletedOnboarding = prefs.getBool('has_completed_onboarding') ?? false; // Adicionado
+
+  runApp(MyApp(hasCompletedOnboarding: hasCompletedOnboarding)); // Modificado
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool hasCompletedOnboarding; // Adicionado
+
+  const MyApp({super.key, required this.hasCompletedOnboarding}); // Modificado
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +36,10 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.green,
         textTheme: GoogleFonts.khulaTextTheme(),
       ),
-      initialRoute: '/login',
+      // initialRoute: '/login', // Removido para usar 'home' dinamicamente
+      home: hasCompletedOnboarding // Adicionado
+          ? const LoginScreen() // Adicionado
+          : const OnboardingScreen(), // Adicionado
       routes: {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
