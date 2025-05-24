@@ -1,6 +1,6 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render, redirect
-from django.urls import reverse
+from rest_framework import generics
 from django.utils import timezone
 from datetime import datetime, timedelta
 from immobile.models import Immobile, Payment, Rental
@@ -26,19 +26,6 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 import calendar
-# class OwnerViewSet(ModelViewSet):
-#     queryset = Owner.objects.all()
-#     serializer_class = OwnerSerializer
-#     permission_classes = [IsAuthenticated]
-    
-#     def get_queryset(self):
-#         return Owner.objects.filter(user=self.request.user)
-
-#     @action(detail=False, methods=['get'], url_path='me')
-#     def me(self, request):
-#         owner = get_object_or_404(Owner, user=request.user)
-#         serializer = self.get_serializer(owner)
-#         return Response(serializer.data)
 
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
@@ -97,8 +84,11 @@ class OwnerViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-
+#Criacao de PERFIL SEM AUTENTICACAO.
+class OwnerCreateView(generics.CreateAPIView):
+    queryset = Owner.objects.all()
+    serializer_class = OwnerSerializer
+    permission_classes = [AllowAny]
 
 # Statistics Page
 class OwnerStatisticsView(LoginRequiredMixin, TemplateView):

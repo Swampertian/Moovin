@@ -5,7 +5,7 @@ class TenantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tenant
         fields = [
-            'id', 'name', 'age', 'job', 'city', 'state',
+            'id', 'user', 'name', 'age', 'job', 'city', 'state',
             'about_me', 'prefers_studio', 'prefers_apartment',
             'prefers_shared_rent', 'accepts_pets', 'user_rating',
             'properties_rented', 'rated_by_landlords', 'recommended_by_landlords',

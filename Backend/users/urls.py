@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.urls import path, include
 from .views import *
+from owner.views import OwnerCreateView
+from tenant.views import TenantCreateView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
@@ -12,4 +14,6 @@ urlpatterns = [
     path('all',UserListView.as_view(),name='user-list'),
     path('user',UserRetriverView.as_view(),name='get-user'),
     path('destroy/<str:pk>',UserDeleteView.as_view(),name='delete-user'),
+
+
 ]
