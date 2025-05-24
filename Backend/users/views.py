@@ -9,18 +9,15 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
 from rest_framework.views import APIView
-<<<<<<< HEAD
 from django.core.mail import send_mail
 from django.conf import settings
 import random
 import string
 from .models import EmailVerificationCode
-=======
 from django.contrib import messages
 from django.urls import reverse_lazy
 from django.core.exceptions import PermissionDenied
 
->>>>>>> develop
 class UserRegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -70,7 +67,6 @@ class UserDeleteView(generics.DestroyAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAdminUser]
 
-<<<<<<< HEAD
 class RequestEmailVerification(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
@@ -124,7 +120,6 @@ class VerifyEmailCode(APIView):
                 return Response({'error': 'Código de verificação expirou.'}, status=status.HTTP_400_BAD_REQUEST)
         except EmailVerificationCode.DoesNotExist:
             return Response({'error': 'Código de verificação inválido.'}, status=status.HTTP_400_BAD_REQUEST)
-=======
 
 
 class LoginWebView(View):
@@ -176,4 +171,3 @@ class LogoutWebView(View):
             logout(request)
             messages.success(request, "Logout realizado com sucesso.")
         return redirect(reverse_lazy('login-web'))
->>>>>>> develop

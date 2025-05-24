@@ -30,12 +30,12 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 #Credencias para o email:
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'  
-EMAIL_PORT = 587  
-EMAIL_USE_TLS = True  
-EMAIL_HOST_USER = 'moovinaplicativo@gmail.com' 
-EMAIL_HOST_PASSWORD = 'pmpq nwkn xybn zgew'  
-DEFAULT_FROM_EMAIL = 'moovinaplicativo@gmail.com' 
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'moovinaplicativo@gmail.com'
+EMAIL_HOST_PASSWORD = 'pmpq nwkn xybn zgew'
+DEFAULT_FROM_EMAIL = 'moovinaplicativo@gmail.com'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -74,8 +74,8 @@ INSTALLED_APPS = [
     'owner',
     'users',
     'review',
-    'subscriptions',
     'notification',
+    'subscriptions',
 ]
 AUTH_USER_MODEL = 'users.User'
 
@@ -129,14 +129,6 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT'),
     }
 }
-
-
-EMAIL_HOST='smtp.gmail.com' 
-EMAIL_PORT=587
-EMAIL_USE_TLS=True
-EMAIL_HOST_USER='seuemail@gmail.com' # Gmail account used to send emails
-EMAIL_HOST_PASSWORD=''  # App Password for the Gmail account
-DEFAULT_FROM_EMAIL='seuemail@gmail.com' # Default 'From' address for outgoing emails
 
 
 # Password validation
