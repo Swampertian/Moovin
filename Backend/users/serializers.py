@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from .models import *
+from tenant.models import Tenant
+from owner.models import Owner
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
