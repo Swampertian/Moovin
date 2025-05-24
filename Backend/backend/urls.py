@@ -15,6 +15,9 @@ urlpatterns = [
     path('api/visits/', include('visits.urls')),
     path('api/tenant/tenant_create', TenantCreateView.as_view(), name='tenant-create'),
     path('api/owner/owner_create', OwnerCreateView.as_view(), name='owner-create'),
+    path('api/subscriptions/',include('subscriptions.urls')),
+    path('api/notifications/', include('notification.urls')),
+
     
 ]
 

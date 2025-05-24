@@ -3,7 +3,7 @@
 //const String immobileBase = '$apiBase/immobile/';
 //const String userBase     = '$apiBase/users';
 
-const String apiBase      = 'http://10.0.2.2:8000/api';
+const String apiBase      = 'http://127.0.0.1:8000/api';
 const String ownerBase    = '$apiBase/owners/owners';
 const String immobileBase = '$apiBase/immobile/';
 const String userBase     = '$apiBase/users';

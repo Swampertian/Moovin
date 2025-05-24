@@ -151,8 +151,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
     );
   }
-
-  Future<void> _handleRegistration({required bool isOwner}) async {
+/*Future<void> _handleRegistration({required bool isOwner}) async {
     if (_formKey.currentState?.validate() ?? false) {
       final userType = isOwner ? 'Proprietario' : 'Inquilino';
 
@@ -164,7 +163,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         'user_type': userType,
       };
 
-      final apiService = ApiService(baseUrl: 'http://10.0.2.2:8000/api'); //url de emulador
+      final apiService = ApiService(baseUrl: 'http://127.0.0.1:8000/api'); //url de emulador
 
       try {
         final response = await apiService.registerUser(userData);
@@ -191,6 +190,50 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erro no cadastro: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }*/
+ Future<void> _handleRegistration({required bool isOwner}) async {
+    if (_formKey.currentState?.validate() ?? false) {
+      final String email = _emailController.text;
+      final apiService = ApiService(baseUrl: 'http://localhost:8000/api');
+
+      try {
+        final response = await apiService.requestEmailVerification(email);
+        if (response['status'] == 'success') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Um código de verificação foi enviado para o seu e-mail.'),
+              backgroundColor: Colors.blue,
+            ),
+          );
+          print('Email sendo passado para VerifyEmailScreen: ${_emailController.text}');
+          Navigator.pushNamed(
+            context,
+            '/verify-email', // Nova rota para a tela de verificação
+            arguments: {
+              'id': response['id'].toString(),
+              'name': _nameController.text,
+              'email': _emailController.text,
+              'password': _passwordController.text,
+              'isOwner': isOwner,
+            },
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Erro ao solicitar verificação: ${response['message'] ?? 'Tente novamente.'}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro de conexão: $e'),
             backgroundColor: Colors.red,
           ),
         );

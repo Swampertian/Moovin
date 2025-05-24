@@ -2,7 +2,7 @@ from django.contrib import admin
 from rest_framework.permissions import IsAdminUser
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User
+from .models import User,EmailVerificationCode
 from users .serializers import UserSerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -33,3 +33,9 @@ class UserListView(APIView):
         users = User.objects.all()
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
+    
+@admin.register(EmailVerificationCode)
+class EmailVerificationCodeAdmin(admin.ModelAdmin):
+    list_display = ['email', 'code', 'created_at']
+    search_fields = ['email', 'code']
+    readonly_fields = ['created_at']

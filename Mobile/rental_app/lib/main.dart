@@ -11,11 +11,23 @@ import 'screens/owner_dashboard_screen.dart';
 import 'screens/search_immobile_screen.dart';
 import 'screens/review_screen.dart';
 import 'screens/create_profile_screen.dart';
+import 'screens/unauthorized_screen.dart';
+import 'screens/notification_screen.dart';
+import '../providers/notification_provider.dart';
 import 'screens/review_create_screen.dart';
 import 'screens/review_screen.dart';
+import 'screens/verify_email_screen.dart';
 import 'screens/review_create_screen.dart';
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
+        // Outros providers
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -35,12 +47,12 @@ class MyApp extends StatelessWidget {
         '/register': (context) => const RegisterScreen(),
         '/tenant': (context) => const TenantProfileScreen(),
         '/owner': (context) => const OwnerProfileScreen(),
-        '/immobile_details': (context) => ChangeNotifierProvider(
-  create: (context) => ReviewProvider(), // Forneça o ReviewProvider aqui
-  child:  DetailImmobileScreen(immobileId: 3),
-),
+        '/verify-email': (context) => const VerifyEmailScreen(),
+        '/immobile_details': (context) => const DetailImmobileScreen(immobileId: 1),
         '/owner_dashboard': (context) => const OwnerDashboardScreen(),
         '/search-immobile': (context) => const SearchImmobileScreen(),
+        '/erro-screen': (context) => const UnauthorizedScreen(),        
+        '/notifications': (context) => const NotificationScreen(),
         '/create_review': (context) => ChangeNotifierProvider( // Forneça o ReviewProvider aqui
   create: (_) => ReviewProvider(),
   child: Builder(

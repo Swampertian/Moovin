@@ -24,6 +24,14 @@
         .alert { padding: 10px; margin-bottom: 15px; border-radius: 5px; }
         .alert.error { background-color: #f8d7da; color: #721c24; }
         .alert.success { background-color: #d4edda; color: #155724; }
+        .logout-button {
+                        background: none;
+                        border: none;
+                        color: inherit;
+                        text-decoration: underline;
+                        cursor: pointer;
+                        font: inherit;
+                    }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
@@ -34,10 +42,13 @@
         </div>
         <div>
             <a href="#">Sobre</a>
-            <a href="#">Serviços</a>
-            <a href="#">Contato</a>
+            <a href="{% url 'owner-management'%}">Gerenciamento de imóveis</a>
+            <a href="{%url 'owner_statistics'%}">Relatórios e outros</a>
             {% if user.is_authenticated %}
-                <a href="{% url 'logout' %}">Sair</a>
+                <form method="post" action="{% url 'logout-web' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="logout-button">Sair</button>
+                </form>
             {% else %}
                 <a href="#">Entrar</a>
             {% endif %}

@@ -6,9 +6,56 @@ import '../models/owner.dart';
 import 'edit_owner_profile_screen.dart';
 import 'owner_immobiles_screen.dart';
 import 'edit_immobile_screen.dart';
-
-class OwnerProfileScreen extends StatelessWidget {
+import '../services/auth_service.dart';
+class OwnerProfileScreen extends StatefulWidget {
+  
   const OwnerProfileScreen({super.key});
+
+  @override
+  _OwnerProfileScreenState createState() => _OwnerProfileScreenState();
+}
+
+class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAccess();
+  }
+
+  Widget _buildItem(String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        children: [
+          const Icon(Icons.circle, size: 8, color: Colors.black),
+          const SizedBox(width: 8),
+          Expanded(child: Text(text)),
+        ],
+      ),
+    );
+  }
+  
+  void _checkAccess() async {
+    final authService = AuthService();
+    bool loggedIn = await authService.isLoggedIn();
+    bool isOwner = await authService.isOwner();
+
+    if (!loggedIn) {
+      Navigator.of(context).pushReplacementNamed('/login');
+      return;
+    } else if (!isOwner) {
+      Navigator.of(context).pushReplacementNamed('/erro-screen');
+      return;
+    }
+
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +75,13 @@ class OwnerProfileScreen extends StatelessWidget {
                 onPressed: () => Navigator.pop(context),
               ),
               actions: [
+                IconButton(
+                  icon: const Icon(Icons.notifications),
+                  tooltip: 'Notificações',
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/notifications');
+                  },
+                ),
                 IconButton(
                   icon: const Icon(Icons.edit),
                   tooltip: 'Editar Perfil',
@@ -244,19 +298,6 @@ class OwnerProfileScreen extends StatelessWidget {
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildItem(String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        children: [
-          const Icon(Icons.circle, size: 8, color: Colors.black),
-          const SizedBox(width: 8),
-          Expanded(child: Text(text)),
-        ],
       ),
     );
   }
