@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Auto-fill today's date in the date field
     const dateField = document.getElementById('date_received');
     if (dateField) {
         const today = new Date();

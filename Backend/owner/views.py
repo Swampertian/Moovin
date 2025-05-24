@@ -25,7 +25,7 @@ from rest_framework import authentication
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
-
+import calendar
 # class OwnerViewSet(ModelViewSet):
 #     queryset = Owner.objects.all()
 #     serializer_class = OwnerSerializer
@@ -97,6 +97,9 @@ class OwnerViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+
+
 # Statistics Page
 class OwnerStatisticsView(LoginRequiredMixin, TemplateView):
     template_name = 'owner/statistics.html'
@@ -105,7 +108,7 @@ class OwnerStatisticsView(LoginRequiredMixin, TemplateView):
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             try:
-                user = User.objects.get(id=4)
+                user = User.objects.get(id=3)
                 login(request, user, backend='django.contrib.auth.backends.ModelBackend')
                 messages.info(request, "Logged in as user ID 1 for testing purposes.")
             except User.DoesNotExist:
@@ -221,7 +224,7 @@ class OwnerCalendarView(LoginRequiredMixin, TemplateView):
             messages.error(self.request, "Você não está registrado como proprietário.")
             return context
 
-        # Get month and year from query params or default to current
+        
         month = self.request.GET.get('month', timezone.now().strftime('%Y-%m'))
         try:
             year, month = map(int, month.split('-'))
@@ -365,7 +368,7 @@ class OwnerChartsView(LoginRequiredMixin, TemplateView):
         end_date = today
         start_date = (today.replace(day=1) - timedelta(days=365)).replace(day=1)  # Get 12 full months
 
-        # Generate all months in range for complete data
+        
         revenue_data = []
         month_dates = []
         
@@ -477,3 +480,66 @@ class OwnerManagementImmobileDetailView(TemplateView):
             context['error'] = 'Property not found'
         return context
 
+# ------------------  Pagina de agendamento ----------- 
+
+class OwnerVisitScheduleView(LoginRequiredMixin, TemplateView):
+    template_name = 'owner/visit_schedule.html'
+    login_url = '/api/users/token'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            try:
+                user = User.objects.get(id=3) 
+                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+                messages.info(request, "Logado automaticamente como proprietário de teste.")
+            except User.DoesNotExist:
+                messages.error(request, "Usuário de teste não encontrado.")
+                return redirect(self.login_url)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        owner = getattr(user, 'owner_profile', None).first()
+
+        try:
+            # owner = Owner.objects.get(user=self.request.user)  # or request.user.id
+            owner = Owner.objects.get(id=1)
+            context['owner']=owner
+            
+        except Owner.DoesNotExist:
+            context['error'] = 'Owner not found'
+        return context
+
+
+        # Buscar imóveis do proprietário
+        properties = Immobile.objects.filter(owner=owner)
+
+        
+        immobile_id = self.request.GET.get('immobile_id')
+        selected_property = None
+        if immobile_id:
+            try:
+                selected_property = properties.get(id_immobile=immobile_id)
+            except Immobile.DoesNotExist:
+                messages.warning(self.request, "Imóvel não encontrado ou não pertence ao proprietário.")
+
+     
+        today = timezone.now().date()
+        current_year = today.year
+        current_month = today.month
+        num_days = (datetime(current_year, current_month + 1, 1) - timezone.timedelta(days=1)).day if current_month < 12 else 31
+        days_in_month = list(range(1, num_days + 1))
+        months = [(i, calendar.month_name[i]) for i in range(1, 13)]
+        
+        context.update({
+            'immobile_id': immobile_id or (selected_property.id_immobile if selected_property else None),
+            'properties': properties,
+            'selected_property': selected_property,
+            'days_in_month': days_in_month,
+            'month': current_month,
+            'year': current_year,
+            'months': months,
+            'month_name': calendar.month_name[current_month],
+        })
+        return context
