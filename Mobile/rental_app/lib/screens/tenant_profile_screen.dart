@@ -3,10 +3,54 @@ import 'package:provider/provider.dart';
 import '../providers/tenant_provider.dart';
 import '../services/api_service.dart';
 import './tenant_edit_profile_screen.dart';
+import '../services/auth_service.dart';
 
-
-class TenantProfileScreen extends StatelessWidget {
+class TenantProfileScreen extends StatefulWidget {
   const TenantProfileScreen({super.key});
+
+  @override
+  _TenantProfileScreenState createState() => _TenantProfileScreenState();
+}
+
+class _TenantProfileScreenState extends State<TenantProfileScreen> {
+  bool _isLoading = true;
+
+   @override
+  void initState() {
+    super.initState();
+    _checkAccess();
+  }
+
+  Widget _buildHistoryItem(String text, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: Colors.green),
+        const SizedBox(width: 8),
+        Expanded(child: Text(text)),
+      ],
+    );
+  }
+
+  void _checkAccess() async {
+    // Placeholder: Replace with your actual authentication service
+    final authService = AuthService(); // Inject or initialize your auth service
+    bool loggedIn = await authService.isLoggedIn();
+    bool isTenant = await authService.isTenant();
+
+    if (!loggedIn) {
+      Navigator.of(context).pushReplacementNamed('/login');
+      return;
+    } else if (!isTenant) {
+      Navigator.of(context).pushReplacementNamed('/erro-screen');
+      return;
+    }
+
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +91,6 @@ class TenantProfileScreen extends StatelessWidget {
                           }
                         }
                       : null,
-
                 );
               },
             ),
@@ -68,8 +111,6 @@ class TenantProfileScreen extends StatelessWidget {
             return SingleChildScrollView(
               child: Column(
                 children: [
-
-
                   Stack(
                     children: [
                       Container(
@@ -240,7 +281,6 @@ class TenantProfileScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-
                         const SizedBox(height: 24),
                         const Text(
                           'Histórico na plataforma',
@@ -326,33 +366,25 @@ class TenantProfileScreen extends StatelessWidget {
             BottomNavigationBarItem(
               icon: Icon(Icons.search),
               label: 'Pesquisar',
-
               backgroundColor: Colors.green,
-
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.chat),
               label: 'Chat',
-
               backgroundColor: Colors.green,
-
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.favorite),
               label: 'Favoritos',
-
               backgroundColor: Colors.green,
-
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person),
               label: 'Perfil',
-
               backgroundColor: Colors.green,
             ),
           ],
           backgroundColor: Colors.green[600],
-
           selectedItemColor: Colors.white,
           unselectedItemColor: Colors.white70,
           currentIndex: 3,
@@ -361,16 +393,6 @@ class TenantProfileScreen extends StatelessWidget {
           },
         ),
       ),
-    );
-  }
-
-  Widget _buildHistoryItem(String text, IconData icon) {
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: Colors.green),
-        const SizedBox(width: 8),
-        Expanded(child: Text(text)),
-      ],
     );
   }
 }

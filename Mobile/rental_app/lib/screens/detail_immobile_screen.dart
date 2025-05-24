@@ -3,10 +3,46 @@ import 'package:provider/provider.dart';
 import '../providers/immobile_provider.dart';
 import '../providers/review_provider.dart';
 import '../models/immobile.dart';
+import '../services/auth_service.dart';
 import 'review_screen.dart';
-class DetailImmobileScreen extends StatelessWidget {
+class DetailImmobileScreen extends StatefulWidget {
   final int immobileId;
   const DetailImmobileScreen({super.key, required this.immobileId});
+
+  @override
+  _DetailImmobileScreenState createState() => _DetailImmobileScreenState();
+}
+
+class _DetailImmobileScreenState extends State<DetailImmobileScreen> {
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAccess();
+  }
+
+  void _checkAccess() async {
+    // Placeholder: Replace with your actual authentication service
+    final authService = AuthService(); // Inject or initialize your auth service
+    bool loggedIn = await authService.isLoggedIn();
+    bool isOwner = await authService.isOwner();
+
+    if (!loggedIn) {
+      // Navigator.of(context).pushReplacementNamed('/login');
+      Navigator.of(context).pushReplacementNamed('/erro-screen');
+      return;
+    }
+
+    // if (!isOwner) {
+    //   
+    //   return;
+    // }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
 
   Widget _buildThumbnail(String? imageBase64, String contentType) {
     if (imageBase64 == null || imageBase64.isEmpty) {
@@ -111,8 +147,14 @@ class DetailImmobileScreen extends StatelessWidget {
 
 @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return ChangeNotifierProvider(
-      create: (context) => ImmobileProvider()..fetchImmobile(immobileId),
+      create: (context) => ImmobileProvider()..fetchImmobile(widget.immobileId),
       child: Scaffold(
         appBar: AppBar(
           title: Consumer<ImmobileProvider>(
