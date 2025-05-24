@@ -6,11 +6,11 @@ from review.models import Review, ReviewType
 class Tenant(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,related_name='tenant_profile')
     name = models.CharField(max_length=100)
-    age = models.PositiveIntegerField()
-    job = models.CharField(max_length=100)
-    city = models.CharField(max_length=100)
-    state = models.CharField(max_length=100)
-    about_me = models.TextField()
+    age = models.PositiveIntegerField(null=True)
+    job = models.CharField(max_length=100,null=True)
+    city = models.CharField(max_length=100,null=True)
+    state = models.CharField(max_length=100,null=True)
+    about_me = models.TextField(null=True)
     
     # Rental preferences
     prefers_studio = models.BooleanField(default=False)
