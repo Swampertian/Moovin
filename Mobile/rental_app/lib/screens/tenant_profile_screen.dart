@@ -7,7 +7,7 @@ import 'search_immobile_screen.dart';
 import '../services/auth_service.dart';
 import '../providers/notification_provider.dart'; 
 import 'notification_screen.dart'; 
-import '_screen.dart'; 
+import 'chat_screen.dart'; 
 
 
 class TenantProfileScreen extends StatefulWidget {
