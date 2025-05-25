@@ -7,6 +7,9 @@ from rest_framework.viewsets import ModelViewSet
 from .models import Tenant
 from .serializers import TenantSerializer
 from django.contrib.auth.models import User
+from rest_framework.permissions import AllowAny
+from rest_framework import generics
+
 
 class TenantViewSet(ModelViewSet):
     queryset = Tenant.objects.all()
@@ -45,3 +48,11 @@ class TenantViewSet(ModelViewSet):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class TenantCreateView(generics.CreateAPIView):
+    queryset = Tenant.objects.all()
+    serializer_class = TenantSerializer
+    permission_classes = [AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        print("REQUISIÇÃO RECEBIDA:", request.data)
+        return super().create(request, *args, **kwargs)

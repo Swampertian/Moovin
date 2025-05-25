@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.urls import path, include
 from .views import *
+from owner.views import OwnerCreateView
+from tenant.views import TenantCreateView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
@@ -16,4 +18,5 @@ urlpatterns = [
     path('logout-web/',LogoutWebView.as_view(),name='logout-web'),
     path('request-email-verification/',RequestEmailVerification.as_view(),name='request-verify-email'),
     path('verify-email-code/', VerifyEmailCode.as_view(), name='verify-email-code'),
+
 ]
