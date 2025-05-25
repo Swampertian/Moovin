@@ -16,6 +16,8 @@ import 'screens/unauthorized_screen.dart';
 import 'screens/notification_screen.dart';
 import '../providers/notification_provider.dart';
 import 'screens/review_create_screen.dart';
+import 'screens/review_screen.dart';
+import 'screens/verify_email_screen.dart';
 import 'screens/onboarding_screen.dart';
 
 void main() async { 
