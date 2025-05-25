@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'providers/review_provider.dart'; 
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
@@ -17,21 +18,20 @@ import '../providers/notification_provider.dart';
 import 'screens/review_create_screen.dart';
 import 'screens/review_screen.dart';
 import 'screens/verify_email_screen.dart';
-import 'screens/review_create_screen.dart';
-void main() {
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => NotificationProvider()),
-        // Outros providers
-      ],
-      child: const MyApp(),
-    ),
-  );
+import 'screens/onboarding_screen.dart';
+
+void main() async { 
+  WidgetsFlutterBinding.ensureInitialized(); 
+  final prefs = await SharedPreferences.getInstance(); 
+  final bool hasCompletedOnboarding = prefs.getBool('has_completed_onboarding') ?? false;
+
+  runApp(MyApp(hasCompletedOnboarding: hasCompletedOnboarding));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool hasCompletedOnboarding;
+
+  const MyApp({super.key, required this.hasCompletedOnboarding}); 
 
   @override
   Widget build(BuildContext context) {
@@ -41,26 +41,32 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.green,
         textTheme: GoogleFonts.khulaTextTheme(),
       ),
-      initialRoute: '/login',
+
+      home: hasCompletedOnboarding 
+          ? const LoginScreen()
+          : const OnboardingScreen(), 
       routes: {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
         '/tenant': (context) => const TenantProfileScreen(),
         '/owner': (context) => const OwnerProfileScreen(),
         '/verify-email': (context) => const VerifyEmailScreen(),
-        '/immobile_details': (context) => const DetailImmobileScreen(immobileId: 1),
+        '/immobile_details': (context) => ChangeNotifierProvider(
+  create: (context) => ReviewProvider(),
+  child:  DetailImmobileScreen(immobileId: 3),
+),
         '/owner_dashboard': (context) => const OwnerDashboardScreen(),
         '/search-immobile': (context) => const SearchImmobileScreen(),
         '/erro-screen': (context) => const UnauthorizedScreen(),        
         '/notifications': (context) => const NotificationScreen(),
-        '/create_review': (context) => ChangeNotifierProvider( // Forneça o ReviewProvider aqui
+        '/create_review': (context) => ChangeNotifierProvider(
   create: (_) => ReviewProvider(),
   child: Builder(
     builder: (newContext) {
       final args = ModalRoute.of(newContext)?.settings.arguments as Map<String, dynamic>?;
       final reviewType = args?['reviewType'] as String? ?? 'PROPERTY';
       final targetId = args?['targetId'] as int? ?? 3;
-      final targetName = args?['targetName'] as String? ?? 'admin'; // Pegue o targetName também
+      final targetName = args?['targetName'] as String? ?? 'admin';
       return CreateReviewScreen(
         reviewType: reviewType,
         targetId: targetId,
@@ -69,7 +75,7 @@ class MyApp extends StatelessWidget {
     },
   ),
 ),
-'/review': (context) => ChangeNotifierProvider( // Ou Provider
+'/review': (context) => ChangeNotifierProvider( 
   create: (_) => ReviewProvider(),
   child: Builder(
     builder: (newContext) {
@@ -83,7 +89,6 @@ class MyApp extends StatelessWidget {
     },
   )
 )
-        // '/review': (context) => const ReviewScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/create-profile') {
