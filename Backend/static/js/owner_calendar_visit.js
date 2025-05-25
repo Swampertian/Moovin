@@ -116,7 +116,8 @@ document.getElementById('visit-form').addEventListener('submit', function (e) {
         body: formData,
         headers: {
             'X-CSRFToken': getCookie('csrftoken') 
-        }
+        },
+        credentials: 'same-origin' 
     })
     .then(res => {
         if (!res.ok) throw new Error('Erro ao enviar');

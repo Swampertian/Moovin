@@ -9,7 +9,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 class VisitViewSet(viewsets.ModelViewSet):
     queryset = Visit.objects.all()
     serializer_class = VisitSerializer
-    ##permission_classes = [permissions.IsAuthenticated, IsPremiumOwner]
+    permission_classes = [permissions.IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
     def get_queryset(self):
