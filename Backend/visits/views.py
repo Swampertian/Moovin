@@ -4,11 +4,13 @@ from .serializers import VisitSerializer
 ##from .permissions import IsPremiumOwner
 from rest_framework.exceptions import ValidationError
 from datetime import datetime
+from rest_framework.parsers import MultiPartParser, FormParser
 
 class VisitViewSet(viewsets.ModelViewSet):
     queryset = Visit.objects.all()
     serializer_class = VisitSerializer
     ##permission_classes = [permissions.IsAuthenticated, IsPremiumOwner]
+    parser_classes = [MultiPartParser, FormParser]
 
     def get_queryset(self):
         return Visit.objects.filter(owner=self.request.user)

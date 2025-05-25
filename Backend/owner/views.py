@@ -30,6 +30,8 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 import calendar
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
@@ -514,14 +516,15 @@ class OwnerManagementImmobileDetailView(PermissionRequiredMixin,TemplateView):
 
 # ------------------  Pagina de agendamento ----------- 
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')  # Garante que o token CSRF seja enviado no cookie
 class OwnerVisitScheduleView(LoginRequiredMixin, TemplateView):
     template_name = 'owner/visit_schedule.html'
-    login_url = '/api/users/token'
+    login_url = '/api/users/login-web/'
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             try:
-                user = User.objects.get(id=3) 
+                user = User.objects.get(id=3)  #  Só para testes locais; remover isso na produção
                 login(request, user, backend='django.contrib.auth.backends.ModelBackend')
                 messages.info(request, "Logado automaticamente como proprietário de teste.")
             except User.DoesNotExist:
@@ -532,42 +535,29 @@ class OwnerVisitScheduleView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
-        owner = getattr(user, 'owner_profile', None).first()
+        owner = getattr(user, 'owner_profile', None)
 
-        try:
-            # owner = Owner.objects.get(user=self.request.user)  # or request.user.id
-            owner = Owner.objects.get(id=1)
-            context['owner']=owner
-            
-        except Owner.DoesNotExist:
-            context['error'] = 'Owner not found'
-        return context
+        if not owner:
+            context['error'] = 'Proprietário não encontrado.'
+            return context
 
-
-        # Buscar imóveis do proprietário
         properties = Immobile.objects.filter(owner=owner)
 
-        
         immobile_id = self.request.GET.get('immobile_id')
-        selected_property = None
-        if immobile_id:
-            try:
-                selected_property = properties.get(id_immobile=immobile_id)
-            except Immobile.DoesNotExist:
-                messages.warning(self.request, "Imóvel não encontrado ou não pertence ao proprietário.")
+        selected_property = properties.filter(id_immobile=immobile_id).first() if immobile_id else None
 
-     
         today = timezone.now().date()
         current_year = today.year
         current_month = today.month
-        num_days = (datetime(current_year, current_month + 1, 1) - timezone.timedelta(days=1)).day if current_month < 12 else 31
+        num_days = calendar.monthrange(current_year, current_month)[1]
         days_in_month = list(range(1, num_days + 1))
         months = [(i, calendar.month_name[i]) for i in range(1, 13)]
-        
+
         context.update({
-            'immobile_id': immobile_id or (selected_property.id_immobile if selected_property else None),
+            'owner': owner,
             'properties': properties,
             'selected_property': selected_property,
+            'immobile_id': immobile_id or (selected_property.id_immobile if selected_property else None),
             'days_in_month': days_in_month,
             'month': current_month,
             'year': current_year,

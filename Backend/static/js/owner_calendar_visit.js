@@ -91,25 +91,43 @@ document.querySelector('#next-year').onclick = () => {
     generateCalendar(curr_month.value, curr_year.value);
 };
 
-// Submissão do formulário
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+
 document.getElementById('visit-form').addEventListener('submit', function (e) {
     e.preventDefault();
     const formData = new FormData(this);
 
     fetch('/api/visits/', {
         method: 'POST',
-        body: formData
+        body: formData,
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken') 
+        }
     })
-        .then(res => {
-            if (!res.ok) throw new Error('Erro ao enviar');
-            return res.json();
-        })
-        .then(data => {
-            alert('Visita agendada com sucesso!');
-            location.reload();
-        })
-        .catch(err => {
-            alert('Erro ao agendar visita.');
-            console.error(err);
-        });
+    .then(res => {
+        if (!res.ok) throw new Error('Erro ao enviar');
+        return res.json();
+    })
+    .then(data => {
+        alert('Visita agendada com sucesso!');
+        location.reload();
+    })
+    .catch(err => {
+        alert('Erro ao agendar visita.');
+        console.error(err);
+    });
 });
