@@ -50,6 +50,7 @@ class MyApp extends StatelessWidget {
         '/register': (context) => const RegisterScreen(),
         '/tenant': (context) => const TenantProfileScreen(),
         '/owner': (context) => const OwnerProfileScreen(),
+        '/verify-email': (context) => const VerifyEmailScreen(),
         '/immobile_details': (context) => ChangeNotifierProvider(
   create: (context) => ReviewProvider(),
   child:  DetailImmobileScreen(immobileId: 3),
