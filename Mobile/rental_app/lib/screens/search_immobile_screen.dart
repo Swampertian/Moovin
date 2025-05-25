@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart'; 
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../services/api_service.dart';
 import '../models/immobile.dart';
 import '../providers/review_provider.dart';
+import '../providers/notification_provider.dart'; 
 import 'detail_immobile_screen.dart';
 import 'login_screen.dart';
 import 'tenant_profile_screen.dart';
 import 'owner_dashboard_screen.dart';
+import 'notification_screen.dart'; 
+import 'chat_screen.dart'; 
 
 class SearchImmobileScreen extends StatefulWidget {
   const SearchImmobileScreen({super.key});
@@ -24,7 +27,7 @@ class _SearchImmobileScreenState extends State<SearchImmobileScreen> {
   bool isLoading = true;
   bool isPressed = false;
 
-  final FlutterSecureStorage _secureStorage = FlutterSecureStorage(); 
+  final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
   String? _userType;
 
   final Map<String, String> tipoMap = {
@@ -36,7 +39,7 @@ class _SearchImmobileScreenState extends State<SearchImmobileScreen> {
   @override
   void initState() {
     super.initState();
-    _loadUserType(); // Carregar o tipo de usuário ao iniciar a tela
+    _loadUserType();
     fetchImmobiles({});
     _searchController.addListener(() {
       setState(() {
@@ -45,10 +48,9 @@ class _SearchImmobileScreenState extends State<SearchImmobileScreen> {
     });
   }
 
-  // Função para carregar o tipo de usuário do storage
   Future<void> _loadUserType() async {
     _userType = await _secureStorage.read(key: 'user_type');
-    setState(() {}); 
+    setState(() {});
   }
 
   @override
@@ -438,12 +440,12 @@ class _SearchImmobileScreenState extends State<SearchImmobileScreen> {
           children: [
             Image.asset(
               'assets/images/logo.png',
-              height: 70, 
-              width: 70, 
+              height: 70,
+              width: 70,
             ),
-            const SizedBox(width: 8), 
+            const SizedBox(width: 8),
             Padding(
-              padding: const EdgeInsets.only(top: 8.0), 
+              padding: const EdgeInsets.only(top: 8.0),
               child: const Text(
                 'Moovin',
                 style: TextStyle(
@@ -460,8 +462,8 @@ class _SearchImmobileScreenState extends State<SearchImmobileScreen> {
             icon: const Icon(Icons.menu, color: Colors.white),
             onSelected: (String result) {
               switch (result) {
-                case 'dashboard_proprietario': 
-                  if (_userType == 'Proprietario') { // Verifique se é proprietário antes de navegar
+                case 'dashboard_proprietario':
+                  if (_userType == 'Proprietario') {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const OwnerDashboardScreen()),
@@ -518,9 +520,8 @@ class _SearchImmobileScreenState extends State<SearchImmobileScreen> {
                 ),
               ];
 
-              // Adiciona a opção "Dashboard do Proprietário" se o usuário for proprietário
               if (_userType == 'Proprietario') {
-                menuItems.insert(0, // Insere no início da lista, ou onde preferir
+                menuItems.insert(0,
                   const PopupMenuItem<String>(
                     value: 'dashboard_proprietario',
                     child: Row(
@@ -568,13 +569,20 @@ class _SearchImmobileScreenState extends State<SearchImmobileScreen> {
         onTap: (index) {
           switch (index) {
             case 0:
-              // Já está na tela de busca
               break;
             case 1:
-              // Lógica para Notificações (ainda não implementada)
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ChangeNotifierProvider(
+                    create: (context) => NotificationProvider(),
+                    child: const NotificationScreen(),
+                  ),
+                ),
+              );
               break;
             case 2:
-              // Lógica para Conversas (ainda não implementada)
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatScreen()));
               break;
             case 3:
               Navigator.push(context, MaterialPageRoute(builder: (context) => const TenantProfileScreen()));
@@ -651,25 +659,25 @@ class _SearchImmobileScreenState extends State<SearchImmobileScreen> {
                 GestureDetector(
                   onTap: () async {
                     setState(() {
-                      isPressedMap['Casa'] = true; // Define como true ao tocar
+                      isPressedMap['Casa'] = true;
                     });
                     final tipoSelecionado = tipoMap['Casa'];
                     print('Tipo selecionado: $tipoSelecionado');
                     await fetchImmobiles({'tipo': tipoSelecionado});
                     setState(() {
-                      isPressedMap['Casa'] = false; // Define como false após a ação
+                      isPressedMap['Casa'] = false;
                     });
                   },
                   child: _buildCategoryButton(
                     context,
                     icon: Icons.house_outlined,
                     label: "Casa",
-                    selected: isPressedMap['Casa']!, // Usa o estado do mapa
+                    selected: isPressedMap['Casa']!,
                     onTap: () {
                       setState(() {
-                        isPressedMap['Casa'] = !isPressedMap['Casa']!; // Alterna o estado
-                        if (isPressedMap['Casa']!) { // Se selecionado
-                          isPressedMap['Apartamento'] = false; // Desseleciona outros
+                        isPressedMap['Casa'] = !isPressedMap['Casa']!;
+                        if (isPressedMap['Casa']!) {
+                          isPressedMap['Apartamento'] = false;
                           isPressedMap['Kitnet'] = false;
                         }
                       });

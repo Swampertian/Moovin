@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'providers/review_provider.dart'; 
+import 'providers/review_provider.dart';
+import 'providers/notification_provider.dart'; 
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/tenant_profile_screen.dart';
@@ -14,9 +15,8 @@ import 'screens/review_screen.dart';
 import 'screens/create_profile_screen.dart';
 import 'screens/unauthorized_screen.dart';
 import 'screens/notification_screen.dart';
-import '../providers/notification_provider.dart';
+import 'screens/chat_screen.dart'; 
 import 'screens/review_create_screen.dart';
-import 'screens/review_screen.dart';
 import 'screens/verify_email_screen.dart';
 import 'screens/onboarding_screen.dart';
 
@@ -25,13 +25,20 @@ void main() async {
   final prefs = await SharedPreferences.getInstance(); 
   final bool hasCompletedOnboarding = prefs.getBool('has_completed_onboarding') ?? false;
 
-  runApp(MyApp(hasCompletedOnboarding: hasCompletedOnboarding));
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
+      ],
+      child: MyApp(hasCompletedOnboarding: hasCompletedOnboarding),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
   final bool hasCompletedOnboarding;
 
-  const MyApp({super.key, required this.hasCompletedOnboarding}); 
+  const MyApp({super.key, required this.hasCompletedOnboarding});
 
   @override
   Widget build(BuildContext context) {
@@ -42,9 +49,9 @@ class MyApp extends StatelessWidget {
         textTheme: GoogleFonts.khulaTextTheme(),
       ),
 
-      home: hasCompletedOnboarding 
+      home: hasCompletedOnboarding
           ? const LoginScreen()
-          : const OnboardingScreen(), 
+          : const OnboardingScreen(),
       routes: {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
@@ -52,43 +59,47 @@ class MyApp extends StatelessWidget {
         '/owner': (context) => const OwnerProfileScreen(),
         '/verify-email': (context) => const VerifyEmailScreen(),
         '/immobile_details': (context) => ChangeNotifierProvider(
-  create: (context) => ReviewProvider(),
-  child:  DetailImmobileScreen(immobileId: 3),
-),
+              create: (context) => ReviewProvider(),
+              child: DetailImmobileScreen(immobileId: ModalRoute.of(context)?.settings.arguments as int? ?? 3), 
+            ),
         '/owner_dashboard': (context) => const OwnerDashboardScreen(),
         '/search-immobile': (context) => const SearchImmobileScreen(),
-        '/erro-screen': (context) => const UnauthorizedScreen(),        
-        '/notifications': (context) => const NotificationScreen(),
+        '/erro-screen': (context) => const UnauthorizedScreen(),
+        '/notifications': (context) => ChangeNotifierProvider( 
+              create: (context) => NotificationProvider(),
+              child: const NotificationScreen(),
+            ),
+        '/conversations': (context) => const ChatScreen(), 
         '/create_review': (context) => ChangeNotifierProvider(
-  create: (_) => ReviewProvider(),
-  child: Builder(
-    builder: (newContext) {
-      final args = ModalRoute.of(newContext)?.settings.arguments as Map<String, dynamic>?;
-      final reviewType = args?['reviewType'] as String? ?? 'PROPERTY';
-      final targetId = args?['targetId'] as int? ?? 3;
-      final targetName = args?['targetName'] as String? ?? 'admin';
-      return CreateReviewScreen(
-        reviewType: reviewType,
-        targetId: targetId,
-        targetName: targetName,
-      );
-    },
-  ),
-),
-'/review': (context) => ChangeNotifierProvider( 
-  create: (_) => ReviewProvider(),
-  child: Builder(
-    builder: (newContext) {
-      final args = ModalRoute.of(newContext)?.settings.arguments as Map<String, dynamic>?;
-      final reviewType = args?['reviewType'] as String? ?? 'immobile';
-      final targetId = args?['targetId'] as int? ?? 1;
-      return ReviewsScreen(
-        reviewType: reviewType,
-        targetId: targetId,
-      );
-    },
-  )
-)
+              create: (_) => ReviewProvider(),
+              child: Builder(
+                builder: (newContext) {
+                  final args = ModalRoute.of(newContext)?.settings.arguments as Map<String, dynamic>?;
+                  final reviewType = args?['reviewType'] as String? ?? 'PROPERTY';
+                  final targetId = args?['targetId'] as int? ?? 3;
+                  final targetName = args?['targetName'] as String? ?? 'admin';
+                  return CreateReviewScreen(
+                    reviewType: reviewType,
+                    targetId: targetId,
+                    targetName: targetName,
+                  );
+                },
+              ),
+            ),
+        '/review': (context) => ChangeNotifierProvider(
+              create: (_) => ReviewProvider(),
+              child: Builder(
+                builder: (newContext) {
+                  final args = ModalRoute.of(newContext)?.settings.arguments as Map<String, dynamic>?;
+                  final reviewType = args?['reviewType'] as String? ?? 'immobile';
+                  final targetId = args?['targetId'] as int? ?? 1;
+                  return ReviewsScreen(
+                    reviewType: reviewType,
+                    targetId: targetId,
+                  );
+                },
+              ),
+            ),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/create-profile') {
@@ -120,7 +131,6 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
-}
-    
+}    
 
 //nao apague os comentarios que chamam funcoes nem importacoes desnecessarios, elas serviram para testes.

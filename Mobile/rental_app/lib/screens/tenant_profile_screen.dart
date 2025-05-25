@@ -3,8 +3,13 @@ import 'package:provider/provider.dart';
 import '../providers/tenant_provider.dart';
 import '../services/api_service.dart';
 import './tenant_edit_profile_screen.dart';
-import 'search_immobile_screen.dart'; 
+import 'search_immobile_screen.dart';
 import '../services/auth_service.dart';
+import '../providers/notification_provider.dart'; 
+import 'notification_screen.dart'; 
+import '_screen.dart'; 
+
+
 class TenantProfileScreen extends StatefulWidget {
   const TenantProfileScreen({super.key});
 
@@ -14,8 +19,9 @@ class TenantProfileScreen extends StatefulWidget {
 
 class _TenantProfileScreenState extends State<TenantProfileScreen> {
   bool _isLoading = true;
+  final AuthService _authService = AuthService(); // Instância de AuthService
 
-   @override
+  @override
   void initState() {
     super.initState();
     _checkAccess();
@@ -32,28 +38,36 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
   }
 
   void _checkAccess() async {
-    // Placeholder: Replace with your actual authentication service
-    final authService = AuthService(); // Inject or initialize your auth service
-    bool loggedIn = await authService.isLoggedIn();
-    bool isTenant = await authService.isTenant();
+    bool loggedIn = await _authService.isLoggedIn();
+    bool isTenant = await _authService.isTenant();
 
     if (!loggedIn) {
-      Navigator.of(context).pushReplacementNamed('/login');
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed('/login');
+      }
       return;
     } else if (!isTenant) {
-      Navigator.of(context).pushReplacementNamed('/erro-screen');
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed('/erro-screen');
+      }
       return;
     }
 
-
-    setState(() {
-      _isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
-
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return ChangeNotifierProvider(
       create: (context) => TenantProvider()..fetchTenant(),
       child: Scaffold(
@@ -62,12 +76,12 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
           backgroundColor: Colors.green,
           title: const Text(
             'Perfil',
-            style: TextStyle(color: Colors.white), // Texto "Perfil" branco
+            style: TextStyle(color: Colors.white),
           ),
           leading: IconButton(
             icon: const Icon(
               Icons.arrow_back,
-              color: Colors.white, // Ícone da seta branco
+              color: Colors.white,
             ),
             onPressed: () => Navigator.pop(context),
           ),
@@ -77,7 +91,7 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
                 return IconButton(
                   icon: const Icon(
                     Icons.edit,
-                    color: Colors.white, // Ícone de editar branco
+                    color: Colors.white,
                   ),
                   onPressed: provider.tenant != null
                       ? () async {
@@ -90,7 +104,7 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
                             ),
                           );
                           if (result == true) {
-                            provider.fetchTenant(); // Refresh the data after editing
+                            provider.fetchTenant();
                           }
                         }
                       : null,
@@ -390,20 +404,25 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
           backgroundColor: Colors.green[600],
           selectedItemColor: Colors.white,
           unselectedItemColor: Colors.white70,
-          currentIndex: 3, // Mantido 3, pois Perfil é o último item (índice 3)
+          currentIndex: 3, 
           onTap: (index) {
-            // Lógica de navegação
+          
             if (index == 0) {
-              // Redireciona para a tela de busca (SearchImmobileScreen)
               Navigator.push(context, MaterialPageRoute(builder: (context) => const SearchImmobileScreen()));
             } else if (index == 1) {
-              // Lógica para Notificações (ainda não implementada)
-              // Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationsScreen()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ChangeNotifierProvider(
+                    create: (context) => NotificationProvider(),
+                    child: const NotificationScreen(),
+                  ),
+                ),
+              );
             } else if (index == 2) {
-              // Lógica para Conversas (ainda não implementada)
-              // Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatScreen()));
             } else if (index == 3) {
-              // Já está na tela de perfil, talvez fazer nada ou rolar para o topo
+      
             }
           },
         ),
