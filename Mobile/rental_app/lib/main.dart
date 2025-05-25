@@ -12,21 +12,24 @@ import 'screens/owner_dashboard_screen.dart';
 import 'screens/search_immobile_screen.dart';
 import 'screens/review_screen.dart';
 import 'screens/create_profile_screen.dart';
+import 'screens/unauthorized_screen.dart';
+import 'screens/notification_screen.dart';
+import '../providers/notification_provider.dart';
 import 'screens/review_create_screen.dart';
-import 'screens/onboarding_screen.dart'; // Adicionado
+import 'screens/onboarding_screen.dart';
 
-void main() async { // Modificado para async
-  WidgetsFlutterBinding.ensureInitialized(); // Adicionado
-  final prefs = await SharedPreferences.getInstance(); // Adicionado
-  final bool hasCompletedOnboarding = prefs.getBool('has_completed_onboarding') ?? false; // Adicionado
+void main() async { 
+  WidgetsFlutterBinding.ensureInitialized(); 
+  final prefs = await SharedPreferences.getInstance(); 
+  final bool hasCompletedOnboarding = prefs.getBool('has_completed_onboarding') ?? false;
 
-  runApp(MyApp(hasCompletedOnboarding: hasCompletedOnboarding)); // Modificado
+  runApp(MyApp(hasCompletedOnboarding: hasCompletedOnboarding));
 }
 
 class MyApp extends StatelessWidget {
-  final bool hasCompletedOnboarding; // Adicionado
+  final bool hasCompletedOnboarding;
 
-  const MyApp({super.key, required this.hasCompletedOnboarding}); // Modificado
+  const MyApp({super.key, required this.hasCompletedOnboarding}); 
 
   @override
   Widget build(BuildContext context) {
@@ -36,29 +39,31 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.green,
         textTheme: GoogleFonts.khulaTextTheme(),
       ),
-      // initialRoute: '/login', // Removido para usar 'home' dinamicamente
-      home: hasCompletedOnboarding // Adicionado
-          ? const LoginScreen() // Adicionado
-          : const OnboardingScreen(), // Adicionado
+
+      home: hasCompletedOnboarding 
+          ? const LoginScreen()
+          : const OnboardingScreen(), 
       routes: {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
         '/tenant': (context) => const TenantProfileScreen(),
         '/owner': (context) => const OwnerProfileScreen(),
         '/immobile_details': (context) => ChangeNotifierProvider(
-  create: (context) => ReviewProvider(), // Forneça o ReviewProvider aqui
+  create: (context) => ReviewProvider(),
   child:  DetailImmobileScreen(immobileId: 3),
 ),
         '/owner_dashboard': (context) => const OwnerDashboardScreen(),
         '/search-immobile': (context) => const SearchImmobileScreen(),
-        '/create_review': (context) => ChangeNotifierProvider( // Forneça o ReviewProvider aqui
+        '/erro-screen': (context) => const UnauthorizedScreen(),        
+        '/notifications': (context) => const NotificationScreen(),
+        '/create_review': (context) => ChangeNotifierProvider(
   create: (_) => ReviewProvider(),
   child: Builder(
     builder: (newContext) {
       final args = ModalRoute.of(newContext)?.settings.arguments as Map<String, dynamic>?;
       final reviewType = args?['reviewType'] as String? ?? 'PROPERTY';
       final targetId = args?['targetId'] as int? ?? 3;
-      final targetName = args?['targetName'] as String? ?? 'admin'; // Pegue o targetName também
+      final targetName = args?['targetName'] as String? ?? 'admin';
       return CreateReviewScreen(
         reviewType: reviewType,
         targetId: targetId,
@@ -67,7 +72,7 @@ class MyApp extends StatelessWidget {
     },
   ),
 ),
-'/review': (context) => ChangeNotifierProvider( // Ou Provider
+'/review': (context) => ChangeNotifierProvider( 
   create: (_) => ReviewProvider(),
   child: Builder(
     builder: (newContext) {
@@ -81,7 +86,6 @@ class MyApp extends StatelessWidget {
     },
   )
 )
-        // '/review': (context) => const ReviewScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/create-profile') {
