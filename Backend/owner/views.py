@@ -25,7 +25,7 @@ from rest_framework import authentication
 from subscriptions.mixins import DRFPermissionMixin
 from subscriptions.permissions import HasActiveSubscription
 from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decoratorfrom 
+from django.utils.decorators import method_decorator
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
