@@ -3,12 +3,14 @@ from .models import Visit
 from .serializers import VisitSerializer
 ##from .permissions import IsPremiumOwner
 from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from datetime import datetime
 
 class VisitViewSet(viewsets.ModelViewSet):
     queryset = Visit.objects.all()
     serializer_class = VisitSerializer
     ##permission_classes = [permissions.IsAuthenticated, IsPremiumOwner]
+    permission_classes =[IsAuthenticated]
 
     def get_queryset(self):
         return Visit.objects.filter(owner=self.request.user)
