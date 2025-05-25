@@ -438,7 +438,7 @@ class _SearchImmobileScreenState extends State<SearchImmobileScreen> {
           children: [
             Image.asset(
               'assets/images/logo.png',
-              height: 70, /
+              height: 70, 
               width: 70, 
             ),
             const SizedBox(width: 8), 

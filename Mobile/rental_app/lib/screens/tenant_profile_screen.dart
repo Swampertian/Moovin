@@ -4,8 +4,8 @@ import '../providers/tenant_provider.dart';
 import '../services/api_service.dart';
 import './tenant_edit_profile_screen.dart';
 import 'search_immobile_screen.dart'; 
-
-class TenantProfileScreen extends StatelessWidget {
+import '../services/auth_service.dart';
+class TenantProfileScreen extends StatefulWidget {
   const TenantProfileScreen({super.key});
 
   @override
