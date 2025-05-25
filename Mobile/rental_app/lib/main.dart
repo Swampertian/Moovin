@@ -65,10 +65,7 @@ class MyApp extends StatelessWidget {
         '/owner_dashboard': (context) => const OwnerDashboardScreen(),
         '/search-immobile': (context) => const SearchImmobileScreen(),
         '/erro-screen': (context) => const UnauthorizedScreen(),
-        '/notifications': (context) => ChangeNotifierProvider( 
-              create: (context) => NotificationProvider(),
-              child: const NotificationScreen(),
-            ),
+        '/notifications': (context) => const NotificationScreen(),
         '/conversations': (context) => const ChatScreen(), 
         '/create_review': (context) => ChangeNotifierProvider(
               create: (_) => ReviewProvider(),
