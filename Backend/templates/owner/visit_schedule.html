@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gerenciamento de Imóveis{% endblock %}
+
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/owner_calendar_visit.css' %}">
+{% endblock %}
+{% block content %}
+<div class="dashboard-container">
+    <div class="section-header">
+        <h3>Bem-vindo, {{ owner.name }}</h3>
+    </div>
+    
+        <div class="calendar light">
+            <div class="calendar-header">
+                <span class="month-picker" id="month-picker">Janeiro</span>
+                <div class="year-picker">
+                    <span class="year-change" id="prev-year"><</span>
+                    <span id="year">2023</span>
+                    <span class="year-change" id="next-year">></span>
+                </div>
+            </div>
+
+            <div class="calendar-body">
+                <div class="calendar-week-day">
+                    <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
+                </div>
+                <div class="calendar-days"> 
+                </div>
+            </div>
+
+            <div class="calendar-footer">
+                <div><span style="display:inline-block; width:15px; height:15px; background:#4caf50; border-radius:3px;"></span> Visita Confirmada</div>
+                <div><span style="display:inline-block; width:15px; height:15px; background:#f44336; border-radius:3px;"></span> Visita Cancelada</div>
+                <div><span style="display:inline-block; width:15px; height:15px; background:#0000ff; border-radius:50%;"></span> Hoje</div>
+            </div>
+
+            <div class="month-list"></div>
+            <form id="visit-form" method="POST">
+                {% csrf_token %}
+                <label for="visitor_name">Nome do Visitante:</label>
+                <input type="text" id="visitor_name" name="visitor_name" class="form-control" required>
+
+                <label for="selected-date">Data selecionada:</label>
+                <input type="text" id="selected-date" name="date" readonly required>
+
+                <label for="selected-time">Horário desejado:</label>
+                <input type="text" id="selected-time" name="time" placeholder="Ex: 14:30" required>
+
+                <input type="hidden" name="immobile" value="{{ immobile_id }}">
+                <button type="submit">Agendar Visita</button>
+            </form>
+        </div> 
+    
+</div>
+
+<script src="{% static 'js/owner_calendar_visit.js' %}"></script>
+
+{% endblock %}

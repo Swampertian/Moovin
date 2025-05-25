@@ -42,7 +42,9 @@
                 <div class="property-actions">
                     <a href="{% url 'owner-management-property-detail' prop.id_immobile %}"><button class="btn-details">Informações Detalhadas</button></a>
                     {% if prop.status == "Available" %}
-                    <a href="#"><button class="btn-details">Agendar Visita</button></a>
+                    <a href="{% url 'visit_schedule' %}?immobile_id={{ prop.id_immobile }}">
+                        <button class="btn-details">Agendar Visita</button>
+                    </a>
                     {% endif %}
                 </div>
             </div>

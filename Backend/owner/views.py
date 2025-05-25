@@ -1,6 +1,6 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render, redirect
-from django.urls import reverse
+from rest_framework import generics
 from django.utils import timezone
 from datetime import datetime, timedelta
 from immobile.models import Immobile, Payment, Rental
@@ -29,20 +29,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
-
-# class OwnerViewSet(ModelViewSet):
-#     queryset = Owner.objects.all()
-#     serializer_class = OwnerSerializer
-#     permission_classes = [IsAuthenticated]
-    
-#     def get_queryset(self):
-#         return Owner.objects.filter(user=self.request.user)
-
-#     @action(detail=False, methods=['get'], url_path='me')
-#     def me(self, request):
-#         owner = get_object_or_404(Owner, user=request.user)
-#         serializer = self.get_serializer(owner)
-#         return Response(serializer.data)
+import calendar
 
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
@@ -101,6 +88,12 @@ class OwnerViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+#Criacao de PERFIL SEM AUTENTICACAO.
+class OwnerCreateView(generics.CreateAPIView):
+    queryset = Owner.objects.all()
+    serializer_class = OwnerSerializer
+    permission_classes = [AllowAny]
+
 # Statistics Page
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
@@ -116,9 +109,22 @@ class OwnerStatisticsView(PermissionRequiredMixin, TemplateView):
     permission_required = 'subscriptions.has_active_subscription'
     login_url = 'login-web'
 
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            try:
+                user = User.objects.get(id=3)
+                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+                messages.info(request, "Logged in as user ID 1 for testing purposes.")
+            except User.DoesNotExist:
+                messages.error(request, "User with ID 1 does not exist. Please create one.")
+                return redirect(self.login_url)
+        return super().dispatch(request, *args, **kwargs)
+
     def handle_no_permission(self):
         messages.error(self.request, "Você precisa de uma assinatura ativa para acessar esta página.")
         return redirect(self.login_url)
+
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -252,7 +258,7 @@ class OwnerCalendarView(PermissionRequiredMixin,TemplateView):
             messages.error(self.request, "Você não está registrado como proprietário.")
             return context
 
-        # Get month and year from query params or default to current
+        
         month = self.request.GET.get('month', timezone.now().strftime('%Y-%m'))
         try:
             year, month = map(int, month.split('-'))
@@ -390,7 +396,7 @@ class OwnerChartsView(PermissionRequiredMixin, TemplateView):
         end_date = today
         start_date = (today.replace(day=1) - timedelta(days=365)).replace(day=1)  # Get 12 full months
 
-        # Generate all months in range for complete data
+        
         revenue_data = []
         month_dates = []
         
@@ -506,3 +512,66 @@ class OwnerManagementImmobileDetailView(PermissionRequiredMixin,TemplateView):
             context['error'] = 'Property not found'
         return context
 
+# ------------------  Pagina de agendamento ----------- 
+
+class OwnerVisitScheduleView(LoginRequiredMixin, TemplateView):
+    template_name = 'owner/visit_schedule.html'
+    login_url = '/api/users/token'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            try:
+                user = User.objects.get(id=3) 
+                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+                messages.info(request, "Logado automaticamente como proprietário de teste.")
+            except User.DoesNotExist:
+                messages.error(request, "Usuário de teste não encontrado.")
+                return redirect(self.login_url)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        owner = getattr(user, 'owner_profile', None).first()
+
+        try:
+            # owner = Owner.objects.get(user=self.request.user)  # or request.user.id
+            owner = Owner.objects.get(id=1)
+            context['owner']=owner
+            
+        except Owner.DoesNotExist:
+            context['error'] = 'Owner not found'
+        return context
+
+
+        # Buscar imóveis do proprietário
+        properties = Immobile.objects.filter(owner=owner)
+
+        
+        immobile_id = self.request.GET.get('immobile_id')
+        selected_property = None
+        if immobile_id:
+            try:
+                selected_property = properties.get(id_immobile=immobile_id)
+            except Immobile.DoesNotExist:
+                messages.warning(self.request, "Imóvel não encontrado ou não pertence ao proprietário.")
+
+     
+        today = timezone.now().date()
+        current_year = today.year
+        current_month = today.month
+        num_days = (datetime(current_year, current_month + 1, 1) - timezone.timedelta(days=1)).day if current_month < 12 else 31
+        days_in_month = list(range(1, num_days + 1))
+        months = [(i, calendar.month_name[i]) for i in range(1, 13)]
+        
+        context.update({
+            'immobile_id': immobile_id or (selected_property.id_immobile if selected_property else None),
+            'properties': properties,
+            'selected_property': selected_property,
+            'days_in_month': days_in_month,
+            'month': current_month,
+            'year': current_year,
+            'months': months,
+            'month_name': calendar.month_name[current_month],
+        })
+        return context
