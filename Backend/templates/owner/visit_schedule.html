@@ -3,59 +3,89 @@
 
 {% block title %}Gerenciamento de Imóveis{% endblock %}
 
-
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/owner_calendar_visit.css' %}">
 {% endblock %}
+
 {% block content %}
 <div class="dashboard-container">
     <div class="section-header">
-        <h3>Bem-vindo, {{ owner.name }}</h3>
+        <h3>
+            Bem-vindo{% if owner and owner.name %}, {{ owner.name }}{% endif %}
+        </h3>
     </div>
-    
-        <div class="calendar light">
-            <div class="calendar-header">
-                <span class="month-picker" id="month-picker">Janeiro</span>
-                <div class="year-picker">
-                    <span class="year-change" id="prev-year"><</span>
-                    <span id="year">2023</span>
-                    <span class="year-change" id="next-year">></span>
-                </div>
+
+    <div class="calendar light">
+        <div class="calendar-header">
+            <span class="month-picker" id="month-picker">Janeiro</span>
+            <div class="year-picker">
+                <span class="year-change" id="prev-year">&lt;</span>
+                <span id="year">2023</span>
+                <span class="year-change" id="next-year">&gt;</span>
+            </div>
+        </div>
+
+        <div class="calendar-body">
+            <div class="calendar-week-day">
+                <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
+            </div>
+            <div class="calendar-days"></div>
+        </div>
+
+        <div class="calendar-footer">
+            <div><span style="display:inline-block; width:15px; height:15px; background:#4caf50; border-radius:3px;"></span> Visita Confirmada</div>
+            <div><span style="display:inline-block; width:15px; height:15px; background:#f44336; border-radius:3px;"></span> Visita Cancelada</div>
+            <div><span style="display:inline-block; width:15px; height:15px; background:#0000ff; border-radius:50%;"></span> Hoje</div>
+        </div>
+
+        <div class="month-list"></div>
+
+       <form method="POST" action="{% url 'visit_create' %}" class="visit-form">
+            {% csrf_token %}
+
+            <div class="form-row">
+                <label for="name">Nome do Visitante:</label>
+                <input type="text" id="name" name="name" value="{{ form.name.value|default:'' }}" required>
+                {% if form.name.errors %}
+                    <div class="field-error">{{ form.name.errors.0 }}</div>
+                {% endif %}
             </div>
 
-            <div class="calendar-body">
-                <div class="calendar-week-day">
-                    <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
-                </div>
-                <div class="calendar-days"> 
-                </div>
+            <div class="form-row">
+                <label for="date">Data selecionada:</label>
+                <input type="text" id="date" name="date" value="{{ form.date.value|default:'' }}" readonly required>
+                {% if form.date.errors %}
+                    <div class="field-error">{{ form.date.errors.0 }}</div>
+                {% endif %}
             </div>
 
-            <div class="calendar-footer">
-                <div><span style="display:inline-block; width:15px; height:15px; background:#4caf50; border-radius:3px;"></span> Visita Confirmada</div>
-                <div><span style="display:inline-block; width:15px; height:15px; background:#f44336; border-radius:3px;"></span> Visita Cancelada</div>
-                <div><span style="display:inline-block; width:15px; height:15px; background:#0000ff; border-radius:50%;"></span> Hoje</div>
+            <div class="form-row">
+                <label for="time">Horário desejado:</label>
+                <input type="time" id="time" name="time" value="{{ form.time.value|default:'' }}" required>
+                {% if form.time.errors %}
+                    <div class="field-error">{{ form.time.errors.0 }}</div>
+                {% endif %}
             </div>
 
-            <div class="month-list"></div>
-            <form id="visit-form" method="POST">
-                {% csrf_token %}
-                <label for="visitor_name">Nome do Visitante:</label>
-                <input type="text" id="visitor_name" name="visitor_name" class="form-control" required>
+            <input type="hidden" name="immobile" value="{{ immobile_id }}">
+            {% if form.immobile.errors %}
+                <div class="field-error">{{ form.immobile.errors.0 }}</div>
+            {% endif %}
 
-                <label for="selected-date">Data selecionada:</label>
-                <input type="text" id="selected-date" name="date" readonly required>
+            {% if form.non_field_errors %}
+                <div class="field-error">{{ form.non_field_errors.0 }}</div>
+            {% endif %}
 
-                <label for="selected-time">Horário desejado:</label>
-                <input type="text" id="selected-time" name="time" placeholder="Ex: 14:30" required>
-
-                <input type="hidden" name="immobile" value="{{ immobile_id }}">
+            <div class="form-submit">
                 <button type="submit">Agendar Visita</button>
-            </form>
-        </div> 
-    
+            </div>
+        </form>
+
+    </div>
 </div>
 
 <script src="{% static 'js/owner_calendar_visit.js' %}"></script>
 
+
 {% endblock %}
+

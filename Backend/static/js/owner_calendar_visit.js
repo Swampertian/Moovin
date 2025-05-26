@@ -11,9 +11,17 @@ getFebDays = (year) => {
     return isLeapYear(year) ? 29 : 28;
 };
 
-function onDayClick(day, month, year) {
+function onDayClick(day, month, year, clickedElement) {
     const formatted = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    document.getElementById('selected-date').value = formatted;
+    document.getElementById('date').value = formatted;
+
+    
+    document.querySelectorAll('.calendar-day-hover.selected').forEach(el => {
+        el.classList.remove('selected');
+    });
+
+    
+    clickedElement.classList.add('selected');
 }
 
 generateCalendar = (month, year) => {
@@ -41,9 +49,13 @@ generateCalendar = (month, year) => {
             const dayNumber = i - first_day.getDay() + 1;
             day.innerHTML = dayNumber;
             day.innerHTML += `<span></span><span></span><span></span><span></span>`
-           
+            
+         
+
+
+
             day.addEventListener('click', () => {
-                onDayClick(dayNumber, month, year);
+                onDayClick(dayNumber, month, year, day);
             });
 
             if (dayNumber === currDate.getDate() &&
@@ -90,26 +102,3 @@ document.querySelector('#next-year').onclick = () => {
     ++curr_year.value;
     generateCalendar(curr_month.value, curr_year.value);
 };
-
-// Submissão do formulário
-document.getElementById('visit-form').addEventListener('submit', function (e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-
-    fetch('/api/visits/', {
-        method: 'POST',
-        body: formData
-    })
-        .then(res => {
-            if (!res.ok) throw new Error('Erro ao enviar');
-            return res.json();
-        })
-        .then(data => {
-            alert('Visita agendada com sucesso!');
-            location.reload();
-        })
-        .catch(err => {
-            alert('Erro ao agendar visita.');
-            console.error(err);
-        });
-});

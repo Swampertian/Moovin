@@ -30,7 +30,10 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 import calendar
-
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import ensure_csrf_cookie
+from visits.models import Visit
+from visits.forms import VisitForm
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
@@ -502,64 +505,73 @@ class OwnerManagementImmobileDetailView(PermissionRequiredMixin,TemplateView):
 
 # ------------------  Pagina de agendamento ----------- 
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class OwnerVisitScheduleView(LoginRequiredMixin, TemplateView):
     template_name = 'owner/visit_schedule.html'
-    login_url = '/api/users/token'
+    login_url = '/api/users/login-web/'
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             try:
-                user = User.objects.get(id=3) 
+                user = User.objects.get(id=3)
                 login(request, user, backend='django.contrib.auth.backends.ModelBackend')
                 messages.info(request, "Logado automaticamente como proprietário de teste.")
             except User.DoesNotExist:
                 messages.error(request, "Usuário de teste não encontrado.")
                 return redirect(self.login_url)
+
+        if request.method == 'POST':
+            form = VisitForm(request.POST)
+            if form.is_valid():
+                visit = form.save(commit=False)
+                visit.owner = request.user
+                visit.save()
+                messages.success(request, "Visita agendada com sucesso!")
+            else:
+                messages.error(request, "Erro ao agendar visita.")
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
-        owner = getattr(user, 'owner_profile', None).first()
 
-        try:
-            # owner = Owner.objects.get(user=self.request.user)  # or request.user.id
-            owner = Owner.objects.get(id=1)
-            context['owner']=owner
-            
-        except Owner.DoesNotExist:
-            context['error'] = 'Owner not found'
-        return context
+        owner_manager = getattr(user, 'owner_profile', None)
+        owner = owner_manager.first() if hasattr(owner_manager, 'all') else owner
 
+        if not owner:
+            context['error'] = 'Proprietário não encontrado.'
+            return context
 
-        # Buscar imóveis do proprietário
         properties = Immobile.objects.filter(owner=owner)
 
-        
         immobile_id = self.request.GET.get('immobile_id')
-        selected_property = None
-        if immobile_id:
-            try:
-                selected_property = properties.get(id_immobile=immobile_id)
-            except Immobile.DoesNotExist:
-                messages.warning(self.request, "Imóvel não encontrado ou não pertence ao proprietário.")
+        selected_property = (
+            properties.filter(id_immobile=immobile_id).first() if immobile_id else None
+        )
 
-     
         today = timezone.now().date()
         current_year = today.year
         current_month = today.month
-        num_days = (datetime(current_year, current_month + 1, 1) - timezone.timedelta(days=1)).day if current_month < 12 else 31
+        num_days = calendar.monthrange(current_year, current_month)[1]
         days_in_month = list(range(1, num_days + 1))
         months = [(i, calendar.month_name[i]) for i in range(1, 13)]
-        
+        visits_in_month = Visit.objects.filter(
+            immobile__owner=owner,
+            date__year=current_year,
+            date__month=current_month
+        )
+        visited_days = [visit.date.day for visit in visits_in_month]
         context.update({
-            'immobile_id': immobile_id or (selected_property.id_immobile if selected_property else None),
+            'form': VisitForm(initial={'immobile': selected_property}),
+            'owner': owner,
             'properties': properties,
             'selected_property': selected_property,
+            'immobile_id': immobile_id or (selected_property.id_immobile if selected_property else None),
             'days_in_month': days_in_month,
             'month': current_month,
             'year': current_year,
             'months': months,
             'month_name': calendar.month_name[current_month],
+            'visited_days': visited_days,
         })
         return context
