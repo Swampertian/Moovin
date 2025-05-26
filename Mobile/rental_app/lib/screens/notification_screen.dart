@@ -5,6 +5,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../providers/notification_provider.dart';
 import '../models/notification.dart' as models;
 import 'send_notification_screen.dart';
+import 'search_immobile_screen.dart';
+import 'tenant_profile_screen.dart';
+import 'chat_screen.dart'; 
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -28,7 +31,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 
   void _loadData() async {
-    // Carregar o user_type do FlutterSecureStorage
     final userType = await _secureStorage.read(key: 'user_type');
     setState(() {
       _userType = userType;
@@ -139,6 +141,80 @@ class _NotificationScreenState extends State<NotificationScreen> {
     provider.deleteNotification(notificationId);
   }
 
+  Widget _buildNotificationDetails(models.Notification notification) {
+    final notificationColor = _getNotificationColor(notification.type);
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                backgroundColor: notificationColor.withAlpha(50),
+                child: Icon(_getNotificationIcon(notification.type), color: notificationColor),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      notification.title,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _formatDate(notification.createdAt),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          Divider(height: 24, color: Colors.grey[300]),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _getNotificationTypeText(notification.type),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: notificationColor,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    notification.message,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Center(
+            child: TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.green),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Fechar'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -146,9 +222,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
         title: const Text('Notificações'),
         backgroundColor: Colors.green,
         elevation: 0,
+        foregroundColor: Colors.white,
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: () {
               final provider = Provider.of<NotificationProvider>(context, listen: false);
               provider.fetchNotifications();
@@ -168,8 +245,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     child: TextField(
                       decoration: InputDecoration(
                         hintText: 'Filtrar por título...',
-                        prefixIcon: Icon(Icons.search, size: 20),
-                        contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                        prefixIcon: const Icon(Icons.search, size: 20),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide(color: Colors.grey[300]!),
@@ -191,13 +268,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     ),
                   ),
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 SizedBox(
                   height: 40,
                   child: AspectRatio(
                     aspectRatio: 1,
                     child: PopupMenuButton<String>(
-                      icon: Icon(Icons.filter_list, size: 20),
+                      icon: const Icon(Icons.filter_list, size: 20),
                       onSelected: (value) {
                         setState(() {
                           _selectedFilter = value == 'Todas' ? null : value;
@@ -217,16 +294,15 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     ),
                   ),
                 ),
-                SizedBox(width: 8),
-                // Exibir o botão apenas se o user_type for 'Proprietario'
+                const SizedBox(width: 8),
                 if (!_isLoadingUserType && _userType == 'Proprietario')
                   IconButton(
-                    icon: Icon(Icons.send, size: 20),
+                    icon: const Icon(Icons.send, size: 20),
                     onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => SendNotificationScreen(),
+                          builder: (context) => const SendNotificationScreen(),
                         ),
                       );
                     },
@@ -247,14 +323,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.error_outline, size: 48, color: Colors.red),
-                        SizedBox(height: 16),
+                        const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                        const SizedBox(height: 16),
                         Text('Erro: ${provider.error}', textAlign: TextAlign.center),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
                           onPressed: () => provider.fetchNotifications(),
-                          child: Text('Tentar novamente'),
+                          child: const Text('Tentar novamente'),
                         ),
                       ],
                     ),
@@ -272,9 +348,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.notifications_off, size: 48, color: Colors.grey),
-                        SizedBox(height: 16),
-                        Text(message, style: TextStyle(fontSize: 16)),
+                        const Icon(Icons.notifications_off, size: 48, color: Colors.grey),
+                        const SizedBox(height: 16),
+                        Text(message, style: const TextStyle(fontSize: 16)),
                         if (provider.notifications.isNotEmpty)
                           TextButton(
                             style: TextButton.styleFrom(foregroundColor: Colors.green),
@@ -284,7 +360,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                 _searchTitle = '';
                               });
                             },
-                            child: Text('Mostrar todas'),
+                            child: const Text('Mostrar todas'),
                           ),
                       ],
                     ),
@@ -295,7 +371,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   onRefresh: () => provider.fetchNotifications(),
                   color: Colors.green,
                   child: ListView.separated(
-                    physics: AlwaysScrollableScrollPhysics(),
+                    physics: const AlwaysScrollableScrollPhysics(),
                     itemCount: filteredNotifications.length,
                     separatorBuilder: (context, index) => Divider(height: 1, color: Colors.grey[300]),
                     itemBuilder: (context, index) {
@@ -308,8 +384,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         background: Container(
                           color: Colors.red,
                           alignment: Alignment.centerRight,
-                          padding: EdgeInsets.symmetric(horizontal: 20),
-                          child: Icon(Icons.delete, color: Colors.white),
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: const Icon(Icons.delete, color: Colors.white),
                         ),
                         direction: DismissDirection.endToStart,
                         confirmDismiss: (direction) async {
@@ -317,18 +393,18 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             context: context,
                             builder: (BuildContext context) {
                               return AlertDialog(
-                                title: Text("Confirmar Exclusão"),
-                                content: Text("Deseja realmente excluir esta notificação?"),
+                                title: const Text("Confirmar Exclusão"),
+                                content: const Text("Deseja realmente excluir esta notificação?"),
                                 actions: [
                                   TextButton(
                                     style: TextButton.styleFrom(foregroundColor: Colors.grey),
                                     onPressed: () => Navigator.of(context).pop(false),
-                                    child: Text("Cancelar"),
+                                    child: const Text("Cancelar"),
                                   ),
                                   TextButton(
                                     style: TextButton.styleFrom(foregroundColor: Colors.red),
                                     onPressed: () => Navigator.of(context).pop(true),
-                                    child: Text("Excluir"),
+                                    child: const Text("Excluir"),
                                   ),
                                 ],
                               );
@@ -346,20 +422,20 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             showModalBottomSheet(
                               context: context,
                               builder: (context) => _buildNotificationDetails(notification),
-                              shape: RoundedRectangleBorder(
+                              shape: const RoundedRectangleBorder(
                                 borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
                               ),
                             );
                           },
                           child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.grey.withAlpha(50),
                                   blurRadius: 4,
-                                  offset: Offset(0, 2),
+                                  offset: const Offset(0, 2),
                                 ),
                               ],
                             ),
@@ -370,7 +446,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                   backgroundColor: notificationColor.withAlpha(50),
                                   child: Icon(notificationIcon, color: notificationColor),
                                 ),
-                                SizedBox(width: 12),
+                                const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -394,7 +470,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                               overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
-                                          SizedBox(width: 8),
+                                          const SizedBox(width: 8),
                                           Text(
                                             notification.isRead ? 'Visto' : 'Não Visto',
                                             style: TextStyle(
@@ -404,7 +480,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                           ),
                                         ],
                                       ),
-                                      SizedBox(height: 8),
+                                      const SizedBox(height: 8),
                                       Row(
                                         children: [
                                           Text(
@@ -414,7 +490,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                               color: notificationColor,
                                             ),
                                           ),
-                                          SizedBox(width: 8),
+                                          const SizedBox(width: 8),
                                           Text(
                                             _formatDate(notification.createdAt),
                                             style: TextStyle(
@@ -424,7 +500,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                           ),
                                         ],
                                       ),
-                                      SizedBox(height: 8),
+                                      const SizedBox(height: 8),
                                       Text(
                                         notification.message,
                                         style: TextStyle(
@@ -452,79 +528,50 @@ class _NotificationScreenState extends State<NotificationScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildNotificationDetails(models.Notification notification) {
-    final notificationColor = _getNotificationColor(notification.type);
-    return Container(
-      padding: EdgeInsets.all(16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                backgroundColor: notificationColor.withAlpha(50),
-                child: Icon(_getNotificationIcon(notification.type), color: notificationColor),
-              ),
-              SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      notification.title,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      _formatDate(notification.createdAt),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+      bottomNavigationBar: BottomNavigationBar(
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: 'Pesquisar',
+            backgroundColor: Colors.green,
           ),
-          Divider(height: 24, color: Colors.grey[300]),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _getNotificationTypeText(notification.type),
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: notificationColor,
-                    ),
-                  ),
-                  SizedBox(height: 12),
-                  Text(
-                    notification.message,
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ],
-              ),
-            ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications),
+            label: 'Notificações',
+            backgroundColor: Colors.green,
           ),
-          SizedBox(height: 16),
-          Center(
-            child: TextButton(
-              style: TextButton.styleFrom(foregroundColor: Colors.green),
-              onPressed: () => Navigator.pop(context),
-              child: Text('Fechar'),
-            ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.chat_bubble),
+            label: 'Conversas',
+            backgroundColor: Colors.green,
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Perfil',
+            backgroundColor: Colors.green,
           ),
         ],
+        backgroundColor: Colors.green[600],
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.white70,
+        currentIndex: 1,
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const SearchImmobileScreen()));
+              break;
+            case 1:
+              break;
+            case 2:
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatScreen()));
+              break;
+            case 3:
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const TenantProfileScreen()));
+              break;
+            default:
+              break;
+          }
+        },
       ),
     );
   }

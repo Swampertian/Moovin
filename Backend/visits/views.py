@@ -13,9 +13,10 @@ from .models import Visit
 from .forms import VisitForm
 from .serializers import VisitSerializer
 from immobile.models import Immobile
+from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from datetime import datetime
 
-
-# --- API (DRF) ---
 
 class VisitViewSet(viewsets.ModelViewSet):
     """
@@ -24,8 +25,10 @@ class VisitViewSet(viewsets.ModelViewSet):
     """
     queryset = Visit.objects.all()
     serializer_class = VisitSerializer
+
     permission_classes = [permissions.IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
+
 
     def get_queryset(self):
         return Visit.objects.filter(owner=self.request.user)

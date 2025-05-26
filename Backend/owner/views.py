@@ -25,7 +25,7 @@ from rest_framework import authentication
 from subscriptions.mixins import DRFPermissionMixin
 from subscriptions.permissions import HasActiveSubscription
 from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
+# from django.utils.decorators import method_decoratorfrom 
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
@@ -111,18 +111,6 @@ class OwnerStatisticsView(PermissionRequiredMixin, TemplateView):
     template_name = 'owner/statistics.html'
     permission_required = 'subscriptions.has_active_subscription'
     login_url = 'login-web'
-
-
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            try:
-                user = User.objects.get(id=3)
-                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-                messages.info(request, "Logged in as user ID 1 for testing purposes.")
-            except User.DoesNotExist:
-                messages.error(request, "User with ID 1 does not exist. Please create one.")
-                return redirect(self.login_url)
-        return super().dispatch(request, *args, **kwargs)
 
     def handle_no_permission(self):
         messages.error(self.request, "Você precisa de uma assinatura ativa para acessar esta página.")

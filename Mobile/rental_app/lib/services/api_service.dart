@@ -60,7 +60,7 @@ class ApiService {
     if (refresh == null) return false;
 
     try {
-      final response = await dio.post('/users/token/refresh/', data: {'refresh': refresh});
+      final response = await dio.post('/users/token/refresh', data: {'refresh': refresh});
       if (response.statusCode == 200) {
         await _secureStorage.write(key: 'access_token', value: response.data['access']);
         return true;
@@ -168,8 +168,8 @@ class ApiService {
   }
 
   Future<Owner> updateCurrentOwner(Map<String, dynamic> data) async {
-    final token = await _secureStorage.read(key: 'jwt_token');
-    if (token == null) throw Exception('Token JWT não encontrado.');
+    // final token = await _secureStorage.read(key: 'access_token');
+    // if (token == null) throw Exception('Token JWT não encontrado.');
 
     final response = await dio.patch(
       '$_ownerBase/me/update-profile/',
@@ -321,7 +321,7 @@ Future<List<Review>> fetchReviews({required String type, required int targetId})
   final url = Uri.parse('$_reviewBase/reviews/by_object/?type=${type.toLowerCase()}&id=$targetId');
   print('🔎 Fetching Reviews for target (type: $type, id: $targetId): $url');
 
-  final token = await _secureStorage.read(key: 'jwt_token');
+  final token = await _secureStorage.read(key: 'access_token');
   if (token == null) {
     throw Exception('Token JWT não encontrado para buscar as avaliações.');
   }
@@ -356,7 +356,7 @@ Future<List<Review>> fetchReviews({required String type, required int targetId})
     print('📝 Submitting Review: $url');
     print('type: $type');
 
-    final token = await _secureStorage.read(key: 'jwt_token');
+    final token = await _secureStorage.read(key: 'access_token');
   if (token == null) {
     throw Exception('Token JWT não encontrado para criar a avaliação.');
   }

@@ -54,9 +54,8 @@ class _LoginScreenState extends State<LoginScreen> {
       if (token != null) {
         final userData = await apiService.getUser(token); 
         
-        String userType = userData['user_type']; // Acessando diretamente o 'user_type'
-
-        // Armazenando o 'user_type' no Flutter Secure Storage
+        String userType = userData['user_type']; 
+        
         await _secureStorage.write(key: 'user_type', value: userType);
 
       } else {
