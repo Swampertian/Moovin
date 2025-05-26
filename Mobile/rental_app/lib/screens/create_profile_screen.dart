@@ -1,7 +1,7 @@
+
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart'; 
-import 'package:rental_app/models/owner.dart';
-import 'package:rental_app/models/tenant.dart';
+import 'package:http/http.dart' as http;
 
 class CreateProfileScreen extends StatefulWidget {
   final String userId;
@@ -32,68 +32,58 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
   final _formKey = GlobalKey<FormState>();
 
   Future<void> _saveProfile() async {
-    final prefs = await SharedPreferences.getInstance();
+    final url = widget.isOwner
+        ? 'http://10.0.2.2:8000/api/owner/owner_create'
+        : 'http://10.0.2.2:8000/api/tenant/tenant_create';
 
-    if (widget.isOwner) {
-      final owner = Owner(
-        id: int.parse(widget.userId),
-        name: widget.name,
-        phone: _phoneController.text,
-        city: _cityController.text,
-        state: _stateController.text,
-        aboutMe: _aboutMeController.text,
-        revenueGenerated: 0.0,
-        rentedProperties: 0,
-        ratedByTenants: 0,
-        recommendedByTenants: 0,
-        fastResponder: true,
-        rating: 0.0,
-        properties: [],
+    final body = widget.isOwner
+        ? {
+            'user': int.parse(widget.userId),
+            'name': widget.name,
+            'phone': _phoneController.text,
+            'city': _cityController.text,
+            'state': _stateController.text,
+            'about_me': _aboutMeController.text,
+          }
+        : {
+            'user': int.parse(widget.userId),
+            'name': widget.name,
+            'age': int.tryParse(_ageController.text) ?? 0,
+            'job': _jobController.text,
+            'city': _cityController.text,
+            'state': _stateController.text,
+            'about_me': _aboutMeController.text,
+          };
+
+    try {
+      print(jsonEncode(body));
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(body),
       );
 
-      await prefs.setString('owner_email', widget.email);
-      await prefs.setString('owner_name', owner.name);
-      await prefs.setString('owner_phone', owner.phone);
-      await prefs.setString('owner_city', owner.city);
-      await prefs.setString('owner_state', owner.state);
-      await prefs.setString('owner_aboutMe', owner.aboutMe);
-
-    } else {
-      final tenant = Tenant(
-        id: int.parse(widget.userId),
-        name: widget.name,
-        age: int.parse(_ageController.text),
-        job: _jobController.text,
-        city: _cityController.text,
-        state: _stateController.text,
-        aboutMe: _aboutMeController.text,
-        prefersStudio: false,
-        prefersApartment: false,
-        prefersSharedRent: false,
-        acceptsPets: false,
-        userRating: 0.0,
-        propertiesRented: 0,
-        ratedByLandlords: 0,
-        recommendedByLandlords: 0,
-        favoritedProperties: 0,
-        fastResponder: false,
-        memberSince: '',
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Perfil criado com sucesso!'), backgroundColor: Colors.green),
+        );
+        Navigator.pushReplacementNamed(context, '/login');
+      } else {
+        final errorData = jsonDecode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro: ${errorData.toString()}'), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro na conexão com o servidor: $e'), backgroundColor: Colors.red),
       );
-
-      await prefs.setString('tenant_email', widget.email);
-      await prefs.setString('tenant_name', tenant.name);
-      await prefs.setString('tenant_phone', _phoneController.text);
-      await prefs.setString('tenant_city', tenant.city);
-      await prefs.setString('tenant_state', tenant.state);
-      await prefs.setString('tenant_aboutMe', tenant.aboutMe);
-
     }
   }
 
   void _goToLogin() {
     if (_formKey.currentState?.validate() ?? false) {
       _saveProfile();
-      Navigator.pushReplacementNamed(context, '/login');
     }
   }
 
@@ -111,7 +101,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
               children: [
                 Image.asset('assets/images/logo.png', height: 180),
                 const SizedBox(height: 20),
-
                 const Text(
                   'Criação de Perfil',
                   style: TextStyle(
@@ -155,26 +144,28 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                _buildTextField(
-                  controller: _ageController,
-                  label: 'Idade',
-                  validator: (value) {
-                    final age = int.tryParse(value ?? '');
-                    if (age == null || age <= 0) {
-                      return 'Por favor, insira uma idade válida';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
+                if (!widget.isOwner) ...[
+                  _buildTextField(
+                    controller: _ageController,
+                    label: 'Idade',
+                    validator: (value) {
+                      final age = int.tryParse(value ?? '');
+                      if (age == null || age <= 0) {
+                        return 'Por favor, insira uma idade válida';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
 
-                _buildTextField(
-                  controller: _jobController,
-                  label: 'Profissão',
-                  validator: (value) =>
-                      value == null || value.isEmpty ? 'Por favor, insira sua profissão' : null,
-                ),
-                const SizedBox(height: 16),
+                  _buildTextField(
+                    controller: _jobController,
+                    label: 'Profissão',
+                    validator: (value) =>
+                        value == null || value.isEmpty ? 'Por favor, insira sua profissão' : null,
+                  ),
+                  const SizedBox(height: 16),
+                ],
 
                 _buildTextField(
                   controller: _aboutMeController,
@@ -258,3 +249,4 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
     );
   }
 }
+

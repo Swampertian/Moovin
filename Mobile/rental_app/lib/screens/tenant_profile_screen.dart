@@ -3,30 +3,96 @@ import 'package:provider/provider.dart';
 import '../providers/tenant_provider.dart';
 import '../services/api_service.dart';
 import './tenant_edit_profile_screen.dart';
+import 'search_immobile_screen.dart';
+import '../services/auth_service.dart';
+import '../providers/notification_provider.dart'; 
+import 'notification_screen.dart'; 
+import 'chat_screen.dart'; 
 
 
-class TenantProfileScreen extends StatelessWidget {
+class TenantProfileScreen extends StatefulWidget {
   const TenantProfileScreen({super.key});
 
   @override
+  _TenantProfileScreenState createState() => _TenantProfileScreenState();
+}
+
+class _TenantProfileScreenState extends State<TenantProfileScreen> {
+  bool _isLoading = true;
+  final AuthService _authService = AuthService(); // Instância de AuthService
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAccess();
+  }
+
+  Widget _buildHistoryItem(String text, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: Colors.green),
+        const SizedBox(width: 8),
+        Expanded(child: Text(text)),
+      ],
+    );
+  }
+
+  void _checkAccess() async {
+    bool loggedIn = await _authService.isLoggedIn();
+    bool isTenant = await _authService.isTenant();
+
+    if (!loggedIn) {
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed('/login');
+      }
+      return;
+    } else if (!isTenant) {
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed('/erro-screen');
+      }
+      return;
+    }
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return ChangeNotifierProvider(
       create: (context) => TenantProvider()..fetchTenant(),
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
           backgroundColor: Colors.green,
-          title: const Text('Perfil'),
+          title: const Text(
+            'Perfil',
+            style: TextStyle(color: Colors.white),
+          ),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: const Icon(
+              Icons.arrow_back,
+              color: Colors.white,
+            ),
             onPressed: () => Navigator.pop(context),
           ),
           actions: [
-
             Consumer<TenantProvider>(
               builder: (context, provider, child) {
                 return IconButton(
-                  icon: const Icon(Icons.edit),
+                  icon: const Icon(
+                    Icons.edit,
+                    color: Colors.white,
+                  ),
                   onPressed: provider.tenant != null
                       ? () async {
                           final result = await Navigator.push(
@@ -38,11 +104,10 @@ class TenantProfileScreen extends StatelessWidget {
                             ),
                           );
                           if (result == true) {
-                            provider.fetchTenant(); // Refresh the data after editing
+                            provider.fetchTenant();
                           }
                         }
                       : null,
-
                 );
               },
             ),
@@ -63,8 +128,6 @@ class TenantProfileScreen extends StatelessWidget {
             return SingleChildScrollView(
               child: Column(
                 children: [
-
-
                   Stack(
                     children: [
                       Container(
@@ -235,7 +298,6 @@ class TenantProfileScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-
                         const SizedBox(height: 24),
                         const Text(
                           'Histórico na plataforma',
@@ -320,52 +382,51 @@ class TenantProfileScreen extends StatelessWidget {
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.search),
-              label: 'Pesquisar',
-
+              label: 'Buscar',
               backgroundColor: Colors.green,
-
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.chat),
-              label: 'Chat',
-
+              icon: Icon(Icons.notifications),
+              label: 'Notificações',
               backgroundColor: Colors.green,
-
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.favorite),
-              label: 'Favoritos',
-
+              icon: Icon(Icons.chat_bubble_outline),
+              label: 'Conversas',
               backgroundColor: Colors.green,
-
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person),
               label: 'Perfil',
-
               backgroundColor: Colors.green,
             ),
           ],
           backgroundColor: Colors.green[600],
-
           selectedItemColor: Colors.white,
           unselectedItemColor: Colors.white70,
-          currentIndex: 3,
+          currentIndex: 3, 
           onTap: (index) {
-            // Handle navigation
+          
+            if (index == 0) {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const SearchImmobileScreen()));
+            } else if (index == 1) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ChangeNotifierProvider(
+                    create: (context) => NotificationProvider(),
+                    child: const NotificationScreen(),
+                  ),
+                ),
+              );
+            } else if (index == 2) {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatScreen()));
+            } else if (index == 3) {
+      
+            }
           },
         ),
       ),
-    );
-  }
-
-  Widget _buildHistoryItem(String text, IconData icon) {
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: Colors.green),
-        const SizedBox(width: 8),
-        Expanded(child: Text(text)),
-      ],
     );
   }
 }

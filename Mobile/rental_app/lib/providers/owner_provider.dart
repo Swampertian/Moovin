@@ -13,13 +13,13 @@ class OwnerProvider with ChangeNotifier {
 
   final ApiService _apiService = ApiService();
 
-  Future<void> fetchOwner(int id) async {
+  Future<void> fetchOwner() async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      _owner = await _apiService.fetchOwner(id);
+      _owner = await _apiService.fetchCurrentOwner();
     } catch (e) {
       _error = e.toString();
     } finally {

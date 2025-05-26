@@ -28,6 +28,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 
+#Credencias para o email:
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'moovinaplicativo@gmail.com'
+EMAIL_HOST_PASSWORD = 'pmpq nwkn xybn zgew'
+DEFAULT_FROM_EMAIL = 'moovinaplicativo@gmail.com'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -66,6 +74,9 @@ INSTALLED_APPS = [
     'owner',
     'users',
     'review',
+    'visits',
+    'notification',
+    'subscriptions',
 
 ]
 AUTH_USER_MODEL = 'users.User'
@@ -122,8 +133,6 @@ DATABASES = {
 }
 
 
-
-
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
@@ -148,7 +157,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'pt-BR'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Araguaina'
+USE_TZ = True
 
 USE_I18N = True
 
@@ -166,12 +176,3 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-REST_FRAMEWORK = {
-     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
-        'rest_framework.permissions.IsAuthenticated',
-     ],
-     'DEFAULT_AUTHENTICATION_CLASSES': [
-         'rest_framework_simplejwt.authentication.JWTAuthentication',
-     ],
-}

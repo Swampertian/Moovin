@@ -12,11 +12,17 @@ class ReviewSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         type_str = validated_data.pop('type')
         object_id = validated_data['object_id']
+        print(f"Tentando obter ContentType para: '{type_str}'")
+        content_type_model = type_str.lower() #no ContType esta immobile mas no model da review pede PROPERTY
+        if type_str == 'PROPERTY':
+            content_type_model = 'immobile'
         try:
-            content_type = ContentType.objects.get(model=type_str.lower())
+            content_type = ContentType.objects.get(model=content_type_model)
+            #print(f"content-{content_type}")
         except ContentType.DoesNotExist:
             raise serializers.ValidationError({'type': 'Invalid type specified.'})
 
         validated_data['content_type'] = content_type
         validated_data['type'] = type_str
+        print(validated_data)
         return super().create(validated_data)

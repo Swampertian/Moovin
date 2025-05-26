@@ -1,43 +1,39 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render, redirect
-from django.urls import reverse
+from rest_framework import generics
 from django.utils import timezone
 from datetime import datetime, timedelta
 from immobile.models import Immobile, Payment, Rental
 from django.db.models import Sum
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin,PermissionRequiredMixin
 from django.contrib.auth import login
 from users.models import User
 from owner.models import Owner
 from rest_framework import viewsets
 from .models import Owner
+from rest_framework.response import Response
+from rest_framework.decorators import action
 from .serializers import OwnerSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import AllowAny
-from django.views.decorators.csrf import csrf_exempt
+
 from rest_framework.decorators import action
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework import authentication
-
+from subscriptions.mixins import DRFPermissionMixin
+from subscriptions.permissions import HasActiveSubscription
+from django.views.decorators.csrf import csrf_exempt
+# from django.utils.decorators import method_decoratorfrom 
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
-
-# class OwnerViewSet(ModelViewSet):
-#     queryset = Owner.objects.all()
-#     serializer_class = OwnerSerializer
-#     permission_classes = [IsAuthenticated]
-    
-#     def get_queryset(self):
-#         return Owner.objects.filter(user=self.request.user)
-
-#     @action(detail=False, methods=['get'], url_path='me')
-#     def me(self, request):
-#         owner = get_object_or_404(Owner, user=request.user)
-#         serializer = self.get_serializer(owner)
-#         return Response(serializer.data)
-
+import calendar
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import ensure_csrf_cookie
+from visits.models import Visit
+from visits.forms import VisitForm
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
@@ -57,32 +53,69 @@ class OwnerViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        owner = getattr(user, 'owner_profile', None).first()
-        if owner:
+        try:
+            owner = user.owner_profile
             return Owner.objects.filter(id=owner.id)
-        return Owner.objects.none()
-    
+        except Owner.DoesNotExist:
+            return Owner.objects.none()
+
+    @action(detail=True, methods=['patch'], url_path='update-profile')
+    def update_profile(self, request, pk=None):
+        owner = self.get_object()
+        serializer = self.get_serializer(owner, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     @action(detail=False, methods=['get'], url_path='me')
     def me(self, request):
-        owner = get_object_or_404(Owner, user=request.user)
-        serializer = self.get_serializer(owner)
+        try:
+            profile = Owner.objects.get(user=request.user)
+        except Owner.DoesNotExist:
+            return Response({"detail": "Perfil não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.get_serializer(profile)
         return Response(serializer.data)
 
-# Statistics Page
-class OwnerStatisticsView(LoginRequiredMixin, TemplateView):
-    template_name = 'owner/statistics.html'
-    login_url = '/api/users/token'
+    @action(detail=False, methods=['patch'], url_path='me/update-profile')
+    def update_me_profile(self, request):
+        try:
+            owner = Owner.objects.get(user=request.user)
+        except Owner.DoesNotExist:
+            return Response({"detail": "Perfil não encontrado."}, status=status.HTTP_404_NOT_FOUND)
 
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            try:
-                user = User.objects.get(id=4)
-                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-                messages.info(request, "Logged in as user ID 1 for testing purposes.")
-            except User.DoesNotExist:
-                messages.error(request, "User with ID 1 does not exist. Please create one.")
-                return redirect(self.login_url)
-        return super().dispatch(request, *args, **kwargs)
+        serializer = self.get_serializer(owner, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#Criacao de PERFIL SEM AUTENTICACAO.
+class OwnerCreateView(generics.CreateAPIView):
+    queryset = Owner.objects.all()
+    serializer_class = OwnerSerializer
+    permission_classes = [AllowAny]
+
+# Statistics Page
+from django.views.generic import TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib import messages
+from django.shortcuts import redirect
+from django.utils import timezone
+from django.http import HttpResponseForbidden
+from datetime import datetime, timedelta
+from django.db.models import Sum, Min
+
+class OwnerStatisticsView(PermissionRequiredMixin, TemplateView):
+    template_name = 'owner/statistics.html'
+    permission_required = 'subscriptions.has_active_subscription'
+    login_url = 'login-web'
+
+    def handle_no_permission(self):
+        messages.error(self.request, "Você precisa de uma assinatura ativa para acessar esta página.")
+        return redirect(self.login_url)
+
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -106,32 +139,50 @@ class OwnerStatisticsView(LoginRequiredMixin, TemplateView):
                 start_date = (timezone.now() - timedelta(days=30)).strftime('%Y-%m-%d')
                 end_date = timezone.now().strftime('%Y-%m-%d')
 
-        start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
-        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+        try:
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+            if start_date > end_date:
+                messages.error(self.request, "A data inicial deve ser anterior ou igual à data final.")
+                start_date = (timezone.now() - timedelta(days=30)).date()
+                end_date = timezone.now().date()
+        except ValueError:
+            messages.error(self.request, "Formato de data inválido.")
+            start_date = (timezone.now() - timedelta(days=30)).date()
+            end_date = timezone.now().date()
 
         # Total expected and received revenue
         total_expected = sum(prop.rent for prop in properties)
         payments = Payment.objects.filter(
             immobile__owner=owner,
             date_received__range=[start_date, end_date]
-        )
+        ).select_related('immobile')
         total_received = payments.aggregate(Sum('amount_received'))['amount_received__sum'] or 0
 
         # Property payment status
         property_data = []
         has_properties_in_range = False
+        payment_totals = payments.values('immobile').annotate(
+            total_received=Sum('amount_received'),
+            first_date=Min('date_received')
+        ).order_by('immobile')
+        payment_dict = {p['immobile']: p for p in payment_totals}
+
         for prop in properties:
-            prop_payments = payments.filter(immobile=prop)
-            amount_received = prop_payments.aggregate(Sum('amount_received'))['amount_received__sum'] or 0
+            payment_info = payment_dict.get(prop.id_immobile, {
+                'total_received': 0,
+                'first_date': None
+            })
+            amount_received = payment_info['total_received'] or 0
             status = "Pago" if amount_received >= prop.rent else "Não Pago"
-            date_received = prop_payments.first().date_received if prop_payments.exists() else None
-            if prop_payments.exists():
+            date_received = payment_info['first_date'] or '-'
+            if amount_received > 0:
                 has_properties_in_range = True
             property_data.append({
                 'immobile': prop,
                 'status': status,
                 'valor_do_pagamento': amount_received,
-                'data_do_pagamento': date_received if date_received else '-'
+                'data_do_pagamento': date_received
             })
 
         context.update({
@@ -155,34 +206,40 @@ class OwnerStatisticsView(LoginRequiredMixin, TemplateView):
         amount_received = request.POST.get('amount_received')
         date_received = request.POST.get('date_received')
 
+        if not all([immobile_id, amount_received, date_received]):
+            messages.error(request, "Todos os campos são obrigatórios.")
+            return redirect('owner_statistics')
+
         try:
+            amount_received = float(amount_received)
+            if amount_received <= 0:
+                raise ValueError("O valor recebido deve ser positivo.")
+            date_received = datetime.strptime(date_received, '%Y-%m-%d').date()
             immobile = Immobile.objects.get(id_immobile=immobile_id, owner=owner)
             Payment.objects.create(
                 immobile=immobile,
-                amount_received=float(amount_received),
+                amount_received=amount_received,
                 date_received=date_received
             )
             messages.success(request, "Pagamento registrado com sucesso!")
+        except ValueError as e:
+            messages.error(request, f"Erro nos dados fornecidos: {str(e)}")
+        except Immobile.DoesNotExist:
+            messages.error(request, "Imóvel não encontrado ou não pertence ao proprietário.")
         except Exception as e:
             messages.error(request, f"Erro ao registrar pagamento: {str(e)}")
 
         return redirect('owner_statistics')
 
-class OwnerCalendarView(LoginRequiredMixin, TemplateView):
+class OwnerCalendarView(PermissionRequiredMixin,TemplateView):
     template_name = 'owner/calendar.html'
-    login_url = '/api/users/token'
+    permission_required = 'subscriptions.has_active_subscription'
+    login_url = 'login-web'
 
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            try:
-                user = User.objects.get(id=3)
-                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-                messages.info(request, "Logged in as user ID 1 for testing purposes.")
-            except User.DoesNotExist:
-                messages.error(request, "User with ID 1 does not exist. Please create one.")
-                return redirect(self.login_url)
-        return super().dispatch(request, *args, **kwargs)
-
+    def handle_no_permission(self):
+        messages.error(self.request, "Você precisa de uma assinatura ativa para acessar esta página.")
+        return redirect(self.login_url)
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
@@ -192,7 +249,7 @@ class OwnerCalendarView(LoginRequiredMixin, TemplateView):
             messages.error(self.request, "Você não está registrado como proprietário.")
             return context
 
-        # Get month and year from query params or default to current
+        
         month = self.request.GET.get('month', timezone.now().strftime('%Y-%m'))
         try:
             year, month = map(int, month.split('-'))
@@ -305,20 +362,14 @@ class OwnerCalendarView(LoginRequiredMixin, TemplateView):
         return context
 
 # Charts Page
-class OwnerChartsView(LoginRequiredMixin, TemplateView):
+class OwnerChartsView(PermissionRequiredMixin, TemplateView):
     template_name = 'owner/charts.html'
-    login_url = '/api/users/token'
+    permission_required = 'subscriptions.has_active_subscription'
+    login_url = 'login-web'
 
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            try:
-                user = User.objects.get(id=3)
-                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-                messages.info(request, "Logged in as user ID 1 for testing purposes.")
-            except User.DoesNotExist:
-                messages.error(request, "User with ID 1 does not exist. Please create one.")
-                return redirect(self.login_url)
-        return super().dispatch(request, *args, **kwargs)
+    def handle_no_permission(self):
+        messages.error(self.request, "Você precisa de uma assinatura ativa para acessar esta página.")
+        return redirect(self.login_url)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -336,7 +387,7 @@ class OwnerChartsView(LoginRequiredMixin, TemplateView):
         end_date = today
         start_date = (today.replace(day=1) - timedelta(days=365)).replace(day=1)  # Get 12 full months
 
-        # Generate all months in range for complete data
+        
         revenue_data = []
         month_dates = []
         
@@ -410,14 +461,15 @@ class OwnerChartsView(LoginRequiredMixin, TemplateView):
         
         return context
 
-class OwnerManagementView(TemplateView):
+class OwnerManagementView(PermissionRequiredMixin,TemplateView):
     template_name = 'owner/management.html'
-    
+    permission_required = 'subscriptions.has_active_subscription'
+    login_url = 'login-web'
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         try:
-            # owner = Owner.objects.get(user=self.request.user)  # or request.user.id
-            owner = Owner.objects.get(id=1)
+            owner = Owner.objects.get(user=self.request.user)  
             context['owner']=owner
             context['properties'] = Immobile.objects.filter(owner=owner)
         except Owner.DoesNotExist:
@@ -425,8 +477,11 @@ class OwnerManagementView(TemplateView):
             context['error'] = 'Owner not found'
         return context
 
-class OwnerManagementImmobileDetailView(TemplateView):
+class OwnerManagementImmobileDetailView(PermissionRequiredMixin,TemplateView):
     template_name = 'owner/management_detail.html'
+    permission_required = 'subscriptions.has_active_subscription'
+    login_url = 'login-web'
+
     
     def get_context_data(self, pk, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -448,3 +503,75 @@ class OwnerManagementImmobileDetailView(TemplateView):
             context['error'] = 'Property not found'
         return context
 
+# ------------------  Pagina de agendamento ----------- 
+
+@method_decorator(ensure_csrf_cookie, name='dispatch')
+class OwnerVisitScheduleView(LoginRequiredMixin, TemplateView):
+    template_name = 'owner/visit_schedule.html'
+    login_url = '/api/users/login-web/'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            try:
+                user = User.objects.get(id=3)
+                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+                messages.info(request, "Logado automaticamente como proprietário de teste.")
+            except User.DoesNotExist:
+                messages.error(request, "Usuário de teste não encontrado.")
+                return redirect(self.login_url)
+
+        if request.method == 'POST':
+            form = VisitForm(request.POST)
+            if form.is_valid():
+                visit = form.save(commit=False)
+                visit.owner = request.user
+                visit.save()
+                messages.success(request, "Visita agendada com sucesso!")
+            else:
+                messages.error(request, "Erro ao agendar visita.")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        owner_manager = getattr(user, 'owner_profile', None)
+        owner = owner_manager.first() if hasattr(owner_manager, 'all') else owner
+
+        if not owner:
+            context['error'] = 'Proprietário não encontrado.'
+            return context
+
+        properties = Immobile.objects.filter(owner=owner)
+
+        immobile_id = self.request.GET.get('immobile_id')
+        selected_property = (
+            properties.filter(id_immobile=immobile_id).first() if immobile_id else None
+        )
+
+        today = timezone.now().date()
+        current_year = today.year
+        current_month = today.month
+        num_days = calendar.monthrange(current_year, current_month)[1]
+        days_in_month = list(range(1, num_days + 1))
+        months = [(i, calendar.month_name[i]) for i in range(1, 13)]
+        visits_in_month = Visit.objects.filter(
+            immobile__owner=owner,
+            date__year=current_year,
+            date__month=current_month
+        )
+        visited_days = [visit.date.day for visit in visits_in_month]
+        context.update({
+            'form': VisitForm(initial={'immobile': selected_property}),
+            'owner': owner,
+            'properties': properties,
+            'selected_property': selected_property,
+            'immobile_id': immobile_id or (selected_property.id_immobile if selected_property else None),
+            'days_in_month': days_in_month,
+            'month': current_month,
+            'year': current_year,
+            'months': months,
+            'month_name': calendar.month_name[current_month],
+            'visited_days': visited_days,
+        })
+        return context

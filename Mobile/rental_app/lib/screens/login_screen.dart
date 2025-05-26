@@ -25,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
       _errorMessage = null; 
     });
 
-    final apiService = ApiService(baseUrl: 'http://localhost:8000/api'); 
+    final apiService = ApiService(baseUrl: 'http://127.0.0.1:8000/api'); //url de emulador
 
     try {
     String email = _emailController.text;
@@ -37,7 +37,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (result['access'] != null) {
 
-      await _secureStorage.write(key: 'jwt_token', value: result['access']);
+      await _secureStorage.write(key: 'access_token', value: result['access']);
+      await _secureStorage.write(key: 'refresh_token', value: result['refresh']);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -47,15 +48,14 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       
 // Lógica para direcionar para o perfil. Precisa ser refatorada depois. Não excluir o comentário até a refatoração  
-      String? token = await _secureStorage.read(key: 'jwt_token');
+      String? token = await _secureStorage.read(key: 'access_token');
       
      
       if (token != null) {
         final userData = await apiService.getUser(token); 
         
-        String userType = userData['user_type']; // Acessando diretamente o 'user_type'
-
-        // Armazenando o 'user_type' no Flutter Secure Storage
+        String userType = userData['user_type']; 
+        
         await _secureStorage.write(key: 'user_type', value: userType);
 
       } else {

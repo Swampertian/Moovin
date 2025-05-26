@@ -1,12 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/immobile_provider.dart';
+import '../providers/review_provider.dart';
 import '../models/immobile.dart';
-
-class DetailImmobileScreen extends StatelessWidget {
+import '../services/auth_service.dart';
+import 'review_screen.dart';
+class DetailImmobileScreen extends StatefulWidget {
   final int immobileId;
-
   const DetailImmobileScreen({super.key, required this.immobileId});
+
+  @override
+  _DetailImmobileScreenState createState() => _DetailImmobileScreenState();
+}
+
+class _DetailImmobileScreenState extends State<DetailImmobileScreen> {
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAccess();
+  }
+
+  void _checkAccess() async {
+    // Placeholder: Replace with your actual authentication service
+    final authService = AuthService(); // Inject or initialize your auth service
+    bool loggedIn = await authService.isLoggedIn();
+    bool isOwner = await authService.isOwner();
+
+    if (!loggedIn) {
+      // Navigator.of(context).pushReplacementNamed('/login');
+      Navigator.of(context).pushReplacementNamed('/erro-screen');
+      return;
+    }
+
+    // if (!isOwner) {
+    //   
+    //   return;
+    // }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
 
   Widget _buildThumbnail(String? imageBase64, String contentType) {
     if (imageBase64 == null || imageBase64.isEmpty) {
@@ -109,15 +145,21 @@ class DetailImmobileScreen extends StatelessWidget {
     );
   }
 
-  @override
+@override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return ChangeNotifierProvider(
-      create: (context) => ImmobileProvider()..fetchImmobile(immobileId),
+      create: (context) => ImmobileProvider()..fetchImmobile(widget.immobileId),
       child: Scaffold(
         appBar: AppBar(
           title: Consumer<ImmobileProvider>(
             builder: (context, provider, child) {
-              return Text('Detalhes do imóvel');
+              return const Text('Detalhes do imóvel');
             },
           ),
           backgroundColor: Colors.green,
@@ -142,6 +184,9 @@ class DetailImmobileScreen extends StatelessWidget {
               return const Center(child: Text('Erro ao carregar detalhes do imóvel.'));
             }
 
+            // Simulação da média de avaliação - REMOVER QUANDO INTEGRADO COM A API
+            double averageRating = 4.2;
+            bool hasFetchedReviews = false;
             return SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,11 +265,11 @@ class DetailImmobileScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                                immobile.propertyType == 'house'? 'Casa'
-                                : immobile.propertyType == 'apartment'? 'Apartamento'
-                                : immobile.propertyType, // tradução
-                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                                ),
+                              immobile.propertyType == 'house' ? 'Casa'
+                                  : immobile.propertyType == 'apartment' ? 'Apartamento'
+                                  : immobile.propertyType, // tradução
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
                             Text(
                               'R\$ ${immobile.rent.toStringAsFixed(2)}/mês',
                               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
@@ -249,7 +294,7 @@ class DetailImmobileScreen extends StatelessWidget {
                             _buildDetailChip(Icons.zoom_out_map, '${immobile.area} m²'),
                             _buildDetailChip(Icons.bed, '${immobile.bedrooms}'),
                             _buildDetailChip(Icons.bathtub, '${immobile.bathrooms}'),
-                            if (immobile.airConditioning) //esse IF é ´para que so mostre se o dado nao for null
+                            if (immobile.airConditioning)
                               _buildDetailChip(Icons.ac_unit, 'Ar Cond.'),
                             if (immobile.garage)
                               _buildDetailChip(Icons.garage_outlined, 'Garagem'),
@@ -267,7 +312,98 @@ class DetailImmobileScreen extends StatelessWidget {
                               _buildDetailChip(Icons.wifi, 'Internet'),
                           ],
                         ),
-                                            
+                        const SizedBox(height: 16),
+                        Consumer<ReviewProvider>(
+                          builder: (context, reviewProvider, child) {
+                            if (!hasFetchedReviews) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                reviewProvider.fetchReviews(type: 'immobile', targetId: immobile.idImmobile);
+                                hasFetchedReviews = true;
+                              });
+                            }
+                              
+                            if (reviewProvider.isLoading) {
+                              return const CircularProgressIndicator();
+                            }
+                            print('Reviews: ${reviewProvider.reviews}');
+                            final reviews = reviewProvider.reviews;
+                            double averageRating = 0;
+
+                            if (reviews.isNotEmpty) {
+            final totalRating = reviews.fold<double>(0, (sum, review) => sum + review.rating);
+            final averageRating = totalRating / reviews.length;
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ReviewsScreen(
+                          reviewType: 'PROPERTY',
+                          targetId: immobile.idImmobile,
+                          title: 'Avaliações do Imóvel',
+                        ),
+                      ),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      StarRating(rating: averageRating, starSize: 20),
+                      const SizedBox(width: 8),
+                      Text('(${reviews.length} avaliações)', style: const TextStyle(color: Colors.grey)),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pushNamed(
+                                        context,
+                                        '/review',
+                                        arguments: {
+                                          'reviewType': 'immobile',
+                                          'targetId': immobile.idImmobile,
+                                          'targetName': immobile.propertyType,
+                                        },
+                                      );
+                                    },
+                                    child: const Text('Ver avaliações'),
+                                  ),
+                ),
+              ],
+            );
+          }       else{
+                              // Sem avaliações
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('Sem avaliações ainda.', style: TextStyle(color: Colors.grey)),
+                                  const SizedBox(height: 4),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pushNamed(
+                                        context,
+                                        '/review',
+                                        arguments: {
+                                          'reviewType': 'immobile',
+                                          'targetId': immobile.idImmobile,
+                                          'targetName': immobile.propertyType,
+                                        },
+                                      );
+                                    },
+                                    child: const Text('Ver avaliações'),
+                                  ),
+                                ],
+                              );
+                            }
+                          },
+                        ),
+                        
                         const SizedBox(height: 16),
                         const Text(
                           'Detalhes',
@@ -313,6 +449,38 @@ class DetailImmobileScreen extends StatelessWidget {
           unselectedItemColor: Colors.grey,
         ),
       ),
+    );
+  }
+}
+
+// Crie um widget separado para a exibição das estrelas
+class StarRating extends StatelessWidget {
+  final double rating;
+  final double starSize;
+  final Color color;
+
+  const StarRating({
+    super.key,
+    required this.rating,
+    this.starSize = 18,
+    this.color = Colors.amber,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(5, (index) {
+        return Icon(
+          index < rating.floor()
+              ? Icons.star
+              : index < rating
+                  ? Icons.star_half
+                  : Icons.star_border,
+          color: color,
+          size: starSize,
+        );
+      }),
     );
   }
 }
