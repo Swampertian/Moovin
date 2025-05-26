@@ -40,22 +40,52 @@
 
         <div class="month-list"></div>
 
-        <form id="visit-form" method="POST">
+       <form method="POST" action="{% url 'visit_create' %}" class="visit-form">
             {% csrf_token %}
-            <label for="visitor_name">Nome do Visitante:</label>
-            <input type="text" id="visitor_name" name="visitor_name" class="form-control" required>
 
-            <label for="selected-date">Data selecionada:</label>
-            <input type="text" id="selected-date" name="date" readonly required>
+            <div class="form-row">
+                <label for="name">Nome do Visitante:</label>
+                <input type="text" id="name" name="name" value="{{ form.name.value|default:'' }}" required>
+                {% if form.name.errors %}
+                    <div class="field-error">{{ form.name.errors.0 }}</div>
+                {% endif %}
+            </div>
 
-            <label for="selected-time">Horário desejado:</label>
-            <input type="text" id="selected-time" name="time" placeholder="Ex: 14:30" required>
+            <div class="form-row">
+                <label for="date">Data selecionada:</label>
+                <input type="text" id="date" name="date" value="{{ form.date.value|default:'' }}" readonly required>
+                {% if form.date.errors %}
+                    <div class="field-error">{{ form.date.errors.0 }}</div>
+                {% endif %}
+            </div>
 
-            <input type="hidden" name="immobile" value="{{ immobile_id|default:'' }}">
-            <button type="submit">Agendar Visita</button>
+            <div class="form-row">
+                <label for="time">Horário desejado:</label>
+                <input type="time" id="time" name="time" value="{{ form.time.value|default:'' }}" required>
+                {% if form.time.errors %}
+                    <div class="field-error">{{ form.time.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <input type="hidden" name="immobile" value="{{ immobile_id }}">
+            {% if form.immobile.errors %}
+                <div class="field-error">{{ form.immobile.errors.0 }}</div>
+            {% endif %}
+
+            {% if form.non_field_errors %}
+                <div class="field-error">{{ form.non_field_errors.0 }}</div>
+            {% endif %}
+
+            <div class="form-submit">
+                <button type="submit">Agendar Visita</button>
+            </div>
         </form>
+
     </div>
 </div>
 
 <script src="{% static 'js/owner_calendar_visit.js' %}"></script>
+
+
 {% endblock %}
+

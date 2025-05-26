@@ -32,7 +32,8 @@ from django.shortcuts import get_object_or_404
 import calendar
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
-
+from visits.models import Visit
+from visits.forms import VisitForm
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
@@ -516,7 +517,7 @@ class OwnerManagementImmobileDetailView(PermissionRequiredMixin,TemplateView):
 
 # ------------------  Pagina de agendamento ----------- 
 
-@method_decorator(ensure_csrf_cookie, name='dispatch')  # Garante que o token CSRF seja enviado no cookie
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class OwnerVisitScheduleView(LoginRequiredMixin, TemplateView):
     template_name = 'owner/visit_schedule.html'
     login_url = '/api/users/login-web/'
@@ -524,18 +525,30 @@ class OwnerVisitScheduleView(LoginRequiredMixin, TemplateView):
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             try:
-                user = User.objects.get(id=3)  #  Só para testes locais; remover isso na produção
+                user = User.objects.get(id=3)
                 login(request, user, backend='django.contrib.auth.backends.ModelBackend')
                 messages.info(request, "Logado automaticamente como proprietário de teste.")
             except User.DoesNotExist:
                 messages.error(request, "Usuário de teste não encontrado.")
                 return redirect(self.login_url)
+
+        if request.method == 'POST':
+            form = VisitForm(request.POST)
+            if form.is_valid():
+                visit = form.save(commit=False)
+                visit.owner = request.user
+                visit.save()
+                messages.success(request, "Visita agendada com sucesso!")
+            else:
+                messages.error(request, "Erro ao agendar visita.")
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
-        owner = getattr(user, 'owner_profile', None)
+
+        owner_manager = getattr(user, 'owner_profile', None)
+        owner = owner_manager.first() if hasattr(owner_manager, 'all') else owner
 
         if not owner:
             context['error'] = 'Proprietário não encontrado.'
@@ -544,7 +557,9 @@ class OwnerVisitScheduleView(LoginRequiredMixin, TemplateView):
         properties = Immobile.objects.filter(owner=owner)
 
         immobile_id = self.request.GET.get('immobile_id')
-        selected_property = properties.filter(id_immobile=immobile_id).first() if immobile_id else None
+        selected_property = (
+            properties.filter(id_immobile=immobile_id).first() if immobile_id else None
+        )
 
         today = timezone.now().date()
         current_year = today.year
@@ -552,8 +567,14 @@ class OwnerVisitScheduleView(LoginRequiredMixin, TemplateView):
         num_days = calendar.monthrange(current_year, current_month)[1]
         days_in_month = list(range(1, num_days + 1))
         months = [(i, calendar.month_name[i]) for i in range(1, 13)]
-
+        visits_in_month = Visit.objects.filter(
+            immobile__owner=owner,
+            date__year=current_year,
+            date__month=current_month
+        )
+        visited_days = [visit.date.day for visit in visits_in_month]
         context.update({
+            'form': VisitForm(initial={'immobile': selected_property}),
             'owner': owner,
             'properties': properties,
             'selected_property': selected_property,
@@ -563,5 +584,6 @@ class OwnerVisitScheduleView(LoginRequiredMixin, TemplateView):
             'year': current_year,
             'months': months,
             'month_name': calendar.month_name[current_month],
+            'visited_days': visited_days,
         })
         return context
