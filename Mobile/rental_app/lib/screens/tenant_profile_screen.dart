@@ -8,7 +8,8 @@ import '../services/auth_service.dart';
 import '../providers/notification_provider.dart'; 
 import 'notification_screen.dart'; 
 import 'chat_screen.dart'; 
-
+import 'review_screen.dart';
+import '../providers/review_provider.dart';
 
 class TenantProfileScreen extends StatefulWidget {
   const TenantProfileScreen({super.key});
