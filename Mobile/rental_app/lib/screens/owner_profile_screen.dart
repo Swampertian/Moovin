@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../providers/owner_provider.dart';
 import '../models/owner.dart';
 import 'edit_owner_profile_screen.dart';
 import 'owner_immobiles_screen.dart';
 import 'edit_immobile_screen.dart';
 import '../services/auth_service.dart';
+import 'search_immobile_screen.dart';
+import 'notification_screen.dart';
+import 'chat_screen.dart';
+import 'tenant_profile_screen.dart';
+import 'login_screen.dart';
+import '../providers/notification_provider.dart';
+
 class OwnerProfileScreen extends StatefulWidget {
   
   const OwnerProfileScreen({super.key});
@@ -17,11 +24,20 @@ class OwnerProfileScreen extends StatefulWidget {
 
 class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
   bool _isLoading = true;
+  int _selectedIndex = 3;
+  String? _userType; 
+  final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   @override
   void initState() {
     super.initState();
     _checkAccess();
+    _loadUserType();
+  }
+
+  Future<void> _loadUserType() async {
+    _userType = await _secureStorage.read(key: 'user_type');
+    setState(() {});
   }
 
   Widget _buildItem(String text) {
@@ -285,16 +301,78 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
               ),
             ),
             bottomNavigationBar: BottomNavigationBar(
-              currentIndex: 3,
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.search),
+                  label: 'Pesquisar',
+                  backgroundColor: Colors.green,
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.notifications),
+                  label: 'Notificações',
+                  backgroundColor: Colors.green,
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.chat_bubble),
+                  label: 'Chat',
+                  backgroundColor: Colors.green,
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.person),
+                  label: 'Perfil',
+                  backgroundColor: Colors.green,
+                ),
+              ],
+              currentIndex: _selectedIndex,
               selectedItemColor: Colors.white,
               unselectedItemColor: Colors.white70,
-              backgroundColor: Colors.green,
-              items: const [
-                BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Buscar'),
-                BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
-                BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favoritos'),
-                BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
-              ],
+              backgroundColor: Colors.green[600],
+              onTap: (index) {
+                setState(() {
+                  _selectedIndex = index;
+                });
+                switch (index) {
+                  case 0:
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => const SearchImmobileScreen()),
+                    );
+                    break;
+                  case 1:
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChangeNotifierProvider(
+                          create: (_) => NotificationProvider(),
+                          child: const NotificationScreen(),
+                        ),
+                      ),
+                    );
+                    break;
+                  case 2:
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ChatScreen()),
+                    );
+                    break;
+                  case 3:
+                    if (_userType == 'Proprietario') {
+                      // Already on OwnerProfileScreen, do nothing
+                    } else if (_userType == 'Inquilino') {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const TenantProfileScreen()),
+                      );
+                    } else {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (context) => const LoginScreen()),
+                        (Route<dynamic> route) => false,
+                      );
+                    }
+                    break;
+                }
+              },
             ),
           );
         },
