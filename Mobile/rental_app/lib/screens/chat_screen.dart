@@ -4,6 +4,9 @@ import '../providers/notification_provider.dart'; // Para a nav bar
 import 'notification_screen.dart'; // Para a nav bar
 import 'search_immobile_screen.dart'; // Para a nav bar
 import 'tenant_profile_screen.dart'; // Para a nav bar
+import 'owner_profile_screen.dart';
+import 'login_screen.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ChatScreen extends StatefulWidget { // Pode ser StatelessWidget se não precisar de estado
   const ChatScreen({super.key});
@@ -13,11 +16,25 @@ class ChatScreen extends StatefulWidget { // Pode ser StatelessWidget se não pr
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  int _selectedIndex = 2;
+  String? _userType; 
+  final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
   // Se precisar de alguma inicialização, coloque aqui
   // @override
   // void initState() {
   //   super.initState();
   // }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserType(); // Added: Load user type
+  }
+
+  Future<void> _loadUserType() async {
+    _userType = await _secureStorage.read(key: 'user_type');
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,8 +114,11 @@ class _ChatScreenState extends State<ChatScreen> {
         backgroundColor: Colors.green[600],
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white70,
-        currentIndex: 2, // Definido para 2, pois é a tela de Conversas
+        currentIndex: _selectedIndex, 
         onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
           switch (index) {
             case 0:
               Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const SearchImmobileScreen()));
@@ -118,7 +138,23 @@ class _ChatScreenState extends State<ChatScreen> {
               // Já está na tela de conversas
               break;
             case 3:
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const TenantProfileScreen()));
+              if (_userType == 'Proprietario') {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const OwnerProfileScreen()),
+                );
+              } else if (_userType == 'Inquilino') {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const TenantProfileScreen()),
+                );
+              } else {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  (Route<dynamic> route) => false,
+                );
+              }
               break;
             default:
               break;
