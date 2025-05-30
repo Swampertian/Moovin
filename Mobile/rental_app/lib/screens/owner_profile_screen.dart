@@ -13,6 +13,7 @@ import 'chat_screen.dart';
 import 'tenant_profile_screen.dart';
 import 'login_screen.dart';
 import '../providers/notification_provider.dart';
+import 'unauthorized_screen.dart';
 
 class OwnerProfileScreen extends StatefulWidget {
   
@@ -364,11 +365,10 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
                         MaterialPageRoute(builder: (context) => const TenantProfileScreen()),
                       );
                     } else {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(builder: (context) => const LoginScreen()),
-                        (Route<dynamic> route) => false,
-                      );
+                      Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => const UnauthorizedScreen()),
+                    );
                     }
                     break;
                 }

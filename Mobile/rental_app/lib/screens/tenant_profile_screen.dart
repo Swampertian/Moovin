@@ -9,8 +9,7 @@ import '../providers/notification_provider.dart';
 import 'notification_screen.dart'; 
 import 'chat_screen.dart'; 
 import 'owner_profile_screen.dart';
-import 'login_screen.dart';
-
+import 'unauthorized_screen.dart';
 
 class TenantProfileScreen extends StatefulWidget {
   const TenantProfileScreen({super.key});
@@ -454,11 +453,10 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
                   // Already on TenantProfileScreen, do nothing
                 } else {
                   // If user type is undefined (not logged in or error)
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
-                    (Route<dynamic> route) => false,
-                  );
+                  Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const UnauthorizedScreen()),
+                );
                 }
                 break;
             }

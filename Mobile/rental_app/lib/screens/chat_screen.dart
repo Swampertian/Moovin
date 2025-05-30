@@ -5,8 +5,8 @@ import 'notification_screen.dart'; // Para a nav bar
 import 'search_immobile_screen.dart'; // Para a nav bar
 import 'tenant_profile_screen.dart'; // Para a nav bar
 import 'owner_profile_screen.dart';
-import 'login_screen.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'unauthorized_screen.dart';
 
 class ChatScreen extends StatefulWidget { // Pode ser StatelessWidget se não precisar de estado
   const ChatScreen({super.key});
@@ -149,11 +149,10 @@ class _ChatScreenState extends State<ChatScreen> {
                   MaterialPageRoute(builder: (context) => const TenantProfileScreen()),
                 );
               } else {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                  (Route<dynamic> route) => false,
-                );
+                Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const UnauthorizedScreen()),
+              );
               }
               break;
             default:

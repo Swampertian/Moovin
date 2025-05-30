@@ -9,7 +9,7 @@ import 'search_immobile_screen.dart';
 import 'tenant_profile_screen.dart';
 import 'chat_screen.dart'; 
 import 'owner_profile_screen.dart';
-import 'login_screen.dart';
+import 'unauthorized_screen.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -583,11 +583,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   MaterialPageRoute(builder: (context) => const TenantProfileScreen()),
                 );
               } else {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                  (Route<dynamic> route) => false,
-                );
+                Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const UnauthorizedScreen()),
+              );
               }
               break;
             default:

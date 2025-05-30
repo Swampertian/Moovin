@@ -12,6 +12,7 @@ import 'owner_profile_screen.dart';
 import 'owner_dashboard_screen.dart';
 import 'notification_screen.dart'; 
 import 'chat_screen.dart'; 
+import 'unauthorized_screen.dart';
 
 class SearchImmobileScreen extends StatefulWidget {
   const SearchImmobileScreen({super.key});
@@ -601,10 +602,9 @@ class _SearchImmobileScreenState extends State<SearchImmobileScreen> {
                   MaterialPageRoute(builder: (context) => const TenantProfileScreen()),
                 );
               } else {
-                Navigator.pushAndRemoveUntil(
+                Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                  (Route<dynamic> route) => false,
+                  MaterialPageRoute(builder: (context) => const UnauthorizedScreen()),
                 );
               }
               break;

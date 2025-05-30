@@ -10,8 +10,8 @@ import 'tenant_profile_screen.dart';
 import 'search_immobile_screen.dart';
 import 'notification_screen.dart'; 
 import 'chat_screen.dart'; 
-import 'login_screen.dart';
 import '../providers/notification_provider.dart';
+import 'unauthorized_screen.dart';
 
 class DetailImmobileScreen extends StatefulWidget {
   final int immobileId;
@@ -105,10 +105,9 @@ class _DetailImmobileScreenState extends State<DetailImmobileScreen> {
             MaterialPageRoute(builder: (context) => const TenantProfileScreen()),
           );
         } else {
-          Navigator.pushAndRemoveUntil(
+          Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const LoginScreen()),
-            (Route<dynamic> route) => false,
+            MaterialPageRoute(builder: (context) => const UnauthorizedScreen()),
           );
         }
         break;
