@@ -538,6 +538,20 @@ class _DetailImmobileScreenState extends State<DetailImmobileScreen> {
           backgroundColor: Colors.green[600],
           onTap: _onItemTapped,
         ),
+        floatingActionButton: Transform.scale(
+        scale: 0.9,
+        child: FloatingActionButton.extended(
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('O Chat será implementado em breve!')),
+            );
+          },
+          backgroundColor: Colors.blue,
+          icon: const Icon(Icons.chat, color: Colors.white),
+          label: const Text('Falar com proprietário', style: TextStyle(color: Colors.white)),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
     );
   }
