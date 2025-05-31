@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 from tenant.models import Tenant
 from owner.models import Owner
-from immobile.models import Rental
+from rental.models import Rental
 from django.core.mail import send_mail
 from django.conf import settings
 

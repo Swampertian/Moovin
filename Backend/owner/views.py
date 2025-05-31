@@ -3,7 +3,8 @@ from django.shortcuts import render, redirect
 from rest_framework import generics
 from django.utils import timezone
 from datetime import datetime, timedelta
-from immobile.models import Immobile, Payment, Rental
+from immobile.models import Immobile, Payment
+from rental.models import Rental
 from django.db.models import Sum
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin,PermissionRequiredMixin
