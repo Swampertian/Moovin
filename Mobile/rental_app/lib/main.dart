@@ -3,7 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'providers/review_provider.dart';
-import 'providers/notification_provider.dart'; 
+import 'providers/notification_provider.dart';
+import 'providers/owner_provider.dart'; 
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/tenant_profile_screen.dart';
@@ -15,20 +16,21 @@ import 'screens/review_screen.dart';
 import 'screens/create_profile_screen.dart';
 import 'screens/unauthorized_screen.dart';
 import 'screens/notification_screen.dart';
-import 'screens/chat_screen.dart'; 
+import 'screens/chat_screen.dart';
 import 'screens/review_create_screen.dart';
 import 'screens/verify_email_screen.dart';
 import 'screens/onboarding_screen.dart';
 
-void main() async { 
-  WidgetsFlutterBinding.ensureInitialized(); 
-  final prefs = await SharedPreferences.getInstance(); 
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
   final bool hasCompletedOnboarding = prefs.getBool('has_completed_onboarding') ?? false;
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
+        ChangeNotifierProvider(create: (_) => OwnerProvider()), // ✅ Adicionado
       ],
       child: MyApp(hasCompletedOnboarding: hasCompletedOnboarding),
     ),
@@ -48,7 +50,6 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.green,
         textTheme: GoogleFonts.khulaTextTheme(),
       ),
-
       home: hasCompletedOnboarding
           ? const LoginScreen()
           : const OnboardingScreen(),
@@ -60,13 +61,15 @@ class MyApp extends StatelessWidget {
         '/verify-email': (context) => const VerifyEmailScreen(),
         '/immobile_details': (context) => ChangeNotifierProvider(
               create: (context) => ReviewProvider(),
-              child: DetailImmobileScreen(immobileId: ModalRoute.of(context)?.settings.arguments as int? ?? 3), 
+              child: DetailImmobileScreen(
+                immobileId: ModalRoute.of(context)?.settings.arguments as int? ?? 3,
+              ),
             ),
         '/owner_dashboard': (context) => const OwnerDashboardScreen(),
         '/search-immobile': (context) => const SearchImmobileScreen(),
         '/erro-screen': (context) => const UnauthorizedScreen(),
         '/notifications': (context) => const NotificationScreen(),
-        '/conversations': (context) => const ChatScreen(), 
+        '/conversations': (context) => const ChatScreen(),
         '/create_review': (context) => ChangeNotifierProvider(
               create: (_) => ReviewProvider(),
               child: Builder(
@@ -128,6 +131,4 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
-}    
-
-//nao apague os comentarios que chamam funcoes nem importacoes desnecessarios, elas serviram para testes.
+}
