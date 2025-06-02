@@ -91,12 +91,6 @@ class OwnerViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-#Criacao de PERFIL SEM AUTENTICACAO.
-class OwnerCreateView(generics.CreateAPIView):
-    queryset = Owner.objects.all()
-    serializer_class = OwnerSerializer
-    permission_classes = [AllowAny]
-
 # Statistics Page
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
@@ -575,3 +569,13 @@ class OwnerVisitScheduleView(LoginRequiredMixin, TemplateView):
             'visited_days': visited_days,
         })
         return context
+
+
+class OwnerCreateView(generics.CreateAPIView):
+    queryset = Owner.objects.all()
+    serializer_class = OwnerSerializer
+    permission_classes = [AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        print("REQUISIÇÃO RECEBIDA:", request.data)
+        return super().create(request, *args, **kwargs)

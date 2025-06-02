@@ -8,6 +8,8 @@ from .views import (
     OwnerManagementView,
     OwnerManagementImmobileDetailView,
     OwnerVisitScheduleView,
+    OwnerCreateView,
+
 )
 
 router = DefaultRouter()
@@ -27,5 +29,6 @@ urlpatterns = [
 
     # Agendamento de Visitas
     path('visit_schedule/', OwnerVisitScheduleView.as_view(), name='owner_visit_schedule'),
+    path('owner_create', OwnerCreateView.as_view(), name='owner-create'),
 
 ]
