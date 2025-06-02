@@ -10,10 +10,12 @@ import '../providers/notification_provider.dart';
 import 'detail_immobile_screen.dart';
 import 'login_screen.dart';
 import 'tenant_profile_screen.dart';
+import 'owner_profile_screen.dart';
 import 'owner_dashboard_screen.dart';
 import 'notification_screen.dart'; 
 import 'chat_screen.dart'; 
 import '../providers/review_provider.dart';
+import 'unauthorized_screen.dart';
 class SearchImmobileScreen extends StatefulWidget {
   const SearchImmobileScreen({super.key});
 
@@ -31,6 +33,7 @@ class _SearchImmobileScreenState extends State<SearchImmobileScreen> {
 
   final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
   String? _userType;
+  int _selectedIndex = 0;
 
   final Map<String, String> tipoMap = {
     'Casa': 'house',
@@ -568,8 +571,11 @@ class _SearchImmobileScreenState extends State<SearchImmobileScreen> {
         backgroundColor: Colors.green[600],
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white70,
-        currentIndex: 0,
+        currentIndex: _selectedIndex,
         onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
           switch (index) {
             case 0:
               break;
@@ -588,7 +594,22 @@ class _SearchImmobileScreenState extends State<SearchImmobileScreen> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatScreen()));
               break;
             case 3:
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const TenantProfileScreen()));
+              if (_userType == 'Proprietario') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const OwnerProfileScreen()),
+                );
+              } else if (_userType == 'Inquilino') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const TenantProfileScreen()),
+                );
+              } else {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const UnauthorizedScreen()),
+                );
+              }
               break;
             default:
               break;

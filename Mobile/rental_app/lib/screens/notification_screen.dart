@@ -8,6 +8,8 @@ import 'send_notification_screen.dart';
 import 'search_immobile_screen.dart';
 import 'tenant_profile_screen.dart';
 import 'chat_screen.dart'; 
+import 'owner_profile_screen.dart';
+import 'unauthorized_screen.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -21,6 +23,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   String _searchTitle = '';
   String? _userType;
   bool _isLoadingUserType = true;
+  int _selectedIndex = 1;
   final List<String> _filterOptions = ['Todas', 'Não lidas', 'Aluguel', 'Pagamento', 'Avaliação Recebida', 'Geral'];
   final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
@@ -554,8 +557,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
         backgroundColor: Colors.green[600],
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white70,
-        currentIndex: 1,
+        currentIndex: _selectedIndex,
         onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
           switch (index) {
             case 0:
               Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const SearchImmobileScreen()));
@@ -566,7 +572,22 @@ class _NotificationScreenState extends State<NotificationScreen> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatScreen()));
               break;
             case 3:
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const TenantProfileScreen()));
+              if (_userType == 'Proprietario') {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const OwnerProfileScreen()),
+                );
+              } else if (_userType == 'Inquilino') {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const TenantProfileScreen()),
+                );
+              } else {
+                Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const UnauthorizedScreen()),
+              );
+              }
               break;
             default:
               break;
