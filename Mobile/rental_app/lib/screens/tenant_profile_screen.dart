@@ -8,7 +8,8 @@ import '../services/auth_service.dart';
 import '../providers/notification_provider.dart'; 
 import 'notification_screen.dart'; 
 import 'chat_screen.dart'; 
-
+import 'owner_profile_screen.dart';
+import 'unauthorized_screen.dart';
 
 class TenantProfileScreen extends StatefulWidget {
   const TenantProfileScreen({super.key});
@@ -20,11 +21,19 @@ class TenantProfileScreen extends StatefulWidget {
 class _TenantProfileScreenState extends State<TenantProfileScreen> {
   bool _isLoading = true;
   final AuthService _authService = AuthService(); // Instância de AuthService
+  int _selectedIndex = 3;
+  String? _userType;
 
   @override
   void initState() {
     super.initState();
     _checkAccess();
+    _loadUserType();
+  }
+
+  Future<void> _loadUserType() async {
+    _userType = await _authService.getUserType();
+    setState(() {});
   }
 
   Widget _buildHistoryItem(String text, IconData icon) {
@@ -382,7 +391,7 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.search),
-              label: 'Buscar',
+              label: 'Pesquisar',
               backgroundColor: Colors.green,
             ),
             BottomNavigationBarItem(
@@ -404,25 +413,52 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
           backgroundColor: Colors.green[600],
           selectedItemColor: Colors.white,
           unselectedItemColor: Colors.white70,
-          currentIndex: 3, 
+          currentIndex: _selectedIndex, 
           onTap: (index) {
-          
-            if (index == 0) {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const SearchImmobileScreen()));
-            } else if (index == 1) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ChangeNotifierProvider(
-                    create: (context) => NotificationProvider(),
-                    child: const NotificationScreen(),
+            setState(() {
+              _selectedIndex = index; // Added: Update selected index
+            });
+            switch (index) {
+              case 0:
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SearchImmobileScreen()),
+                );
+                break;
+              case 1:
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChangeNotifierProvider(
+                      create: (context) => NotificationProvider(),
+                      child: const NotificationScreen(),
+                    ),
                   ),
-                ),
-              );
-            } else if (index == 2) {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatScreen()));
-            } else if (index == 3) {
-      
+                );
+                break;
+              case 2:
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ChatScreen()),
+                );
+                break;
+              case 3:
+                // Modified: Logic to choose profile based on user type
+                if (_userType == 'Proprietario') {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const OwnerProfileScreen()),
+                  );
+                } else if (_userType == 'Inquilino') {
+                  // Already on TenantProfileScreen, do nothing
+                } else {
+                  // If user type is undefined (not logged in or error)
+                  Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const UnauthorizedScreen()),
+                );
+                }
+                break;
             }
           },
         ),
