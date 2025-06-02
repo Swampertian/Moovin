@@ -33,8 +33,8 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
 
   Future<void> _saveProfile() async {
     final url = widget.isOwner
-        ? 'http://10.0.2.2:8000/api/owner/owner_create'
-        : 'http://10.0.2.2:8000/api/tenant/tenant_create';
+        ? 'http://10.0.2.2:8000/api/owners/owner_create'
+        : 'http://10.0.2.2:8000/api/tenants/tenant_create';
 
     final body = widget.isOwner
         ? {
