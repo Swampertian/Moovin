@@ -364,7 +364,7 @@ Future<List<Review>> fetchReviews({required String type, required int targetId})
     final Map<String, dynamic> body = {
       'rating': rating,
       'comment': comment,
-      'type': 'PROPERTY',
+      'type': type,
       'object_id': targetId,
       //'author': authorId,
     };
