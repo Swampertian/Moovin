@@ -33,10 +33,12 @@ class _DetailImmobileScreenState extends State<DetailImmobileScreen> {
   bool _isLoading = true;
   int _selectedIndex = 0;
   String? _userType; 
+  late int immobileId;
 
   @override
   void initState() {
     super.initState();
+    immobileId = widget.immobileId;
     _checkAccess();
     _loadUserType();
   }
@@ -581,10 +583,14 @@ class _DetailImmobileScreenState extends State<DetailImmobileScreen> {
               const SizedBox(width: 10),
               FloatingActionButton.extended(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Ver perfil do proprietário será implementado!')),
-                  );
-                },
+                    Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            
+                            builder: (context) => OwnerProfileScreen(immobileId: immobileId),
+                          ),
+                        );
+                      },
                 backgroundColor: Colors.orange,
                 icon: const Icon(Icons.person, color: Colors.white),
                 label: const Text('Ver Perfil', style: TextStyle(color: Colors.white)),

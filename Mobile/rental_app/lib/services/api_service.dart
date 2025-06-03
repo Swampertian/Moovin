@@ -166,6 +166,29 @@ class ApiService {
       throw Exception('Failed to load owner profile');
     }
   }
+  Future<Owner> fetchOwnerByImmobile(int immobileId) async {
+    final url ='$_ownerBase/$immobileId/getbyimmobile';
+    print('🔎 Fetching Owner (self): $url');
+
+    final token = await _secureStorage.read(key: 'access_token');
+
+    if (token == null) {
+      throw Exception('Token JWT não encontrado.');
+    }
+
+    final response = await dio.get(url);
+
+    print('📡 STATUS: ${response.statusCode}');
+    print('📦 BODY: ${response.data}');
+
+    if (response.statusCode == 200) {
+      return Owner.fromJson(response.data);
+    } else {
+      throw Exception('Failed to load owner profile');
+    }
+  }
+
+
 
   Future<Owner> updateCurrentOwner(Map<String, dynamic> data) async {
     // final token = await _secureStorage.read(key: 'access_token');

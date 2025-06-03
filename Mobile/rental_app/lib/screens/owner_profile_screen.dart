@@ -19,7 +19,9 @@ import 'unauthorized_screen.dart';
 
 class OwnerProfileScreen extends StatefulWidget {
   
-  const OwnerProfileScreen({super.key});
+  final int? immobileId;
+  // const OwnerProfileScreen({super.key});
+  const OwnerProfileScreen({Key? key, this.immobileId}) : super(key: key);
 
   @override
   _OwnerProfileScreenState createState() => _OwnerProfileScreenState();
@@ -59,15 +61,16 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
   void _checkAccess() async {
     final authService = AuthService();
     bool loggedIn = await authService.isLoggedIn();
-    bool isOwner = await authService.isOwner();
+    // bool isOwner = await authService.isOwner();
 
     if (!loggedIn) {
       Navigator.of(context).pushReplacementNamed('/login');
       return;
-    } else if (!isOwner) {
-      Navigator.of(context).pushReplacementNamed('/erro-screen');
-      return;
-    }
+    } 
+    // else if (!isOwner) {
+    //   Navigator.of(context).pushReplacementNamed('/erro-screen');
+    //   return;
+    // }
 
 
     setState(() {
@@ -80,7 +83,7 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => OwnerProvider()..fetchOwner()),
+        ChangeNotifierProvider(create: (_) => OwnerProvider()..fetchOwner(immobileId : widget.immobileId)),
         ChangeNotifierProvider(create: (_) => ReviewProvider()),
       ],
       child: Consumer<OwnerProvider>(
