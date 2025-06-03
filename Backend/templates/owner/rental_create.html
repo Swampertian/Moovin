@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+
+{% block title %}Registrar Aluguel{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Cabeçalho -->
+    <div class="section-header">
+        <h3>Registrar Aluguel</h3>
+    </div>
+
+    <!-- Mensagens de Sucesso/Erro -->
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <p class="message {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Formulário de Registro de Aluguel -->
+    <div class="content-section">
+        <div class="info-card">
+            <h4>Informações do Aluguel</h4>
+            <form method="post" class="rental-form">
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="message error">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label for="{{ form.tenant.id_for_label }}">Inquilino</label>
+                    {{ form.tenant }}
+                    {% if form.tenant.errors %}
+                        <p class="message error">{{ form.tenant.errors }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label>Imóvel Selecionado</label>
+                    <input type="text" value="{{ immobile.get_property_type_display }}, {{ immobile.city }}, {{ immobile.state }} - {{ immobile.street }}" readonly>
+                    {{ form.immobile.as_hidden }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.start_data.label_tag }}
+                    {{ form.start_data }}
+                    {% if form.start_data.errors %}
+                        <p class="message error">{{ form.start_data.errors }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.end_data.label_tag }}
+                    {{ form.end_data }}
+                    {% if form.end_data.errors %}
+                        <p class="message error">{{ form.end_data.errors }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.status.label_tag }}
+                    {{ form.status }}
+                    {% if form.status.errors %}
+                        <p class="message error">{{ form.status.errors }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.value.label_tag }}
+                    {{ form.value }}
+                    {% if form.value.errors %}
+                        <p class="message error">{{ form.value.errors }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="action-buttons">
+                    <button type="submit" class="action-btn submit-btn">Registrar Aluguel</button>
+                    <a href="#" class="action-btn cancel-btn">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    a {
+        color: black;
+        text-decoration: none;
+    }
+
+    .dashboard-container {
+        padding: 1.5rem;
+    }
+
+    .section-header h3 {
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+        color: #2e7d32;
+        text-transform: uppercase;
+    }
+
+    .messages {
+        margin-bottom: 1rem;
+    }
+    .message.success {
+        color: #2e7d32;
+        background-color: #e8f5e9;
+        padding: 0.5rem;
+        border-radius: 4px;
+    }
+    .message.error {
+        color: #d32f2f;
+        background-color: #ffebee;
+        padding: 0.5rem;
+        border-radius: 4px;
+    }
+    .message.warning {
+        color: #f57c00;
+        background-color: #fff3e0;
+        padding: 0.5rem;
+        border-radius: 4px;
+    }
+
+    .content-section {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .info-card {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 1rem;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        flex: 1;
+        min-width: 250px;
+        max-width: 600px;
+    }
+
+    .info-card h4 {
+        font-size: 1.2rem;
+        margin-bottom: 0.8rem;
+        color: #333;
+    }
+
+    .rental-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        color: #2e7d32;
+        margin-bottom: 0.3rem;
+    }
+
+    .form-group input,
+    .form-group select {
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .form-group input[type="date"],
+    .form-group input[type="number"] {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+    }
+
+    .form-group input[readonly] {
+        background-color: #f5f5f5;
+        cursor: not-allowed;
+    }
+
+    .action-buttons {
+        margin-top: 1rem;
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .action-btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        transition: background-color 0.3s;
+    }
+
+    .submit-btn {
+        background-color: #2e7d32;
+        color: white;
+    }
+
+    .submit-btn:hover {
+        background-color: #1b5e20;
+    }
+
+    .cancel-btn {
+        background-color: #d32f2f;
+        color: white;
+    }
+
+    .cancel-btn:hover {
+        background-color: #b71c1c;
+    }
+</style>
+{% endblock %}

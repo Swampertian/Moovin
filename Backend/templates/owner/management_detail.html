@@ -59,12 +59,12 @@
                 <p><strong class="strong">Status:</strong> {% if property and property.is_active %} Ativo {% else %} Desativado {% endif %}</p>
                 <div class="action-buttons">
                     <a href="{%url 'immobile_edit' property.id_immobile%}" class="action-btn edit-btn">Editar Imóvel</a>
+                    <a href="{%url 'rental-register' property.id_immobile%}" class="action-btn register-rental-btn">Registrar Aluguel</a>
                     <form method="post" class="deactivate-form">
                         {% csrf_token %}
-                        <button name="deactivate" class="action-btn deactivate-btn" {% if property.status == 'Available' %}disabled{% endif %}>
+                        <button name="deactivate" class="action-btn deactivate-btn" {% if property.status = 'Available' %}disabled{% endif %}>
                             Desativar Imóvel
                         </button>
-
                     </form>
                 </div>
             </div>
@@ -78,7 +78,6 @@
                     <p>- Nome: {{ rental.tenant.name|default:"Não informado" }}</p>
                     <p>- E-mail: {{ rental.tenant.user.email|default:"Não informado" }}</p>
                     <p>- Telefone: {{ rental.tenant.phone|default:"Não informado" }}</p>
-                  
                 {% else %}
                     <p>Nenhum inquilino associado.</p>
                 {% endif %}
@@ -110,25 +109,23 @@
         </div>
 
         <!-- Informações Adicionais -->
-    <div class="additional-info">
-        <p><strong class="strong">Permite Animais:</strong> {% if property and property.pet_friendly is not None %}{% if property.pet_friendly %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
-        <p><strong class="strong">Serviço de Internet:</strong> {% if property and property.internet is not None %}{% if property.internet %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
-        <p><strong class="strong">Ônibus Próximo:</strong> {% if property and property.nearby_bus is not None %}{% if property.nearby_bus %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
-        <p><strong class="strong">Mercado Próximo:</strong> {% if property and property.nearby_market is not None %}{% if property.nearby_market %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
-    </div>
-    
-    <!-- Gráfico -->
-    <div class="chart-card">
-        <h4>Rendimento Estimado (em R$)</h4>
-        <div class="chart-placeholder">Gráfico de Rendimento Estimado (Placeholder)</div>
-    </div>
+        <div class="additional-info">
+            <p><strong class="strong">Permite Animais:</strong> {% if property and property.pet_friendly is not None %}{% if property.pet_friendly %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
+            <p><strong class="strong">Serviço de Internet:</strong> {% if property and property.internet is not None %}{% if property.internet %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
+            <p><strong class="strong">Ônibus Próximo:</strong> {% if property and property.nearby_bus is not None %}{% if property.nearby_bus %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
+            <p><strong class="strong">Mercado Próximo:</strong> {% if property and property.nearby_market is not None %}{% if property.nearby_market %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
+        </div>
+
+        <!-- Gráfico -->
+        <div class="chart-card">
+            <h4>Rendimento Estimado (em R$)</h4>
+            <div class="chart-placeholder">Gráfico de Rendimento Estimado (Placeholder)</div>
+        </div>
     </div>
 
-    
 </div>
 
 <style>
-    
     a {
         color: black;
         text-decoration: none;
@@ -168,6 +165,7 @@
     }
 
     /* Carrossel */
+
 .carousel-section {
     margin-bottom: 1.5rem;
     position: relative;
@@ -284,31 +282,31 @@
     }
 
     .document-upload-form {
-    margin-top: 1rem;
-    display: flex;
-    flex-direction: column; 
-    gap: 0.5rem;
-    width: 100%; 
-}
+        margin-top: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 100%;
+    }
 
     .document-upload-form input[type="file"] {
-        width: 100%; /* Full width for consistency */
+        width: 100%;
         padding: 0.5rem;
         border: 1px solid #ddd;
         border-radius: 4px;
-        box-sizing: border-box; 
+        box-sizing: border-box;
     }
 
     .upload-btn {
-    width: 100%; 
-    padding: 0.5rem 1rem;
-    background-color: #2e7d32;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
+        width: 100%;
+        padding: 0.5rem 1rem;
+        background-color: #2e7d32;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
 
     .upload-btn:hover {
         background-color: #1b5e20;
@@ -339,6 +337,15 @@
 
     .edit-btn:hover {
         background-color: #01579b;
+    }
+
+    .register-rental-btn {
+        background-color: #388e3c;
+        color: white;
+    }
+
+    .register-rental-btn:hover {
+        background-color: #2e7d32;
     }
 
     .deactivate-btn {
@@ -383,8 +390,9 @@
     .additional-info p strong {
         color: #2e7d32;
     }
-    .chart-card h4{
-         color: #2e7d32;
+
+    .chart-card h4 {
+        color: #2e7d32;
     }
 </style>
 
