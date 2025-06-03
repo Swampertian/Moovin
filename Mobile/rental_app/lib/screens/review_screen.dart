@@ -130,7 +130,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                     // Tente pegar o targetName, se disponível, senão use um padrão
                     final targetName = _targetName ?? widget.title ?? 'Detalhe';
                     return CreateReviewScreen(
-                      reviewType: 'PROPERTY',
+                      reviewType: reviewType,
                       targetId: targetId,
                       targetName: targetName,
                     );
