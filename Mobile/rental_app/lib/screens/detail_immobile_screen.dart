@@ -5,6 +5,14 @@ import '../providers/review_provider.dart';
 import '../models/immobile.dart';
 import '../services/auth_service.dart';
 import 'review_screen.dart';
+import 'owner_profile_screen.dart';
+import 'tenant_profile_screen.dart';
+import 'search_immobile_screen.dart';
+import 'notification_screen.dart'; 
+import 'chat_screen.dart'; 
+import '../providers/notification_provider.dart';
+import 'unauthorized_screen.dart';
+
 class DetailImmobileScreen extends StatefulWidget {
   final int immobileId;
   const DetailImmobileScreen({super.key, required this.immobileId});
@@ -15,18 +23,27 @@ class DetailImmobileScreen extends StatefulWidget {
 
 class _DetailImmobileScreenState extends State<DetailImmobileScreen> {
   bool _isLoading = true;
+  int _selectedIndex = 0;
+  String? _userType; 
 
   @override
   void initState() {
     super.initState();
     _checkAccess();
+    _loadUserType();
+  }
+
+  Future<void> _loadUserType() async {
+    final authService = AuthService();
+    _userType = await authService.getUserType();
+    setState(() {});
   }
 
   void _checkAccess() async {
     // Placeholder: Replace with your actual authentication service
     final authService = AuthService(); // Inject or initialize your auth service
     bool loggedIn = await authService.isLoggedIn();
-    bool isOwner = await authService.isOwner();
+    //bool isOwner = await authService.isOwner();
 
     if (!loggedIn) {
       // Navigator.of(context).pushReplacementNamed('/login');
@@ -42,6 +59,59 @@ class _DetailImmobileScreenState extends State<DetailImmobileScreen> {
     setState(() {
       _isLoading = false;
     });
+  }
+
+  void _onItemTapped(int index) async {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    final authService = AuthService();
+
+    switch (index) {
+      case 0:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const SearchImmobileScreen()),
+        );
+        break;
+      case 1:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChangeNotifierProvider(
+              create: (_) => NotificationProvider(),
+              child: const NotificationScreen(),
+            ),
+          ),
+        );
+        break;
+      case 2:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const ChatScreen()),
+        );
+        break;
+      case 3:
+        _userType = await authService.getUserType();
+        if (_userType == 'Proprietario') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const OwnerProfileScreen()),
+          );
+        } else if (_userType == 'Inquilino') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const TenantProfileScreen()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const UnauthorizedScreen()),
+          );
+        }
+        break;
+    }
   }
 
   Widget _buildThumbnail(String? imageBase64, String contentType) {
@@ -71,16 +141,17 @@ class _DetailImmobileScreenState extends State<DetailImmobileScreen> {
 
   Widget _buildDetailChip(IconData icon, String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8), 
       decoration: BoxDecoration(
         color: Colors.brown[300],
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(40), 
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min, 
         children: [
-          Icon(icon, color: Colors.white),
-          const SizedBox(width: 8),
-          Text(label, style: const TextStyle(color: Colors.white)),
+          Icon(icon, color: Colors.white, size: 18), 
+          const SizedBox(width: 4), 
+          Text(label, style: const TextStyle(color: Colors.white, fontSize: 12)), 
         ],
       ),
     );
@@ -138,7 +209,7 @@ class _DetailImmobileScreenState extends State<DetailImmobileScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.8),
+        color: Colors.green.withOpacity(0.0), // Changed to transparent
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(label, style: const TextStyle(fontSize: 12, color: Colors.white)),
@@ -157,15 +228,17 @@ class _DetailImmobileScreenState extends State<DetailImmobileScreen> {
       create: (context) => ImmobileProvider()..fetchImmobile(widget.immobileId),
       child: Scaffold(
         appBar: AppBar(
-          title: Consumer<ImmobileProvider>(
-            builder: (context, provider, child) {
-              return const Text('Detalhes do imóvel');
+          backgroundColor: Colors.green,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white), 
+            onPressed: () {
+              Navigator.of(context).pop();
             },
           ),
-          backgroundColor: Colors.green,
+          title: const Text('Detalhes do Imóvel', style: TextStyle(color: Colors.white)), 
           actions: [
             IconButton(
-              icon: const Icon(Icons.star_border),
+              icon: const Icon(Icons.star_border, color: Colors.white), 
               onPressed: () {
                 // Handle adding/removing from favorites
               },
@@ -267,7 +340,7 @@ class _DetailImmobileScreenState extends State<DetailImmobileScreen> {
                             Text(
                               immobile.propertyType == 'house' ? 'Casa'
                                   : immobile.propertyType == 'apartment' ? 'Apartamento'
-                                  : immobile.propertyType, // tradução
+                                  : immobile.propertyType, 
                               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                             Text(
@@ -288,29 +361,38 @@ class _DetailImmobileScreenState extends State<DetailImmobileScreen> {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            _buildDetailChip(Icons.zoom_out_map, '${immobile.area} m²'),
-                            _buildDetailChip(Icons.bed, '${immobile.bedrooms}'),
-                            _buildDetailChip(Icons.bathtub, '${immobile.bathrooms}'),
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final double screenWidth = constraints.maxWidth;
+                            final double itemWidth = (screenWidth - (16 * 2) - (8 * 2)) / 3; 
+
+                            List<Widget> amenityChips = [];
+                            amenityChips.add(SizedBox(width: itemWidth, child: _buildDetailChip(Icons.zoom_out_map, '${immobile.area} m²')));
+                            amenityChips.add(SizedBox(width: itemWidth, child: _buildDetailChip(Icons.bed, '${immobile.bedrooms}')));
+                            amenityChips.add(SizedBox(width: itemWidth, child: _buildDetailChip(Icons.bathtub, '${immobile.bathrooms}')));
                             if (immobile.airConditioning)
-                              _buildDetailChip(Icons.ac_unit, 'Ar Cond.'),
+                              amenityChips.add(SizedBox(width: itemWidth, child: _buildDetailChip(Icons.ac_unit, 'Ar Cond.')));
                             if (immobile.garage)
-                              _buildDetailChip(Icons.garage_outlined, 'Garagem'),
+                              amenityChips.add(SizedBox(width: itemWidth, child: _buildDetailChip(Icons.garage_outlined, 'Garagem')));
                             if (immobile.pool)
-                              _buildDetailChip(Icons.pool, 'Piscina'),
+                              amenityChips.add(SizedBox(width: itemWidth, child: _buildDetailChip(Icons.pool, 'Piscina')));
                             if (immobile.furnished)
-                              _buildDetailChip(Icons.chair, 'Mobiliado'),
+                              amenityChips.add(SizedBox(width: itemWidth, child: _buildDetailChip(Icons.chair, 'Mobiliado')));
                             if (immobile.petFriendly)
-                              _buildDetailChip(Icons.pets, 'Pet Friendly'),
+                              amenityChips.add(SizedBox(width: itemWidth, child: _buildDetailChip(Icons.pets, 'Pet Friendly')));
                             if (immobile.nearbyMarket)
-                              _buildDetailChip(Icons.shopping_cart, 'Mercado P.'),
+                              amenityChips.add(SizedBox(width: itemWidth, child: _buildDetailChip(Icons.shopping_cart, 'Mercado P.')));
                             if (immobile.nearbyBus)
-                              _buildDetailChip(Icons.directions_bus, 'Ônibus P.'),
+                              amenityChips.add(SizedBox(width: itemWidth, child: _buildDetailChip(Icons.directions_bus, 'Ônibus P.')));
                             if (immobile.internet)
-                              _buildDetailChip(Icons.wifi, 'Internet'),
-                          ],
+                              amenityChips.add(SizedBox(width: itemWidth, child: _buildDetailChip(Icons.wifi, 'Internet')));
+
+                            return Wrap(
+                              spacing: 8.0, 
+                              runSpacing: 8.0, 
+                              children: amenityChips,
+                            );
+                          },
                         ),
                         const SizedBox(height: 16),
                         Consumer<ReviewProvider>(
@@ -366,7 +448,7 @@ class _DetailImmobileScreenState extends State<DetailImmobileScreen> {
                                         context,
                                         '/review',
                                         arguments: {
-                                          'reviewType': 'immobile',
+                                          'reviewType': 'PROPERTY',
                                           'targetId': immobile.idImmobile,
                                           'targetName': immobile.propertyType,
                                         },
@@ -390,7 +472,7 @@ class _DetailImmobileScreenState extends State<DetailImmobileScreen> {
                                         context,
                                         '/review',
                                         arguments: {
-                                          'reviewType': 'immobile',
+                                          'reviewType': 'PROPERTY',
                                           'targetId': immobile.idImmobile,
                                           'targetName': immobile.propertyType,
                                         },
@@ -441,19 +523,76 @@ class _DetailImmobileScreenState extends State<DetailImmobileScreen> {
         ),
         bottomNavigationBar: BottomNavigationBar(
           items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Explore'),
-            BottomNavigationBarItem(icon: Icon(Icons.bookmark_border), label: 'Saved'),
-            BottomNavigationBarItem(icon: Icon(Icons.notifications_none), label: 'Updates'),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.search),
+              label: 'Pesquisar',
+              backgroundColor: Colors.green,
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.notifications),
+              label: 'Notificações',
+              backgroundColor: Colors.green,
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.chat_bubble),
+              label: 'Conversas',
+              backgroundColor: Colors.green,
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: 'Perfil',
+              backgroundColor: Colors.green,
+            ),
           ],
-          selectedItemColor: Colors.green,
-          unselectedItemColor: Colors.grey,
+          currentIndex: _selectedIndex,
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.white70,
+          backgroundColor: Colors.green[600],
+          onTap: _onItemTapped,
         ),
+        floatingActionButton: Padding(
+          padding: const EdgeInsets.only(left: 32.0, right: 32.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: FloatingActionButton.extended(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('O Chat será implementado em breve!')),
+                    );
+                  },
+                  backgroundColor: Colors.blue,
+                  icon: const Icon(Icons.chat, color: Colors.white),
+                  label: const Text('Falar com proprietário', style: TextStyle(color: Colors.white)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(40), 
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              FloatingActionButton.extended(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Ver perfil do proprietário será implementado!')),
+                  );
+                },
+                backgroundColor: Colors.orange,
+                icon: const Icon(Icons.person, color: Colors.white),
+                label: const Text('Ver Perfil', style: TextStyle(color: Colors.white)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(40), 
+                ),
+              ),
+            ],
+          ),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
     );
   }
 }
 
-// Crie um widget separado para a exibição das estrelas
 class StarRating extends StatelessWidget {
   final double rating;
   final double starSize;
