@@ -17,6 +17,7 @@ import 'login_screen.dart';
 import '../providers/notification_provider.dart';
 import 'unauthorized_screen.dart';
 
+
 class OwnerProfileScreen extends StatefulWidget {
   
   final int? immobileId;
@@ -31,6 +32,7 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
   bool _isLoading = true;
   int _selectedIndex = 3;
   String? _userType; 
+  bool permissions = false;
   final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   @override
@@ -61,16 +63,16 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
   void _checkAccess() async {
     final authService = AuthService();
     bool loggedIn = await authService.isLoggedIn();
-    // bool isOwner = await authService.isOwner();
+    bool isOwner = await authService.isOwner();
 
     if (!loggedIn) {
       Navigator.of(context).pushReplacementNamed('/login');
       return;
     } 
-    // else if (!isOwner) {
-    //   Navigator.of(context).pushReplacementNamed('/erro-screen');
-    //   return;
-    // }
+    else if (isOwner) {
+      permissions = true;
+      return;
+    }
 
 
     setState(() {
@@ -108,6 +110,7 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
                     Navigator.pushNamed(context, '/notifications');
                   },
                 ),
+                if(permissions)
                 IconButton(
                   icon: const Icon(Icons.edit),
                   tooltip: 'Editar Perfil',
@@ -125,6 +128,7 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
                           }
                         },
                 ),
+                if(permissions)
                 IconButton(
                   icon: const Icon(Icons.home_work),
                   tooltip: 'Meus Imóveis',
