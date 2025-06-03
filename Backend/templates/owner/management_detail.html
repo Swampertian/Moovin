@@ -21,22 +21,26 @@
 
     <!-- Carrossel de Imagens -->
     <div class="carousel-section">
-        <div class="carousel-container">
-            <div class="carousel-slide">
-                <div class="property-image"><img src="https://th.bing.com/th/id/OIP.J-xjy1VZ4XKitVUaEVpIBwHaFj?rs=1&pid=ImgDetMain" alt="Imagem 1"></div>
-            </div>
-            <div class="carousel-slide">
-                <div class="property-image"><img src="https://th.bing.com/th/id/OIP.J-xjy1VZ4XKitVUaEVpIBwHaFj?rs=1&pid=ImgDetMain" alt="Imagem 2"></div>
-            </div>
-            <div class="carousel-slide">
-                <div class="property-image"><img src="https://th.bing.com/th/id/OIP.J-xjy1VZ4XKitVUaEVpIBwHaFj?rs=1&pid=ImgDetMain" alt="Imagem 3"></div>
+    <div class="carousel-container">
+        {% for photo in property.photos_blob.all %}
+        <div class="carousel-slide">
+            <div class="property-image">
+                <img src="{% url 'serve_image_blob' photo.id %}" alt="Foto do Imóvel">
             </div>
         </div>
-        <div class="carousel-actions">
-            <button class="carousel-btn carousel-prev">←</button>
-            <button class="carousel-btn carousel-next">→</button>
+        {% empty %}
+        <div class="carousel-slide">
+            <div class="property-image">
+                <p>Nenhuma foto disponível</p>
+            </div>
         </div>
+        {% endfor %}
     </div>
+    <div class="carousel-actions">
+        <button class="carousel-btn carousel-prev">←</button>
+        <button class="carousel-btn carousel-next">→</button>
+    </div>
+</div>
 
     <!-- Conteúdo Principal -->
     <div class="content-section">
@@ -161,69 +165,71 @@
     }
 
     /* Carrossel */
-    .carousel-section {
-        margin-bottom: 1.5rem;
-        position: relative;
-        margin: 0 auto;
-        max-width: 100%;
-        display: flex;
-        justify-content: center;
-    }
 
-    .carousel-container {
-        display: flex;
-        overflow: hidden;
-        width: 500px;
-        max-width: 100%;
-        justify-content: center;
-        align-items: center;
-    }
+.carousel-section {
+    margin-bottom: 1.5rem;
+    position: relative;
+    margin: 0 auto; 
+    max-width: 100%;
+    display: flex; 
+    justify-content: center; 
+}
 
-    .carousel-slide {
-        min-width: 100%;
-        transition: transform 0.3s ease;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+.carousel-container {
+    display: flex;
+    overflow: hidden;
+    width: 500px; 
+    max-width: 100%; 
+    justify-content: center; 
+    align-items: center;
+}
 
-    .property-image {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-    }
+.carousel-slide {
+    min-width: 100%;
+    transition: transform 0.3s ease;
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+}
 
-    .property-image img {
-        width: 100%;
-        max-width: 500px;
-        height: 200px;
-        object-fit: cover;
-        background-color: #eee;
-        border-radius: 8px;
-    }
+.property-image {
+    width: 100%;
+    display: flex;
+    justify-content: center; 
+}
 
-    .carousel-actions {
-        position: absolute;
-        top: 50%;
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        transform: translateY(-50%);
-    }
+.property-image img {
+    width: 100%;
+    height: 100%;
+    max-width: 400px; 
+    max-height: 400px;
+    object-fit: contain;
+    background-color: #eee;
+    border-radius: 8px;
+}
 
-    .carousel-btn {
-        padding: 0.5rem 1rem;
-        border: none;
-        background-color: #f5f5f5;
-        border-radius: 12px;
-        cursor: pointer;
-        font-weight: 600;
-        transition: background-color 0.3s;
-    }
+.carousel-actions {
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    transform: translateY(-50%);
+}
 
-    .carousel-btn:hover {
-        background-color: #e0e0e0;
-    }
+.carousel-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    background-color: #f5f5f5;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s;
+}
+
+.carousel-btn:hover {
+    background-color: #e0e0e0;
+}
 
     /* Conteúdo Principal */
     .content-section {

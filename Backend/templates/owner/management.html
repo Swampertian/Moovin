@@ -22,7 +22,11 @@
             {% for prop in properties %}
             <div class="property-card">
                 <div class="property-image">
-                    <img src="" alt="Imagem do Imóvel">
+                    {% if prop.photos_blob.first %}
+                        <img src="{% url 'serve_image_blob' prop.photos_blob.first.id %}" alt="Foto do Imóvel">
+                    {% else %}
+                        <p>Nenhuma foto</p>
+                    {% endif %}
                 </div>
                 <div class="property-info">
                     <p><strong>ID:</strong> {{ prop.id_immobile }}</p>

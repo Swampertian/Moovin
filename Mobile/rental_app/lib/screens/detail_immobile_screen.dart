@@ -5,6 +5,14 @@ import '../providers/review_provider.dart';
 import '../models/immobile.dart';
 import '../services/auth_service.dart';
 import 'review_screen.dart';
+import 'owner_profile_screen.dart';
+import 'tenant_profile_screen.dart';
+import 'search_immobile_screen.dart';
+import 'notification_screen.dart'; 
+import 'chat_screen.dart'; 
+import '../providers/notification_provider.dart';
+import 'unauthorized_screen.dart';
+
 class DetailImmobileScreen extends StatefulWidget {
   final int immobileId;
   const DetailImmobileScreen({super.key, required this.immobileId});
@@ -15,18 +23,27 @@ class DetailImmobileScreen extends StatefulWidget {
 
 class _DetailImmobileScreenState extends State<DetailImmobileScreen> {
   bool _isLoading = true;
+  int _selectedIndex = 0;
+  String? _userType; 
 
   @override
   void initState() {
     super.initState();
     _checkAccess();
+    _loadUserType();
+  }
+
+  Future<void> _loadUserType() async {
+    final authService = AuthService();
+    _userType = await authService.getUserType();
+    setState(() {});
   }
 
   void _checkAccess() async {
     // Placeholder: Replace with your actual authentication service
     final authService = AuthService(); // Inject or initialize your auth service
     bool loggedIn = await authService.isLoggedIn();
-    bool isOwner = await authService.isOwner();
+    //bool isOwner = await authService.isOwner();
 
     if (!loggedIn) {
       // Navigator.of(context).pushReplacementNamed('/login');
@@ -42,6 +59,59 @@ class _DetailImmobileScreenState extends State<DetailImmobileScreen> {
     setState(() {
       _isLoading = false;
     });
+  }
+
+  void _onItemTapped(int index) async {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    final authService = AuthService();
+
+    switch (index) {
+      case 0:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const SearchImmobileScreen()),
+        );
+        break;
+      case 1:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChangeNotifierProvider(
+              create: (_) => NotificationProvider(),
+              child: const NotificationScreen(),
+            ),
+          ),
+        );
+        break;
+      case 2:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const ChatScreen()),
+        );
+        break;
+      case 3:
+        _userType = await authService.getUserType();
+        if (_userType == 'Proprietario') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const OwnerProfileScreen()),
+          );
+        } else if (_userType == 'Inquilino') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const TenantProfileScreen()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const UnauthorizedScreen()),
+          );
+        }
+        break;
+    }
   }
 
   Widget _buildThumbnail(String? imageBase64, String contentType) {
@@ -366,7 +436,7 @@ class _DetailImmobileScreenState extends State<DetailImmobileScreen> {
                                         context,
                                         '/review',
                                         arguments: {
-                                          'reviewType': 'immobile',
+                                          'reviewType': 'PROPERTY',
                                           'targetId': immobile.idImmobile,
                                           'targetName': immobile.propertyType,
                                         },
@@ -390,7 +460,7 @@ class _DetailImmobileScreenState extends State<DetailImmobileScreen> {
                                         context,
                                         '/review',
                                         arguments: {
-                                          'reviewType': 'immobile',
+                                          'reviewType': 'PROPERTY',
                                           'targetId': immobile.idImmobile,
                                           'targetName': immobile.propertyType,
                                         },
@@ -441,13 +511,47 @@ class _DetailImmobileScreenState extends State<DetailImmobileScreen> {
         ),
         bottomNavigationBar: BottomNavigationBar(
           items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Explore'),
-            BottomNavigationBarItem(icon: Icon(Icons.bookmark_border), label: 'Saved'),
-            BottomNavigationBarItem(icon: Icon(Icons.notifications_none), label: 'Updates'),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.search),
+              label: 'Pesquisar',
+              backgroundColor: Colors.green,
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.notifications),
+              label: 'Notificações',
+              backgroundColor: Colors.green,
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.chat_bubble),
+              label: 'Conversas',
+              backgroundColor: Colors.green,
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: 'Perfil',
+              backgroundColor: Colors.green,
+            ),
           ],
-          selectedItemColor: Colors.green,
-          unselectedItemColor: Colors.grey,
+          currentIndex: _selectedIndex,
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.white70,
+          backgroundColor: Colors.green[600],
+          onTap: _onItemTapped,
         ),
+        floatingActionButton: Transform.scale(
+        scale: 0.9,
+        child: FloatingActionButton.extended(
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('O Chat será implementado em breve!')),
+            );
+          },
+          backgroundColor: Colors.blue,
+          icon: const Icon(Icons.chat, color: Colors.white),
+          label: const Text('Falar com proprietário', style: TextStyle(color: Colors.white)),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
     );
   }
