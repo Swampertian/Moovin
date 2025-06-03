@@ -81,17 +81,49 @@ class OwnerViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['patch'], url_path='me/update-profile')
     def update_me_profile(self, request):
+        owner_id = request.data.get('id')
+
+        if not owner_id:
+            return Response(
+                {"detail": "ID do proprietário não fornecido."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         try:
-            owner = Owner.objects.get(user=request.user)
+            owner = Owner.objects.get(id=owner_id)
         except Owner.DoesNotExist:
-            return Response({"detail": "Perfil não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "Perfil não encontrado."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Verifica se o usuário autenticado é o dono do perfil
+        if owner.user.id != request.user.id:
+            return Response(
+                {"detail": "Você não é o dono deste perfil."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
         serializer = self.get_serializer(owner, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(detail=True, methods=['get'], url_path='getbyimmobile')
+    def get_owner(self, request, pk):
+        try:
+            immobile = Immobile.objects.get(id_immobile=pk)
+            profile = immobile.owner
+            if profile == None:
+                return Response({"detail": "Este imóvel não possui um proprietário associado."}, status=status.HTTP_404_NOT_FOUND)
+        except Immobile.DoesNotExist:
+            return Response({"detail": "Imóvel não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.get_serializer(profile)
+        return Response(serializer.data)
+        
 #Criacao de PERFIL SEM AUTENTICACAO.
 class OwnerCreateView(generics.CreateAPIView):
     queryset = Owner.objects.all()

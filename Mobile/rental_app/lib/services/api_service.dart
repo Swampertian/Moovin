@@ -166,6 +166,55 @@ class ApiService {
       throw Exception('Failed to load owner profile');
     }
   }
+  Future<Owner> fetchOwnerByImmobile(int immobileId) async {
+  final url = '$_ownerBase/$immobileId/getbyimmobile';
+  print('🔎 Fetching Owner (self): $url');
+
+  final token = await _secureStorage.read(key: 'access_token');
+
+  if (token == null) {
+    throw Exception('Token JWT não encontrado.');
+  }
+
+  try {
+    final response = await dio.get(
+      url,
+      options: Options(
+        headers: {'Authorization': 'Bearer $token'},
+        receiveTimeout: const Duration(seconds: 10),
+        sendTimeout: const Duration(seconds: 10),
+      ),
+    );
+
+    print('📡 STATUS: ${response.statusCode}');
+    print('📦 BODY: ${response.data}');
+
+    if (response.statusCode == 200) {
+      return Owner.fromJson(response.data);
+    } else if (response.statusCode == 404) {
+      throw Exception('Proprietário não encontrado para este imóvel.');
+    } else {
+      throw Exception('Erro ao carregar perfil do proprietário. Código: ${response.statusCode}');
+    }
+
+  } on DioException catch (e) {
+    if (e.type == DioExceptionType.connectionTimeout ||
+        e.type == DioExceptionType.receiveTimeout) {
+      throw Exception('Tempo de conexão esgotado. Tente novamente.');
+    } else if (e.type == DioExceptionType.badResponse) {
+      throw Exception('Erro de resposta do servidor: ${e.response?.statusCode}');
+    } else if (e.type == DioExceptionType.connectionError) {
+      throw Exception('Erro de conexão. Verifique sua internet.');
+    } else {
+      throw Exception('Erro inesperado: ${e.message}');
+    }
+  } catch (e) {
+    throw Exception('Erro ao buscar proprietário: $e');
+  }
+}
+
+
+
 
   Future<Owner> updateCurrentOwner(Map<String, dynamic> data) async {
     // final token = await _secureStorage.read(key: 'access_token');

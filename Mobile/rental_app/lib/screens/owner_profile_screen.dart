@@ -17,9 +17,12 @@ import 'login_screen.dart';
 import '../providers/notification_provider.dart';
 import 'unauthorized_screen.dart';
 
+
 class OwnerProfileScreen extends StatefulWidget {
   
-  const OwnerProfileScreen({super.key});
+  final int? immobileId;
+  // const OwnerProfileScreen({super.key});
+  const OwnerProfileScreen({Key? key, this.immobileId}) : super(key: key);
 
   @override
   _OwnerProfileScreenState createState() => _OwnerProfileScreenState();
@@ -29,6 +32,7 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
   bool _isLoading = true;
   int _selectedIndex = 3;
   String? _userType; 
+  bool permissions = false;
   final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   @override
@@ -64,8 +68,9 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
     if (!loggedIn) {
       Navigator.of(context).pushReplacementNamed('/login');
       return;
-    } else if (!isOwner) {
-      Navigator.of(context).pushReplacementNamed('/erro-screen');
+    } 
+    else if (isOwner) {
+      permissions = true;
       return;
     }
 
@@ -80,7 +85,7 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => OwnerProvider()..fetchOwner()),
+        ChangeNotifierProvider(create: (_) => OwnerProvider()..fetchOwner(immobileId : widget.immobileId)),
         ChangeNotifierProvider(create: (_) => ReviewProvider()),
       ],
       child: Consumer<OwnerProvider>(
@@ -105,6 +110,7 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
                     Navigator.pushNamed(context, '/notifications');
                   },
                 ),
+                if(permissions)
                 IconButton(
                   icon: const Icon(Icons.edit),
                   tooltip: 'Editar Perfil',
@@ -122,6 +128,7 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
                           }
                         },
                 ),
+                if(permissions)
                 IconButton(
                   icon: const Icon(Icons.home_work),
                   tooltip: 'Meus Imóveis',
