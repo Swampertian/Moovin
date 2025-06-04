@@ -17,6 +17,7 @@ import 'screens/create_profile_screen.dart';
 import 'screens/unauthorized_screen.dart';
 import 'screens/notification_screen.dart';
 import 'screens/chat_screen.dart';
+import 'screens/forgot_password_screen.dart';
 import 'screens/review_create_screen.dart';
 import 'screens/verify_email_screen.dart';
 import 'screens/onboarding_screen.dart';
@@ -68,6 +69,7 @@ class MyApp extends StatelessWidget {
         '/owner_dashboard': (context) => const OwnerDashboardScreen(),
         '/search-immobile': (context) => const SearchImmobileScreen(),
         '/erro-screen': (context) => const UnauthorizedScreen(),
+        '/forgot-password': (context) => const ForgotPasswordScreen(),
         '/notifications': (context) => const NotificationScreen(),
         '/conversations': (context) => const ChatScreen(),
         '/create_review': (context) => ChangeNotifierProvider(

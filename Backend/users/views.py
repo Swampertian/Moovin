@@ -171,3 +171,16 @@ class LogoutWebView(View):
             logout(request)
             messages.success(request, "Logout realizado com sucesso.")
         return redirect(reverse_lazy('login-web'))
+    
+class ResetPasswordView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        #code = request.data.get('code')
+        new_password = request.data.get('new_password')
+        try:
+            user = User.objects.get(email=email)
+            user.set_password(new_password)
+            user.save()
+            return Response({'message': 'Senha redefinida com sucesso'}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({'error': 'Usuário não encontrado'}, status=status.HTTP_404_NOT_FOUND)
