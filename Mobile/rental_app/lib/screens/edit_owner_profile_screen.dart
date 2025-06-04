@@ -83,10 +83,14 @@ class _EditOwnerProfileScreenState extends State<EditOwnerProfileScreen> {
       appBar: AppBar(
         title: const Text('Editar Perfil do Proprietário'),
         backgroundColor: Colors.green,
+        // Adicionado para o título ser branco
+        titleTextStyle: const TextStyle(color: Colors.white, fontSize: 20),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
+        // Adicionado para os ícones serem brancos
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -130,6 +134,7 @@ class _EditOwnerProfileScreenState extends State<EditOwnerProfileScreen> {
                 onPressed: _saveProfile,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
                 ),
                 child: const Text('Salvar Perfil'),

@@ -19,7 +19,7 @@ import 'unauthorized_screen.dart';
 
 
 class OwnerProfileScreen extends StatefulWidget {
-  
+
   final int? immobileId;
   // const OwnerProfileScreen({super.key});
   const OwnerProfileScreen({Key? key, this.immobileId}) : super(key: key);
@@ -31,7 +31,7 @@ class OwnerProfileScreen extends StatefulWidget {
 class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
   bool _isLoading = true;
   int _selectedIndex = 3;
-  String? _userType; 
+  String? _userType;
   bool permissions = false;
   final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
@@ -59,7 +59,7 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
       ),
     );
   }
-  
+
   void _checkAccess() async {
     final authService = AuthService();
     bool loggedIn = await authService.isLoggedIn();
@@ -68,7 +68,7 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
     if (!loggedIn) {
       Navigator.of(context).pushReplacementNamed('/login');
       return;
-    } 
+    }
     else if (isOwner) {
       permissions = true;
       return;
@@ -98,10 +98,14 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
             appBar: AppBar(
               backgroundColor: Colors.green,
               title: const Text('Perfil'),
+              // Adicionado para o título ser branco
+              titleTextStyle: const TextStyle(color: Colors.white, fontSize: 20),
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () => Navigator.pop(context),
               ),
+              // Adicionado para os ícones serem brancos
+              iconTheme: const IconThemeData(color: Colors.white),
               actions: [
                 IconButton(
                   icon: const Icon(Icons.notifications),
