@@ -1,165 +1,564 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detalhes do Imóvel</title>
-    <link rel="stylesheet" href="{% static 'immobile/css/style.css' %}">
-    <style>
-        body {
-            font-family: sans-serif;
-            margin: 20px;
-        }
-        .immobile-detail {
-            border: 1px solid #ccc;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-        h2 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        p {
-            margin: 5px 0;
-        }
-        .photos {
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .photo-item {
-            max-width: 95%;
-            height: auto;
-            border: 1px solid #eee;
-            box-shadow: 1px 1px 3px #ddd;
-            margin: 20px auto;
-        }
-        .photo-item img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-        .edit-button, .delete-button{
-            
-            top: 20px; 
-            right: 20px; 
-            background-color: #2c5e3d;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px; 
-            cursor: pointer;
-            text-decoration: none; 
-            font-size: 1em;
-        }
+{% extends 'base.html' %}
 
-        .edit-button {
-            right: 20px; 
-            background-color: #2c5e3d;
-            text-decoration: none;
-        }
-        .edit-button:hover {
-            background-color: #367c3f;
-        }
-        .delete-button {
-            right: 20px;
-            background-color: #b30000; 
-        }
-        .delete-button:hover {
-            background-color: #e60000;
-        }
+{% block title %}Detalhes do Imóvel{% endblock %}
 
-        .link-voltar {
-            text-align: center;
-            margin-top: 20px;
-        }
-    </style>
-    <script src="{% static 'immobile/js/register.js' %}"></script>
-</head>
-<body>
-    <header>
-        <div class="logo">
-          <img src="{% static 'immobile/img/logo.png' %}" height="15%" width="15%" alt="Moovin">
-          <span>Moovin</span>
+{% block content %}
+<div class="dashboard-container">
+
+    <!-- Cabeçalho -->
+    <div class="section-header">
+        <h3>{{property.property_type}}, {{property.city}} - {{property.state}}</h3>
+    </div>
+
+    <!-- Mensagens de Sucesso/Erro -->
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <p class="message {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</p>
+            {% endfor %}
         </div>
-        <nav>
-          <a href="#">Sobre</a>
-          <a href="#">Serviços</a>
-          <a href="#">Contato</a>
-          <div class="perfil-icon"></div>
-        </nav>
-      </header>
-    <main>
+    {% endif %}
 
-        <div>
-            <h3>Fotos do Imóvel</h3>
-            <div class="immobile-carousel">
-                <div class="carousel-slide">
-                    {% for photo in immobile.photos_blob.all %}
-                        <img src="{% url 'serve_image_blob' photo.id %}" alt="Foto do Imóvel">
-                    {% empty %}
-                        <p>Nenhuma foto cadastrada para este imóvel.</p>
-                    {% endfor %}
+    <!-- Carrossel de Imagens -->
+    <div class="carousel-section">
+        <div class="carousel-container">
+            {% for photo in property.photos_blob.all %}
+            <div class="carousel-slide">
+                <div class="property-image">
+                    <img src="{% url 'serve_image_blob' photo.id %}" alt="Foto do Imóvel">
                 </div>
-                {% if immobile.photos_blob.count > 1 %}
-                <button class="carousel-control prev">&#8249;</button>
-                <button class="carousel-control next">&#8250;</button>
+            </div>
+            {% empty %}
+            <div class="carousel-slide">
+                <div class="property-image">
+                    <p>Nenhuma foto disponível</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="carousel-actions">
+            <button class="carousel-btn carousel-prev">←</button>
+            <button class="carousel-btn carousel-next">→</button>
+        </div>
+    </div>
+
+    <!-- Conteúdo Principal -->
+    <div class="content-section">
+        <!-- Informações Úteis -->
+        <div class="info-card">
+            <h4>Informações Úteis</h4>
+            <div class="info-content">
+                <p><strong class="strong-label">Área do Imóvel:</strong> {{ property.area|default:"Não informado" }}</p>
+                <p><strong class="strong-label">Número de:</strong></p>
+                <p>- Banheiros: {{ property.bathrooms|default:"Não informado" }}</p>
+                <p>- Quartos: {{ property.bedrooms|default:"Não informado" }}</p>
+                <p>- Ar Condicionado: {% if property and property.air_conditioning is not None %}{% if property.air_conditioning %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
+                <p><strong class="strong-label">Garagem:</strong> {% if property and property.garage is not None %}{% if property.garage %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
+                <p><strong class="strong-label">Mobilia:</strong> {% if property and property.furnished is not None %}{% if property.furnished %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
+                <p><strong class="strong-label">Piscina:</strong> {% if property and property.pool is not None %}{% if property.pool %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
+                <p><strong class="strong-label">Status:</strong> {% if property and property.is_active %} Ativo {% else %} Desativado {% endif %}</p>
+                <div class="action-buttons">
+                    <a href="{%url 'immobile_edit' property.id_immobile%}" class="action-btn edit-btn">Editar Imóvel</a>
+                    <a href="{%url 'rental-register' property.id_immobile%}" class="action-btn register-rental-btn">Registrar Aluguel</a>
+                    <form method="post" class="deactivate-form">
+                        {% csrf_token %}
+                        <button name="deactivate" class="action-btn deactivate-btn" {% if property.status == 'Available' %}disabled{% endif %}>
+                            Desativar Imóvel
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contato do Inquilino -->
+        <div class="info-card">
+            <h4>Contato do Inquilino</h4>
+            <div class="info-content">
+                {% if rental %}
+                    <p><strong class="strong-label">Nome:</strong> {{ rental.tenant.name|default:"Não informado" }}</p>
+                    <p><strong class="strong-label">E-mail:</strong> {{ rental.tenant.user.email|default:"Não informado" }}</p>
+                    <p><strong class="strong-label">Telefone:</strong> {{ rental.tenant.phone|default:"Não informado" }}</p>
+                {% else %}
+                    <p>Nenhum inquilino associado.</p>
                 {% endif %}
             </div>
         </div>
 
-        <a href="{% url 'immobile_edit' pk=immobile.pk %}" class="edit-button">Editar</a>
-
-
-        <h2>Detalhes do Imóvel Registrado</h2>
-
-        <div class="immobile-detail">
-            <h3>Informações Gerais</h3>
-            <p><strong>Tipo:</strong> {{ immobile.get_property_type_display }}</p>
-            <p><strong>CEP:</strong> {{ immobile.zip_code }}</p>
-            <p><strong>Estado:</strong> {{ immobile.state }}</p>
-            <p><strong>Cidade:</strong> {{ immobile.city }}</p>
-            <p><strong>Rua:</strong> {{ immobile.street }}</p>
-            <p><strong>Número:</strong> {{ immobile.number }}{% if immobile.no_number %} (Sem Número){% endif %}</p>
-            <p><strong>Quartos:</strong> {{ immobile.bedrooms }}</p>
-            <p><strong>Banheiros:</strong> {{ immobile.bathrooms }}</p>
-            <p><strong>Área:</strong> {{ immobile.area }} m²</p>
-            <p><strong>Aluguel:</strong> R$ {{ immobile.rent }}</p>
+        <!-- Documentos do Imóvel -->
+        <div class="info-card">
+            <h4>Documentos do Imóvel</h4>
+            <div class="info-content">
+                {% if documents %}
+                    <ul>
+                        {% for document in documents %}
+                            <li>
+                                <a href="" target="_blank">{{ document.file.name|cut:"documents/" }}</a>
+                                (Uploaded by {{ document.uploaded_by.username }} on {{ document.uploaded_at|date:"d/m/Y" }})
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>Nenhum documento disponível.</p>
+                {% endif %}
+                <form method="post" enctype="multipart/form-data" class="document-upload-form">
+                    {% csrf_token %}
+                    <input type="file" name="document" accept=".pdf,.jpg,.png" required>
+                    <button type="submit" class="upload-btn">Enviar Documento</button>
+                </form>
+            </div>
         </div>
 
-        <div class="immobile-detail">
-            <h3>Comodidades</h3>
-            <p><strong>Ar Condicionado:</strong> {% if immobile.air_conditioning %}Sim{% else %}Não{% endif %}</p>
-            <p><strong>Garagem:</strong> {% if immobile.garage %}Sim{% else %}Não{% endif %}</p>
-            <p><strong>Piscina:</strong> {% if immobile.pool %}Sim{% else %}Não{% endif %}</p>
-            <p><strong>Mobiliado:</strong> {% if immobile.furnished %}Sim{% else %}Não{% endif %}</p>
-            <p><strong>Aceita Animais:</strong> {% if immobile.pet_friendly %}Sim{% else %}Não{% endif %}</p>
-            <p><strong>Próximo a Mercado:</strong> {% if immobile.nearby_market %}Sim{% else %}Não{% endif %}</p>
-            <p><strong>Próximo a Ônibus:</strong> {% if immobile.nearby_bus %}Sim{% else %}Não{% endif %}</p>
-            <p><strong>Internet:</strong> {% if immobile.internet %}Sim{% else %}Não{% endif %}</p>
+        <!-- Informações Adicionais -->
+        <div class="additional-info">
+            <p><strong class="strong-label">Permite Animais:</strong> {% if property and property.pet_friendly is not None %}{% if property.pet_friendly %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
+            <p><strong class="strong-label">Serviço de Internet:</strong> {% if property and property.internet is not None %}{% if property.internet %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
+            <p><strong class="strong-label">Ônibus Próximo:</strong> {% if property and property.nearby_bus is not None %}{% if property.nearby_bus %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
+            <p><strong class="strong-label">Mercado Próximo:</strong> {% if property and property.nearby_market is not None %}{% if property.nearby_market %} Sim {% else %} Não {% endif %}{% else %} Não informado {% endif %}</p>
         </div>
 
-        <div class="immobile-detail">
-            <h3>Descrição e Regras</h3>
-            <p><strong>Descrição:</strong></p>
-            <p>{{ immobile.description|linebreaksbr }}</p>
-            {% if immobile.additional_rules %}
-            <p><strong>Regras Adicionais:</strong></p>
-            <p>{{ immobile.additional_rules|linebreaksbr }}</p>
-            {% endif %}
+        <!-- Gráfico -->
+        <div class="chart-card">
+            <h4>Rendimento Estimado (em R$)</h4>
+            <div class="chart-placeholder">Gráfico de Rendimento Estimado (Placeholder)</div>
         </div>
+    </div>
 
-        <form method="post" action="{% url 'immobile_delete' pk=immobile.pk %}" style="display: inline;">
-            {% csrf_token %}
-            <button type="submit" class="delete-button" onclick="return confirm('Tem certeza que deseja excluir este imóvel?')">Excluir</button>
-        </form>
+</div>
 
-        <p class="link-voltar"><a href="/api/owners/management/">Voltar para a página inicial</a></p>
-    </main>
-</body>
-</html>
+<style>
+    body {
+        font-family: 'Inter', sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f8f9fa;
+        color: #343a40;
+    }
+
+    a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .dashboard-container {
+        padding: 1.5rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .section-header h3 {
+        font-size: 1.8rem;
+        color: #2e7d32;
+        margin: 0;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    /* Mensagens (Alertas) */
+    .messages {
+        margin-bottom: 1.5rem;
+    }
+    .message {
+        padding: 0.75rem 1.25rem;
+        margin-bottom: 1rem;
+        border: 1px solid transparent;
+        border-radius: 0.5rem;
+        font-size: 0.95rem;
+    }
+    .message.success {
+        color: #155724;
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+    }
+    .message.error {
+        color: #721c24;
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+    }
+    .message.warning {
+        color: #856404;
+        background-color: #fff3cd;
+        border-color: #ffeeba;
+    }
+
+    /* Carrossel */
+    .carousel-section {
+        margin-bottom: 2rem;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto 2rem auto;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .carousel-container {
+        display: flex;
+        overflow: hidden;
+        width: 100%;
+        height: 400px;
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+    .carousel-slide {
+        min-width: 100%;
+        transition: transform 0.4s ease-in-out;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .property-image {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #f0f0f0;
+    }
+
+    .property-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+    .property-image p {
+        color: #6c757d;
+        font-style: italic;
+    }
+
+    .carousel-actions {
+        position: absolute;
+        top: 50%;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        transform: translateY(-50%);
+        padding: 0 10px;
+        box-sizing: border-box;
+    }
+
+    .carousel-btn {
+        background-color: rgba(46, 125, 50, 0.8);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.5rem;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .carousel-btn:hover {
+        background-color: #1b5e20;
+        transform: translateY(-50%) scale(1.05);
+    }
+
+    /* Conteúdo Principal */
+    .content-section {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .info-card, .chart-card {
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        flex: 1;
+        min-width: 300px;
+    }
+
+    .info-card h4, .chart-card h4 {
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+        color: #2e7d32;
+        font-weight: 600;
+    }
+
+    .info-content p, .info-content ul {
+        margin: 0.5rem 0;
+        line-height: 1.6;
+    }
+
+    .strong-label { /* Classe para os labels em negrito */
+        color: #2e7d32;
+        font-weight: 600;
+    }
+
+    .info-content ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .info-content ul li {
+        margin: 0.6rem 0;
+    }
+
+    .info-content ul li a {
+        color: #2e7d32;
+        text-decoration: underline;
+    }
+
+    .info-content ul li a:hover {
+        color: #1b5e20;
+    }
+
+    .document-upload-form {
+        margin-top: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        width: 100%;
+    }
+
+    .document-upload-form input[type="file"] {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        box-sizing: border-box;
+    }
+
+    .upload-btn {
+        width: 100%;
+        padding: 0.75rem 1.5rem;
+        background-color: #2e7d32;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .upload-btn:hover {
+        background-color: #1b5e20;
+        transform: translateY(-2px);
+    }
+
+    /* Botões de Ação */
+    .action-buttons {
+        margin-top: 1.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .action-btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-weight: 600;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .action-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+    }
+
+    .edit-btn {
+        background-color: #1b5e20;
+        color: white;
+    }
+
+    .edit-btn:hover {
+        background-color: #0d3b0e;
+    }
+
+    .register-rental-btn {
+        background-color: #388e3c;
+        color: white;
+    }
+
+    .register-rental-btn:hover {
+        background-color: #2e7d32;
+    }
+
+    .deactivate-btn {
+        background-color: #d32f2f;
+        color: white;
+    }
+
+    .deactivate-btn:hover:not(:disabled) {
+        background-color: #b71c1c;
+    }
+
+    .deactivate-btn:disabled {
+        background-color: #ef9a9a;
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+
+    .deactivate-form {
+        display: inline-block;
+    }
+
+    .chart-card {
+        flex: 2;
+        min-width: 350px;
+    }
+
+    .chart-placeholder {
+        width: 100%;
+        height: 250px;
+        background-color: #e9ecef;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #6c757d;
+        border-radius: 8px;
+        font-style: italic;
+    }
+
+    /* Informações Adicionais */
+    .additional-info {
+        flex-basis: 100%;
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        justify-content: space-around;
+    }
+
+    .additional-info p {
+        margin: 0;
+        flex-basis: 48%;
+        font-weight: 500;
+        color: #495057;
+    }
+
+    .additional-info p .strong-label {
+        color: #2e7d32;
+        font-weight: 700;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .dashboard-container {
+            padding: 1rem;
+        }
+
+        .section-header h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .carousel-container {
+            height: 300px;
+        }
+
+        .carousel-btn {
+            width: 35px;
+            height: 35px;
+            font-size: 1.2rem;
+        }
+
+        .content-section {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .info-card, .chart-card {
+            min-width: 100%;
+            padding: 1rem;
+        }
+
+        .info-card h4, .chart-card h4 {
+            font-size: 1.2rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .action-btn, .upload-btn {
+            width: 100%;
+            padding: 0.6rem 1rem;
+            font-size: 0.95rem;
+        }
+
+        .additional-info {
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 1rem;
+        }
+
+        .additional-info p {
+            flex-basis: 100%;
+        }
+    }
+</style>
+
+<script>
+    const carouselContainer = document.querySelector('.carousel-container');
+    const slides = document.querySelectorAll('.carousel-slide');
+    const prevBtn = document.querySelector('.carousel-prev');
+    const nextBtn = document.querySelector('.carousel-next');
+    let currentIndex = 0;
+
+    function showSlide(index) {
+        if (slides.length === 0) return;
+
+        if (index >= slides.length) {
+            currentIndex = 0;
+        } else if (index < 0) {
+            currentIndex = slides.length - 1;
+        } else {
+            currentIndex = index;
+        }
+        carouselContainer.style.transform = `translateX(${-currentIndex * 100}%)`;
+    }
+
+    prevBtn.addEventListener('click', () => {
+        showSlide(currentIndex - 1);
+    });
+
+    nextBtn.addEventListener('click', () => {
+        showSlide(currentIndex + 1);
+    });
+
+    showSlide(currentIndex);
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowLeft') {
+            showSlide(currentIndex - 1);
+        } else if (event.key === 'ArrowRight') {
+            showSlide(currentIndex + 1);
+        }
+    });
+
+</script>
+{% endblock %}
