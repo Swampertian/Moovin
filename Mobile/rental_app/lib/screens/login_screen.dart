@@ -55,8 +55,10 @@ class _LoginScreenState extends State<LoginScreen> {
         final userData = await apiService.getUser(token); 
         
         String userType = userData['user_type']; 
+        String userId = userData['id'].toString();
         
         await _secureStorage.write(key: 'user_type', value: userType);
+        await _secureStorage.write(key: 'user_id', value: userId);
 
       } else {
       

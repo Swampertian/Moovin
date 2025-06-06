@@ -128,13 +128,17 @@ class _ChatScreenState extends State<ChatScreen> {
                 final lastMessage = conversation.lastMessage;
                 final isUnread = lastMessage != null && !lastMessage.isRead;
 
+                String displayName = _userType == 'Proprietario'
+                  ? conversation.tenant.name 
+                  : conversation.owner.name; 
+
                 return ListTile(
                   leading: CircleAvatar(
                     backgroundColor: Colors.green.withAlpha(50),
                     child: const Icon(Icons.chat, color: Colors.green),
                   ),
                   title: Text(
-                    conversation.immobile.propertyType,
+                    displayName,
                     style: TextStyle(
                       fontWeight: isUnread ? FontWeight.bold : FontWeight.normal,
                     ),

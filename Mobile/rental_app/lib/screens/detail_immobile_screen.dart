@@ -571,97 +571,125 @@ class _DetailImmobileScreenState extends State<DetailImmobileScreen> {
         backgroundColor: Colors.green[600],
         onTap: _onItemTapped,
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          setState(() {
-            _isCreatingConversation = true;
-          });
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(left: 32.0, right: 32.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: FloatingActionButton.extended(
+                onPressed: () async {
+                  setState(() {
+                    _isCreatingConversation = true;
+                  });
 
-          final authService = AuthService();
-          final userType = await authService.getUserType();
-          final token = await _secureStorage.read(key: 'access_token');
+                  final authService = AuthService();
+                  final userType = await authService.getUserType();
+                  final token = await _secureStorage.read(key: 'access_token');
 
-          if (userType != 'Inquilino' || token == null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Apenas inquilinos podem iniciar conversas.')),
-            );
-            setState(() {
-              _isCreatingConversation = false;
-            });
-            return;
-          }
+                  if (userType != 'Inquilino' || token == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Apenas inquilinos podem iniciar conversas.')),
+                    );
+                    setState(() {
+                      _isCreatingConversation = false;
+                    });
+                    return;
+                  }
 
-          try {
-            final chatProvider = Provider.of<ChatProvider>(context, listen: false);
-            final immobileProvider = Provider.of<ImmobileProvider>(context, listen: false);
-            final tenantProvider = Provider.of<TenantProvider>(context, listen: false);
-            final ownerProvider = Provider.of<OwnerProvider>(context, listen: false);
+                  try {
+                    final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+                    final immobileProvider = Provider.of<ImmobileProvider>(context, listen: false);
+                    final tenantProvider = Provider.of<TenantProvider>(context, listen: false);
+                    final ownerProvider = Provider.of<OwnerProvider>(context, listen: false);
 
-            final immobile = immobileProvider.immobile;
-            final tenant = tenantProvider.tenant;
-            final owner = ownerProvider.owner;
+                    final immobile = immobileProvider.immobile;
+                    final tenant = tenantProvider.tenant;
+                    final owner = ownerProvider.owner;
 
-            if (immobile == null || tenant == null) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Dados do imóvel ou inquilino não encontrados.')),
-              );
-              setState(() {
-                _isCreatingConversation = false;
-              });
-              return;
-            }
+                    if (immobile == null || tenant == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Dados do imóvel ou inquilino não encontrados.')),
+                      );
+                      setState(() {
+                        _isCreatingConversation = false;
+                      });
+                      return;
+                    }
 
-            if (owner == null) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Proprietário do imóvel não encontrado.')),
-              );
-              setState(() {
-                _isCreatingConversation = false;
-              });
-              return;
-            }
+                    if (owner == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Proprietário do imóvel não encontrado.')),
+                      );
+                      setState(() {
+                        _isCreatingConversation = false;
+                      });
+                      return;
+                    }
 
-            final conversation = await chatProvider.createConversation(
-              tenant.id,
-              owner.id,
-              immobile.idImmobile,
-            );
+                    final conversation = await chatProvider.createConversation(
+                      tenant.id,
+                      owner.id,
+                      immobile.idImmobile,
+                    );
 
-            setState(() {
-              _isCreatingConversation = false;
-            });
+                    setState(() {
+                      _isCreatingConversation = false;
+                    });
 
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ConversationDetailScreen(
-                  conversationId: conversation.id,
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ConversationDetailScreen(
+                          conversationId: conversation.id,
+                        ),
+                      ),
+                    );
+
+                    Provider.of<NotificationProvider>(context, listen: false).fetchNotifications();
+                  } catch (e) {
+                    setState(() {
+                      _isCreatingConversation = false;
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Erro ao iniciar conversa: $e')),
+                    );
+                  }
+                },
+                backgroundColor: Colors.blue,
+                icon: _isCreatingConversation
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Icon(Icons.chat, color: Colors.white),
+                label: Text(
+                  _isCreatingConversation ? 'Carregando...' : 'Falar com proprietário',
+                  style: const TextStyle(color: Colors.white),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(40),
                 ),
               ),
-            );
-
-            Provider.of<NotificationProvider>(context, listen: false).fetchNotifications();
-          } catch (e) {
-            setState(() {
-              _isCreatingConversation = false;
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Erro ao iniciar conversa: $e')),
-            );
-          }
-        },
-        backgroundColor: Colors.blue,
-        icon: _isCreatingConversation
-            ? const CircularProgressIndicator(color: Colors.white)
-            : const Icon(Icons.chat, color: Colors.white),
-        label: Text(
-          _isCreatingConversation ? 'Carregando...' : 'Falar com proprietário',
-          style: const TextStyle(color: Colors.white),
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(40),
+            ),
+            const SizedBox(width: 10),
+            FloatingActionButton.extended(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => OwnerProfileScreen(immobileId: immobileId),
+                  ),
+                );
+              },
+              backgroundColor: Colors.orange,
+              icon: const Icon(Icons.person, color: Colors.white),
+              label: const Text('Ver Perfil', style: TextStyle(color: Colors.white)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(40),
+              ),
+            ),
+          ],
         ),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
