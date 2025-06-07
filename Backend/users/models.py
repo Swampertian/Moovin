@@ -32,7 +32,7 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True, null=False)
     name = models.CharField(max_length=200, null=False)
-    username = models.CharField(max_length=150, unique=True, null=False)  
+    username = models.CharField(max_length=150, null=False)  
     
     user_type = models.CharField(
         max_length=15,
