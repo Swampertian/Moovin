@@ -7,6 +7,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/immobile.dart';
 import 'package:dio/dio.dart';
 import '../models/review.dart';
+import '../models/conversation.dart';
+import '../models/message.dart';
+
 class ApiService {
   final String _tenantBase = '$apiBase/tenants';
   final String _ownerBase = '$apiBase/owners/owners';
@@ -14,7 +17,8 @@ class ApiService {
   final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
   final String _photoBlobBase = '$apiBase/photo/blob'; 
   late Dio dio;
-
+  final String _chatBase = '$apiBase/chat/conversations';
+  final String _chatBaseMessage = '$apiBase/chat';
 
 
   ApiService() {
@@ -486,5 +490,115 @@ Future<List<Review>> fetchReviews({required String type, required int targetId})
       return {};
     }
   }
-}
 
+  // chat
+  Future<List<Conversation>> fetchConversations() async {
+    final url = Uri.parse('$_chatBase/');
+    final token = await _secureStorage.read(key: 'access_token');
+
+    if (token == null) {
+      throw Exception('Token JWT não encontrado.');
+    }
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final decodedBody = utf8.decode(response.bodyBytes);
+      final List<dynamic> jsonList = jsonDecode(decodedBody);
+      return jsonList.map((json) => Conversation.fromJson(json)).toList();
+    } else {
+      throw Exception('Falha ao carregar conversas: ${response.body}');
+    }
+  }
+
+  Future<Conversation> createConversation({
+    required int tenantId,
+    required int ownerId,
+    required int immobileId,
+  }) async {
+    final url = Uri.parse('$_chatBase/create/');
+    final token = await _secureStorage.read(key: 'access_token');
+
+    if (token == null) {
+      throw Exception('Token JWT não encontrado.');
+    }
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'tenant_id': tenantId,
+        'owner_id': ownerId,
+        'immobile_id': immobileId,
+      }),
+    );
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      final decodedBody = utf8.decode(response.bodyBytes);
+      return Conversation.fromJson(jsonDecode(decodedBody));
+    } else {
+      throw Exception('Falha ao criar conversa: ${response.body}');
+    }
+  }
+
+  Future<Message> sendMessage({
+    required int conversationId,
+    required String content,
+  }) async {
+    final url = Uri.parse('$_chatBaseMessage/messages/create/');
+    final token = await _secureStorage.read(key: 'access_token');
+
+    if (token == null) {
+      throw Exception('Token JWT não encontrado.');
+    }
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'conversation_id': conversationId,
+        'content': content,
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      final decodedBody = utf8.decode(response.bodyBytes);
+      return Message.fromJson(jsonDecode(decodedBody));
+    } else {
+      throw Exception('Falha ao enviar mensagem: ${response.body}');
+    }
+  }
+
+  Future<void> markMessageAsRead(int messageId) async {
+    final url = Uri.parse('$_chatBaseMessage/messages/$messageId/read/');
+    final token = await _secureStorage.read(key: 'access_token');
+
+    if (token == null) {
+      throw Exception('Token JWT não encontrado.');
+    }
+
+    final response = await http.patch(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Falha ao marcar mensagem como lida: ${response.body}');
+    }
+  }
+}

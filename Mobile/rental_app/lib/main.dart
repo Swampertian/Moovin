@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:rental_app/models/immobile.dart';
+import 'package:rental_app/providers/immobile_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'providers/review_provider.dart';
 import 'providers/notification_provider.dart';
@@ -20,6 +22,8 @@ import 'screens/chat_screen.dart';
 import 'screens/review_create_screen.dart';
 import 'screens/verify_email_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'providers/chat_provider.dart';
+import 'providers/tenant_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,6 +35,9 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
         ChangeNotifierProvider(create: (_) => OwnerProvider()), // ✅ Adicionado
+        ChangeNotifierProvider(create: (_) => ChatProvider()),
+        ChangeNotifierProvider(create: (_) => TenantProvider()),
+        ChangeNotifierProvider(create: (_) => ImmobileProvider()),
       ],
       child: MyApp(hasCompletedOnboarding: hasCompletedOnboarding),
     ),
@@ -58,6 +65,7 @@ class MyApp extends StatelessWidget {
         '/register': (context) => const RegisterScreen(),
         '/tenant': (context) => const TenantProfileScreen(),
         '/owner': (context) => const OwnerProfileScreen(),
+        '/chat': (context) => const ChatScreen(),
         '/verify-email': (context) => const VerifyEmailScreen(),
         '/immobile_details': (context) => ChangeNotifierProvider(
               create: (context) => ReviewProvider(),
