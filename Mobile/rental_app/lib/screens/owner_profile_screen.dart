@@ -8,7 +8,7 @@ import 'owner_immobiles_screen.dart';
 import 'edit_immobile_screen.dart';
 import '../services/auth_service.dart';
 class OwnerProfileScreen extends StatefulWidget {
-  
+
   const OwnerProfileScreen({super.key});
 
   @override
@@ -36,7 +36,7 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
       ),
     );
   }
-  
+
   void _checkAccess() async {
     final authService = AuthService();
     bool loggedIn = await authService.isLoggedIn();

@@ -11,21 +11,21 @@ from django.contrib.auth import login
 from users.models import User
 from owner.models import Owner
 from rest_framework import viewsets
-from .models import Owner
+from .models import Owner, OwnerPhoto
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from .serializers import OwnerSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import AllowAny
-
+from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-from rest_framework import authentication
+from rest_framework.views import APIView
 from subscriptions.mixins import DRFPermissionMixin
 from subscriptions.permissions import HasActiveSubscription
 from django.views.decorators.csrf import csrf_exempt
-# from django.utils.decorators import method_decoratorfrom 
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
@@ -39,13 +39,7 @@ class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
         # não faz nada — vai pular a checagem de CSRF
         return
-# class OwnerViewSet(ModelViewSet):
-#     queryset = Owner.objects.all()
-#     serializer_class = OwnerSerializer
-#     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
-#     permission_classes = (AllowAny,)
 
-# API ViewSet for Owner
 class OwnerViewSet(viewsets.ModelViewSet):
     queryset = Owner.objects.all()
     serializer_class = OwnerSerializer
@@ -90,6 +84,69 @@ class OwnerViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class ServeImageBlobAPIView(APIView):
+    """
+    Retorna o conteúdo binário da foto.
+    """
+    def get(self, request, photo_id, format=None):
+        try:
+            photo = OwnerPhoto.objects.get(id=photo_id)
+            return HttpResponse(photo.image_blob, content_type=photo.content_type)
+        except OwnerPhoto.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+    def serve_image_blob(request, photo_id):
+        photo = get_object_or_404(OwnerPhoto, id=photo_id)
+        print("SERVE IMAGE BLOB:")
+        print("  Photo ID:", photo.id)
+        print("  Content Type:", photo.content_type)
+        print("  First 20 bytes of blob:", photo.image_blob[:20] if photo.image_blob else None)
+        return HttpResponse(photo.image_blob, content_type=photo.content_type)
+class OwnerPhotoListAPIView(APIView):
+    def get(self, request, owner_id):
+        try:
+            owner = Owner.objects.get(id=owner_id)
+        except Owner.DoesNotExist:
+            return Response({'error': 'Owner not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        photos = OwnerPhoto.objects.filter(owner=owner)
+        data = []
+
+        for photo in photos:
+            photo_url = request.build_absolute_uri(
+                reverse('serve-owner-photo', args=[photo.id])
+            )
+            data.append({
+                'photo_id': photo.id,
+                'uploaded_at': photo.uploaded_at,
+                'url': photo_url,
+            })
+
+        return Response(data, status=status.HTTP_200_OK)
+
+class OwnerPhotoUploadAPIView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def post(self, request, format=None):
+        uploaded_file = request.FILES.get('photo')
+        owner_id = request.data.get('owner_id')
+
+        if not uploaded_file or not owner_id:
+            return Response({'error': 'Missing photo or owner_id'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            owner = Owner.objects.get(id=owner_id)
+        except Owner.DoesNotExist:
+            return Response({'error': 'Owner not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        photo = OwnerPhoto.objects.create(
+            owner=owner,
+            image_blob=uploaded_file.read(),
+            content_type=uploaded_file.content_type
+        )
+
+        return Response({'message': 'Photo uploaded successfully', 'photo_id': photo.id}, status=status.HTTP_201_CREATED)
 
 # Statistics Page
 from django.views.generic import TemplateView
@@ -97,7 +154,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.utils import timezone
-from django.http import HttpResponseForbidden
+from django.http import HttpResponse
 from datetime import datetime, timedelta
 from django.db.models import Sum, Min
 

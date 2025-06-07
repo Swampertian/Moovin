@@ -1,6 +1,8 @@
-
 import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 
 class CreateProfileScreen extends StatefulWidget {
@@ -30,6 +32,18 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
   final _aboutMeController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
+  File? _selectedImage;
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    }
+  }
 
   Future<void> _saveProfile() async {
     final url = widget.isOwner
@@ -56,7 +70,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
           };
 
     try {
-      print(jsonEncode(body));
       final response = await http.post(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
@@ -64,6 +77,24 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
       );
 
       if (response.statusCode == 201) {
+        final createdProfile = jsonDecode(response.body);
+        final int ownerId = createdProfile['id'];
+
+
+        if (widget.isOwner && _selectedImage != null) {
+          final uploadUrl = Uri.parse('http://10.0.2.2:8000/api/owners/owner-photo-upload/');
+          var request = http.MultipartRequest('POST', uploadUrl);
+          request.files.add(
+            await http.MultipartFile.fromPath('photo', _selectedImage!.path),
+          );
+          request.fields['owner_id'] = ownerId.toString();
+
+          final uploadResponse = await request.send();
+          if (uploadResponse.statusCode != 201) {
+            print('Erro ao enviar imagem');
+          }
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Perfil criado com sucesso!'), backgroundColor: Colors.green),
         );
@@ -173,7 +204,22 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                   validator: (value) =>
                       value == null || value.isEmpty ? 'Por favor, insira uma descrição sobre você' : null,
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 20),
+
+                // 🖼️ Seção de imagem
+                const Text(
+                  'Foto do perfil (opcional)',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF2F6D3C)),
+                ),
+                const SizedBox(height: 10),
+                if (_selectedImage != null)
+                  Image.file(_selectedImage!, height: 150),
+                TextButton.icon(
+                  onPressed: _pickImage,
+                  icon: Icon(Icons.image),
+                  label: Text('Selecionar imagem'),
+                ),
+                const SizedBox(height: 30),
 
                 _buildSubmitButton(
                   text: 'Salvar e Ir para Login',
@@ -249,4 +295,3 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
     );
   }
 }
-

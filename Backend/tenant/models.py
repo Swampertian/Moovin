@@ -77,3 +77,11 @@ class Tenant(models.Model):
     def __str__(self):
         return self.name
 
+class TenantPhoto(models.Model):
+    tenant = models.ForeignKey(Tenant, related_name='photos_blob', on_delete=models.CASCADE)
+    image_blob = models.BinaryField(default=bytes)
+    content_type = models.CharField(max_length=50, default='')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Photo (BLOB) for {self.tenant}"
