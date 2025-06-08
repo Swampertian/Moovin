@@ -78,6 +78,7 @@ INSTALLED_APPS = [
     'notification',
     'subscriptions.apps.SubscriptionsConfig',
     'rental',
+    'chat.apps.ChatConfig',
 
 ]
 AUTH_USER_MODEL = 'users.User'

@@ -142,6 +142,15 @@ class ApiService {
     }
   }
 
+  Future<bool> resetPassword(String email, String newPassword) async {
+  final response = await http.post(
+    Uri.parse('$baseUrl/users/password-reset/'),
+    headers: {'Content-Type': 'application/json'},
+    body: json.encode({'email': email, 'new_password': newPassword}),
+  );
+  return response.statusCode == 200;
+}
+
 
 
 }

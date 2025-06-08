@@ -9,6 +9,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
 from rest_framework.views import APIView
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from django.utils import timezone
+import datetime
 
 from django.core.mail import send_mail
 from django.conf import settings
@@ -173,11 +177,6 @@ class LogoutWebView(View):
             messages.success(request, "Logout realizado com sucesso.")
         return redirect(reverse_lazy('login-web'))
 
-
-from django.http import HttpResponseRedirect
-from django.urls import reverse
-
-
 class RegisterWebView(View):
     template_name = 'register_web.html'
     
@@ -252,8 +251,6 @@ class RegisterWebView(View):
             messages.error(request, f'Erro ao processar o registro: {str(e)}')
             return render(request, self.template_name)
         
-from django.utils import timezone
-import datetime
 
 class VerifyEmailCodeView(View):
     template_name = 'verify_email_code.html'
@@ -299,3 +296,17 @@ class VerifyEmailCodeView(View):
         except EmailVerificationCode.DoesNotExist:
             messages.error(request, 'Código inválido.')
             return render(request, self.template_name)
+   
+class ResetPasswordView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        #code = request.data.get('code')
+        new_password = request.data.get('new_password')
+        try:
+            user = User.objects.get(email=email)
+            user.set_password(new_password)
+            user.save()
+            return Response({'message': 'Senha redefinida com sucesso'}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({'error': 'Usuário não encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
