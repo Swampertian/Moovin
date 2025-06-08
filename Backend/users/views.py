@@ -9,6 +9,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
 from rest_framework.views import APIView
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from django.utils import timezone
+import datetime
 
 from django.core.mail import send_mail
 from django.conf import settings
@@ -81,6 +85,7 @@ class RequestEmailVerification(APIView):
             # Salvar o código de verificação (com um tempo de expiração)
             EmailVerificationCode.objects.update_or_create(
                 email=email,
+                created_at = timezone.now(),
                 defaults={'code': verification_code}
             )
 
@@ -171,7 +176,127 @@ class LogoutWebView(View):
             logout(request)
             messages.success(request, "Logout realizado com sucesso.")
         return redirect(reverse_lazy('login-web'))
+
+class RegisterWebView(View):
+    template_name = 'register_web.html'
     
+    def get(self, request):
+        return render(request, self.template_name)
+    
+    def post(self, request):
+        email = request.POST.get('email')
+        name = request.POST.get('name')
+        user_type = request.POST.get('user_type')
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+        
+        # Validate required fields
+        if not all([email, name, user_type, password, confirm_password]):
+            messages.error(request, 'Todos os campos são obrigatórios.')
+            return render(request, self.template_name)
+        
+        # Validate password match
+        if password != confirm_password:
+            messages.error(request, 'As senhas não coincidem.')
+            return render(request, self.template_name)
+        
+        # Validate user_type
+        valid_user_types = [choice[0] for choice in User.user_type.field.choices]
+        if user_type not in valid_user_types:
+            messages.error(request, 'Tipo de usuário inválido.')
+            return render(request, self.template_name)
+        
+        # Check if email already exists
+        if User.objects.filter(email=email).exists():
+            messages.error(request, 'Este e-mail já está registrado.')
+            return render(request, self.template_name)
+        
+        try:
+            # Generate verification code
+            verification_code = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
+            
+            # Create user (but don't save yet)
+            user = User(
+                email=email,
+                name=name,
+                user_type=user_type
+            )
+            user.set_password(password)
+            
+            # Save verification code
+            EmailVerificationCode.objects.update_or_create(
+                email=email,
+                defaults={'code': verification_code}
+            )
+            
+            # Send verification email
+            subject = 'Verifique seu e-mail'
+            message = f'Seu código de verificação é: {verification_code}'
+            from_email = settings.DEFAULT_FROM_EMAIL
+            recipient_list = [email]
+            send_mail(subject, message, from_email, recipient_list)
+            
+            # Save user to session for verification
+            request.session['pending_user'] = {
+                'email': email,
+                'name': name,
+                'user_type': user_type,
+                'password': password
+            }
+            
+            messages.success(request, 'Código de verificação enviado para o seu e-mail.')
+            return HttpResponseRedirect(reverse('verify-email-code-web'))
+            
+        except Exception as e:
+            messages.error(request, f'Erro ao processar o registro: {str(e)}')
+            return render(request, self.template_name)
+        
+
+class VerifyEmailCodeView(View):
+    template_name = 'verify_email_code.html'
+
+    def get(self, request):
+        return render(request, self.template_name)
+
+    def post(self, request):
+        code = request.POST.get('code')
+        pending_user = request.session.get('pending_user')
+
+        if not pending_user:
+            messages.error(request, 'Sessão expirada. Por favor, registre-se novamente.')
+            return redirect('register-web')
+
+        email = pending_user['email']
+
+        try:
+            verification_entry = EmailVerificationCode.objects.get(email=email, code=code)
+            expiration_time = verification_entry.created_at + datetime.timedelta(minutes=15)
+
+            if timezone.now() > expiration_time:
+                verification_entry.delete()
+                messages.error(request, 'O código expirou. Solicite um novo.')
+                return redirect('register-web')
+
+            # Criar o usuário
+            user = User(
+                email=pending_user['email'],
+                name=pending_user['name'],
+                user_type=pending_user['user_type']
+            )
+            user.set_password(pending_user['password'])
+            user.save()
+
+            # Limpar código e sessão
+            verification_entry.delete()
+            del request.session['pending_user']
+
+            messages.success(request, 'Cadastro concluído com sucesso! Faça login.')
+            return redirect('login-web')
+
+        except EmailVerificationCode.DoesNotExist:
+            messages.error(request, 'Código inválido.')
+            return render(request, self.template_name)
+   
 class ResetPasswordView(APIView):
     def post(self, request):
         email = request.data.get('email')
@@ -184,3 +309,4 @@ class ResetPasswordView(APIView):
             return Response({'message': 'Senha redefinida com sucesso'}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({'error': 'Usuário não encontrado'}, status=status.HTTP_404_NOT_FOUND)
+

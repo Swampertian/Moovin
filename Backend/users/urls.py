@@ -18,6 +18,8 @@ urlpatterns = [
     path('logout-web/',LogoutWebView.as_view(),name='logout-web'),
     path('request-email-verification/',RequestEmailVerification.as_view(),name='request-verify-email'),
     path('verify-email-code/', VerifyEmailCode.as_view(), name='verify-email-code'),
+    path('register-web/',RegisterWebView.as_view(),name='register-web'),
+    path('verify-email-code-web/',VerifyEmailCodeView.as_view(),name='verify-email-code-web'),
     path('password-reset/', ResetPasswordView.as_view(), name='password-reset'),
 
 ]
