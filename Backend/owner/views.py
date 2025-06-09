@@ -3,7 +3,8 @@ from django.shortcuts import render, redirect
 from rest_framework import generics
 from django.utils import timezone
 from datetime import datetime, timedelta
-from immobile.models import Immobile, Payment, Rental
+from immobile.models import Immobile, Payment
+from rental.models import Rental
 from django.db.models import Sum
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin,PermissionRequiredMixin
@@ -74,16 +75,47 @@ class OwnerViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['patch'], url_path='me/update-profile')
     def update_me_profile(self, request):
+        owner_id = request.data.get('id')
+
+        if not owner_id:
+            return Response(
+                {"detail": "ID do proprietário não fornecido."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         try:
-            owner = Owner.objects.get(user=request.user)
+            owner = Owner.objects.get(id=owner_id)
         except Owner.DoesNotExist:
-            return Response({"detail": "Perfil não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "Perfil não encontrado."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Verifica se o usuário autenticado é o dono do perfil
+        if owner.user.id != request.user.id:
+            return Response(
+                {"detail": "Você não é o dono deste perfil."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
         serializer = self.get_serializer(owner, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        @action(detail=True, methods=['get'], url_path='getbyimmobile')
+    def get_owner(self, request, pk):
+        try:
+            immobile = Immobile.objects.get(id_immobile=pk)
+            profile = immobile.owner
+            if profile == None:
+                return Response({"detail": "Este imóvel não possui um proprietário associado."}, status=status.HTTP_404_NOT_FOUND)
+        except Immobile.DoesNotExist:
+            return Response({"detail": "Imóvel não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.get_serializer(profile)
+        return Response(serializer.data)
 class ServeImageBlobAPIView(APIView):
     """
     Retorna o conteúdo binário da foto.
@@ -109,6 +141,7 @@ class OwnerPhotoListAPIView(APIView):
             owner = Owner.objects.get(id=owner_id)
         except Owner.DoesNotExist:
             return Response({'error': 'Owner not found'}, status=status.HTTP_404_NOT_FOUND)
+
 
         photos = OwnerPhoto.objects.filter(owner=owner)
         data = []
@@ -146,7 +179,14 @@ class OwnerPhotoUploadAPIView(APIView):
             content_type=uploaded_file.content_type
         )
 
-        return Response({'message': 'Photo uploaded successfully', 'photo_id': photo.id}, status=status.HTTP_201_CREATED)
+        return Response({'message': 'Photo uploaded successfully', 'photo_id': photo.id}, status=status.HTTP_201_CREATED
+        
+#Criacao de PERFIL SEM AUTENTICACAO.
+class OwnerCreateView(generics.CreateAPIView):
+    queryset = Owner.objects.all()
+    serializer_class = OwnerSerializer
+    permission_classes = [AllowAny]
+
 
 # Statistics Page
 from django.views.generic import TemplateView
@@ -322,17 +362,13 @@ class OwnerCalendarView(PermissionRequiredMixin,TemplateView):
         from calendar import monthrange, monthcalendar
         _, num_days = monthrange(year, month)
 
-        # Get today for highlighting
         today = timezone.now().date()
         is_current_month = (today.year == year and today.month == month)
 
-        # Get calendar weeks
         month_calendar = monthcalendar(year, month)
 
-        # Get all properties for this owner
         properties = Immobile.objects.filter(owner=owner)
         
-        # Get all payments for this month
         month_payments = Payment.objects.filter(
             immobile__owner=owner,
             date_received__year=year,
@@ -350,7 +386,6 @@ class OwnerCalendarView(PermissionRequiredMixin,TemplateView):
                 'is_fully_paid': total_paid >= prop.rent
             }
         
-        # Get daily payments for calendar display
         payments = Payment.objects.filter(
             immobile__owner=owner,
             date_received__year=year,
@@ -368,13 +403,11 @@ class OwnerCalendarView(PermissionRequiredMixin,TemplateView):
                     day_date = datetime(year, month, day_num).date()
                     day_payments = payments.filter(date_received=day_date)
                     
-                    # Calculate payment amount for this day
                     payment_amount = day_payments.aggregate(Sum('amount_received'))['amount_received__sum'] or 0
                     payment_count = day_payments.count()
                     
-                    # Check if this day has any payments for properties that are not fully paid for the month
                     has_incomplete_payment = False
-                    if payment_count > 0:  # Only check days with payments
+                    if payment_count > 0:  
                         for payment in day_payments:
                             property_id = payment.immobile.id_immobile
                             if not property_payment_totals[property_id]['is_fully_paid']:
@@ -396,7 +429,7 @@ class OwnerCalendarView(PermissionRequiredMixin,TemplateView):
         months = [
             (i, datetime(2000, i, 1).strftime('%B')) for i in range(1, 13)
         ]
-        years = list(range(year - 5, year + 6))  # 5 years before and after current year
+        years = list(range(year - 5, year + 6))  
 
         context.update({
             'calendar_weeks': calendar_weeks,
@@ -412,7 +445,6 @@ class OwnerCalendarView(PermissionRequiredMixin,TemplateView):
         })
         return context
 
-# Charts Page
 class OwnerChartsView(PermissionRequiredMixin, TemplateView):
     template_name = 'owner/charts.html'
     permission_required = 'subscriptions.has_active_subscription'
@@ -436,7 +468,7 @@ class OwnerChartsView(PermissionRequiredMixin, TemplateView):
         # Obtain revenue data for the last 12 months
         today = timezone.now().date()
         end_date = today
-        start_date = (today.replace(day=1) - timedelta(days=365)).replace(day=1)  # Get 12 full months
+        start_date = (today.replace(day=1) - timedelta(days=365)).replace(day=1) 
 
         
         revenue_data = []
@@ -446,38 +478,34 @@ class OwnerChartsView(PermissionRequiredMixin, TemplateView):
         current_date = start_date
         while current_date <= end_date:
             month_dates.append(current_date)
-            # Move to first day of next month
             if current_date.month == 12:
                 current_date = current_date.replace(year=current_date.year + 1, month=1)
             else:
                 current_date = current_date.replace(month=current_date.month + 1)
         
-        # For each month, calculate revenue
+
         for i, month_start in enumerate(month_dates):
-            # Calculate month end
-            if i == len(month_dates) - 1:  # Last month (current)
+            if i == len(month_dates) - 1: 
                 month_end = end_date
             else:
                 month_end = month_dates[i + 1] - timedelta(days=1)
             
-            # Get payments for this month
             payments = Payment.objects.filter(
                 immobile__owner=owner,
                 date_received__range=[month_start, month_end]
             )
             total = payments.aggregate(Sum('amount_received'))['amount_received__sum'] or 0
             
-            # Add to revenue data
             revenue_data.append({
                 'month': month_start.strftime('%b %Y'),
-                'revenue': float(total)  # Ensure it's a float for JS
+                'revenue': float(total)  
             })
 
         # Revenue distribution by property type for the same period
         property_types = properties.values_list('property_type', flat=True).distinct()
         revenue_by_property_type = []
         for prop_type in property_types:
-            if not prop_type:  # Skip if property type is None
+            if not prop_type: 
                 continue
                 
             prop_payments = Payment.objects.filter(
@@ -487,25 +515,21 @@ class OwnerChartsView(PermissionRequiredMixin, TemplateView):
             )
             total_revenue = prop_payments.aggregate(Sum('amount_received'))['amount_received__sum'] or 0
             
-            # Only add if there's revenue for this property type
             if total_revenue > 0:
                 revenue_by_property_type.append({
                     'property_type': prop_type if prop_type else 'Não Especificado',
-                    'revenue': int(total_revenue)  # Convertendo para inteiro para evitar problemas com decimais
+                    'revenue': int(total_revenue)  
                 })
         
-        # If no property types with revenue, add default
         if not revenue_by_property_type:
             revenue_by_property_type.append({
                 'property_type': 'Não Especificado',
                 'revenue': 0
             })
 
-        # Adicionar os dados JSON-safe ao contexto
         context.update({
             'revenue_data': revenue_data,
             'revenue_by_property_type': revenue_by_property_type,
-            # Adicione estes dados processados para JavaScript
             'property_type_labels': [item['property_type'] for item in revenue_by_property_type],
             'property_type_values': [item['revenue'] for item in revenue_by_property_type],
         })

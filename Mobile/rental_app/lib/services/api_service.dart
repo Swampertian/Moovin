@@ -7,6 +7,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/immobile.dart';
 import 'package:dio/dio.dart';
 import '../models/review.dart';
+import '../models/conversation.dart';
+import '../models/message.dart';
+
 class ApiService {
   final String _tenantBase = '$apiBase/tenants';
   final String _ownerBase = '$apiBase/owners/owners';
@@ -14,7 +17,8 @@ class ApiService {
   final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
   final String _photoBlobBase = '$apiBase/photo/blob'; 
   late Dio dio;
-
+  final String _chatBase = '$apiBase/chat/conversations';
+  final String _chatBaseMessage = '$apiBase/chat';
 
 
   ApiService() {
@@ -166,6 +170,55 @@ class ApiService {
       throw Exception('Failed to load owner profile');
     }
   }
+  Future<Owner> fetchOwnerByImmobile(int immobileId) async {
+  final url = '$_ownerBase/$immobileId/getbyimmobile';
+  print('🔎 Fetching Owner (self): $url');
+
+  final token = await _secureStorage.read(key: 'access_token');
+
+  if (token == null) {
+    throw Exception('Token JWT não encontrado.');
+  }
+
+  try {
+    final response = await dio.get(
+      url,
+      options: Options(
+        headers: {'Authorization': 'Bearer $token'},
+        receiveTimeout: const Duration(seconds: 10),
+        sendTimeout: const Duration(seconds: 10),
+      ),
+    );
+
+    print('📡 STATUS: ${response.statusCode}');
+    print('📦 BODY: ${response.data}');
+
+    if (response.statusCode == 200) {
+      return Owner.fromJson(response.data);
+    } else if (response.statusCode == 404) {
+      throw Exception('Proprietário não encontrado para este imóvel.');
+    } else {
+      throw Exception('Erro ao carregar perfil do proprietário. Código: ${response.statusCode}');
+    }
+
+  } on DioException catch (e) {
+    if (e.type == DioExceptionType.connectionTimeout ||
+        e.type == DioExceptionType.receiveTimeout) {
+      throw Exception('Tempo de conexão esgotado. Tente novamente.');
+    } else if (e.type == DioExceptionType.badResponse) {
+      throw Exception('Erro de resposta do servidor: ${e.response?.statusCode}');
+    } else if (e.type == DioExceptionType.connectionError) {
+      throw Exception('Erro de conexão. Verifique sua internet.');
+    } else {
+      throw Exception('Erro inesperado: ${e.message}');
+    }
+  } catch (e) {
+    throw Exception('Erro ao buscar proprietário: $e');
+  }
+}
+
+
+
 
   Future<Owner> updateCurrentOwner(Map<String, dynamic> data) async {
     // final token = await _secureStorage.read(key: 'access_token');
@@ -364,7 +417,7 @@ Future<List<Review>> fetchReviews({required String type, required int targetId})
     final Map<String, dynamic> body = {
       'rating': rating,
       'comment': comment,
-      'type': 'PROPERTY',
+      'type': type,
       'object_id': targetId,
       //'author': authorId,
     };
@@ -437,5 +490,115 @@ Future<List<Review>> fetchReviews({required String type, required int targetId})
       return {};
     }
   }
-}
 
+  // chat
+  Future<List<Conversation>> fetchConversations() async {
+    final url = Uri.parse('$_chatBase/');
+    final token = await _secureStorage.read(key: 'access_token');
+
+    if (token == null) {
+      throw Exception('Token JWT não encontrado.');
+    }
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final decodedBody = utf8.decode(response.bodyBytes);
+      final List<dynamic> jsonList = jsonDecode(decodedBody);
+      return jsonList.map((json) => Conversation.fromJson(json)).toList();
+    } else {
+      throw Exception('Falha ao carregar conversas: ${response.body}');
+    }
+  }
+
+  Future<Conversation> createConversation({
+    required int tenantId,
+    required int ownerId,
+    required int immobileId,
+  }) async {
+    final url = Uri.parse('$_chatBase/create/');
+    final token = await _secureStorage.read(key: 'access_token');
+
+    if (token == null) {
+      throw Exception('Token JWT não encontrado.');
+    }
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'tenant_id': tenantId,
+        'owner_id': ownerId,
+        'immobile_id': immobileId,
+      }),
+    );
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      final decodedBody = utf8.decode(response.bodyBytes);
+      return Conversation.fromJson(jsonDecode(decodedBody));
+    } else {
+      throw Exception('Falha ao criar conversa: ${response.body}');
+    }
+  }
+
+  Future<Message> sendMessage({
+    required int conversationId,
+    required String content,
+  }) async {
+    final url = Uri.parse('$_chatBaseMessage/messages/create/');
+    final token = await _secureStorage.read(key: 'access_token');
+
+    if (token == null) {
+      throw Exception('Token JWT não encontrado.');
+    }
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'conversation_id': conversationId,
+        'content': content,
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      final decodedBody = utf8.decode(response.bodyBytes);
+      return Message.fromJson(jsonDecode(decodedBody));
+    } else {
+      throw Exception('Falha ao enviar mensagem: ${response.body}');
+    }
+  }
+
+  Future<void> markMessageAsRead(int messageId) async {
+    final url = Uri.parse('$_chatBaseMessage/messages/$messageId/read/');
+    final token = await _secureStorage.read(key: 'access_token');
+
+    if (token == null) {
+      throw Exception('Token JWT não encontrado.');
+    }
+
+    final response = await http.patch(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Falha ao marcar mensagem como lida: ${response.body}');
+    }
+  }
+}

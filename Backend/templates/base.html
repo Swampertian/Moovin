@@ -32,13 +32,22 @@
                         cursor: pointer;
                         font: inherit;
                     }
+        .navbar-brand-logo-text {
+                        display: flex;
+                        align-items: center;
+                        gap: 10px; 
+                        color: white; 
+                        font-size: 1.5rem; 
+                        font-weight: bold;
+                    }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
 <body class="light">
     <div class="navbar">
-        <div>
+        <div class="navbar-brand-logo-text"> {# Novo div para agrupar logo e texto #}
             <img src="/static/moovin-logo.png" alt="Moovin Logo" style="height: 50px;">
+            <span class="app-name">Moovin</span> {# Texto "Moovin" adicionado aqui #}
         </div>
         <div>
             <a href="#">Sobre</a>

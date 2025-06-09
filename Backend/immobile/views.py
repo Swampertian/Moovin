@@ -175,8 +175,9 @@ class ImmobileRegisterPart1View(CreateView):
         return self.render_to_response(self.get_context_data(form=form))
 
 class ImmobileRegisterPart2View(FormView):
-    form_class = ImmobilePhotoForm
+    form_class = ImmobileRegisterPart2Form
     template_name = 'immobile/register_step3.html'
+    photo_form_class = ImmobilePhotoForm
 
     def get_immobile(self):
         immobile_id = self.kwargs.get('immobile_id')
@@ -190,10 +191,16 @@ class ImmobileRegisterPart2View(FormView):
         context['immobile'] = self.get_immobile()
         print("REGISTER STEP 2 - Get Context Data:")
         print("  Immobile in Context:", context['immobile'])
+        if 'photo_form' not in kwargs:
+            context['photo_form'] = self.photo_form_class()
         return context
+    
 
     def form_valid(self, form):
         immobile = self.get_immobile()
+        immobile.description = form.cleaned_data['description']
+        immobile.additional_rules = form.cleaned_data['additional_rules']
+        immobile.save()
         image_file = self.request.FILES.get('image')
         print("REGISTER STEP 2 - Form Valid:")
         print("  Immobile ID:", immobile.id_immobile)
