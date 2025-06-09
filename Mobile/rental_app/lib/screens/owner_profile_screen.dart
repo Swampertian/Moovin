@@ -20,9 +20,13 @@ import 'unauthorized_screen.dart';
 
 class OwnerProfileScreen extends StatefulWidget {
 
+
+  const OwnerProfileScreen({super.key});
+
   final int? immobileId;
   // const OwnerProfileScreen({super.key});
   const OwnerProfileScreen({Key? key, this.immobileId}) : super(key: key);
+
 
   @override
   _OwnerProfileScreenState createState() => _OwnerProfileScreenState();
