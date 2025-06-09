@@ -35,7 +35,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
 from visits.models import Visit
 from visits.forms import VisitForm
-
+from django.urls import reverse
 class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
         # não faz nada — vai pular a checagem de CSRF
@@ -104,18 +104,20 @@ class OwnerViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        @action(detail=True, methods=['get'], url_path='getbyimmobile')
-    def get_owner(self, request, pk):
+    
+    @action(detail=True, methods=['get'], url_path='getbyimmobile')
+    def immobile_owner(self, request, pk=None):
         try:
-            immobile = Immobile.objects.get(id_immobile=pk)
+            immobile = Immobile.objects.get(pk=pk)
             profile = immobile.owner
-            if profile == None:
+            if profile is None:
                 return Response({"detail": "Este imóvel não possui um proprietário associado."}, status=status.HTTP_404_NOT_FOUND)
         except Immobile.DoesNotExist:
             return Response({"detail": "Imóvel não encontrado."}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = self.get_serializer(profile)
         return Response(serializer.data)
+
 class ServeImageBlobAPIView(APIView):
     """
     Retorna o conteúdo binário da foto.
@@ -179,7 +181,7 @@ class OwnerPhotoUploadAPIView(APIView):
             content_type=uploaded_file.content_type
         )
 
-        return Response({'message': 'Photo uploaded successfully', 'photo_id': photo.id}, status=status.HTTP_201_CREATED
+        return Response({'message': 'Photo uploaded successfully', 'photo_id': photo.id}, status=status.HTTP_201_CREATED)
         
 #Criacao de PERFIL SEM AUTENTICACAO.
 class OwnerCreateView(generics.CreateAPIView):
