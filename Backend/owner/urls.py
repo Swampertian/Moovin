@@ -8,7 +8,12 @@ from .views import (
     OwnerManagementView,
     OwnerManagementImmobileDetailView,
     OwnerVisitScheduleView,
+    OwnerCreateView,
+    OwnerPhotoUploadAPIView,
+    OwnerPhotoListAPIView,
+
 )
+from . import views
 
 router = DefaultRouter()
 router.register(r'owners', OwnerViewSet, basename='owner')
@@ -27,5 +32,11 @@ urlpatterns = [
 
     # Agendamento de Visitas
     path('visit_schedule/', OwnerVisitScheduleView.as_view(), name='owner_visit_schedule'),
+    path('owner_create', OwnerCreateView.as_view(), name='owner-create'),
+    
+    # Imagens
+    path('owner-photo-upload/', OwnerPhotoUploadAPIView.as_view(), name='owner-photo-upload'),
+    path('owners/<int:owner_id>/photos/', OwnerPhotoListAPIView.as_view(), name='owner-photo-list'),
+    path('owner_photo/blob/<int:photo_id>/', views.ServeImageBlobAPIView.as_view(), name='serve_image_blob_api'),
 
 ]

@@ -1,4 +1,5 @@
 import 'immobile.dart';
+
 class Owner {
   final int id;
   final String name;
@@ -13,6 +14,7 @@ class Owner {
   final bool fastResponder;
   final double rating;
   final List<Immobile> properties;
+  final List<OwnerPhoto> photos; 
 
   Owner({
     required this.id,
@@ -28,6 +30,7 @@ class Owner {
     required this.fastResponder,
     required this.rating,
     required this.properties,
+    required this.photos, 
   });
 
   factory Owner.fromJson(Map<String, dynamic> json) {
@@ -36,12 +39,14 @@ class Owner {
       if (v is String) return double.tryParse(v) ?? 0.0;
       return 0.0;
     }
+
     int parseInt(dynamic v) {
       if (v is int) return v;
       if (v is num) return v.toInt();
       if (v is String) return int.tryParse(v) ?? 0;
       return 0;
     }
+
     return Owner(
       id: parseInt(json['id']),
       name: json['name'] as String? ?? '',
@@ -58,8 +63,30 @@ class Owner {
       properties: (json['properties'] as List<dynamic>? ?? [])
           .map((e) => Immobile.fromJson(e as Map<String, dynamic>))
           .toList(),
+      photos: (json['photos'] as List<dynamic>? ?? []) 
+          .map((e) => OwnerPhoto.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
-
   }
 }
 
+
+class OwnerPhoto {
+  final int photoId;
+  final String uploadedAt;
+  final String url;
+
+  OwnerPhoto({
+    required this.photoId,
+    required this.uploadedAt,
+    required this.url,
+  });
+
+  factory OwnerPhoto.fromJson(Map<String, dynamic> json) {
+    return OwnerPhoto(
+      photoId: json['photo_id'],
+      uploadedAt: json['uploaded_at'],
+      url: json['url'],
+    );
+  }
+}

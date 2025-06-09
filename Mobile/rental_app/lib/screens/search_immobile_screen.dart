@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+import 'package:rental_app/screens/owner_profile_screen.dart';
+
 import 'package:rental_app/providers/immobile_provider.dart';
+
 import '../services/api_service.dart';
 import '../models/immobile.dart';
 import '../models/review.dart';
