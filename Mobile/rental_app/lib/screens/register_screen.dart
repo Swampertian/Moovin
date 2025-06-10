@@ -100,7 +100,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 40),
 
                 _buildSubmitButton(
-                  text: 'Cadastrar-se como locatário',
+                  text: 'Cadastrar-se como inquilino',
                   onPressed: () async {
                     await _handleRegistration(isOwner: false);
                   },
@@ -109,7 +109,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 16),
 
                 _buildSubmitButton(
-                  text: 'Cadastrar-se como inquilino',
+                  text: 'Cadastrar-se como proprietário',
                   outlined: true,
                   onPressed: () async {
                     await _handleRegistration(isOwner: true);
@@ -199,7 +199,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
  Future<void> _handleRegistration({required bool isOwner}) async {
     if (_formKey.currentState?.validate() ?? false) {
       final String email = _emailController.text;
-      final apiService = ApiService(baseUrl: 'http://10.0.2.2:8000/api'); //URL emulador
+      final apiService = ApiService(baseUrl: 'http://127.0.0.1:8000/api'); //URL emulador
 
       try {
         final response = await apiService.requestEmailVerification(email);

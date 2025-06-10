@@ -25,6 +25,6 @@ class OwnerSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'user', 'name', 'phone', 'city', 'state', 'about_me',
             'revenue_generated', 'rented_properties', 'rated_by_tenants',
-            'recommended_by_tenants', 'fast_responder', 'properties','photo_blob',
+            'recommended_by_tenants', 'fast_responder', 'properties','photosBlob',
         ]
         read_only_fields = ['id', 'user']

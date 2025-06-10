@@ -2,7 +2,13 @@ from django.urls import path, include
 from .views import TenantCreateView
 from .views import *
 from . import views
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register(r'profile', TenantViewSet)
+
 urlpatterns = [
+    path('', include(router.urls)),
     path('tenant_create', TenantCreateView.as_view(), name='tenant-create'),
     # Imagens
     path('owner-photo-upload/', TenantPhotoUploadAPIView.as_view(), name='tenant-photo-upload'),
