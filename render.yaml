@@ -10,7 +10,7 @@ services:
       python manage.py collectstatic --noinput
 
     startCommand: gunicorn backend.wsgi:application
-    workingDir: backend
+    workingDir: Backend
     envVars:
     - key: DJANGO_SETTINGS_MODULE
       value: backend.settings
