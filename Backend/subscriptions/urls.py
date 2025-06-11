@@ -1,7 +1,8 @@
 
-from .views import ProtectedView
+from .views import StripeCheckoutView
 from django.urls import path, include
 urlpatterns = [
-    path('',ProtectedView.as_view())
+    path('checkout/',StripeCheckoutView.as_view(),name='checkout'),
+
 ]
 

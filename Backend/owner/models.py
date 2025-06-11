@@ -60,13 +60,19 @@ class Owner(models.Model):
     rated_by_tenants = models.PositiveIntegerField(default=0)
     recommended_by_tenants = models.PositiveIntegerField(default=0)
     fast_responder = models.BooleanField(default=False)
-
     def __str__(self):
         return self.name
-
     def get_reviews(self):
         content_type = ContentType.objects.get_for_model(self)
         return Review.objects.filter(content_type=content_type, object_id=self.id, type=ReviewType.PROPERTY)
-
     def average_rating(self):
         return Review.average_for_object(self)
+    
+class OwnerPhoto(models.Model):
+    owner = models.ForeignKey(Owner, related_name='photos_blob', on_delete=models.CASCADE)
+    image_blob = models.BinaryField(default=bytes)
+    content_type = models.CharField(max_length=50, default='')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Photo (BLOB) for {self.owner}"

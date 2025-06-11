@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+import 'package:rental_app/screens/owner_profile_screen.dart';
+
+import 'package:rental_app/providers/immobile_provider.dart';
+
 import '../services/api_service.dart';
 import '../models/immobile.dart';
+import '../models/review.dart';
 import '../providers/review_provider.dart';
 import '../providers/notification_provider.dart'; 
 import 'detail_immobile_screen.dart';
 import 'login_screen.dart';
 import 'tenant_profile_screen.dart';
+import 'owner_profile_screen.dart';
 import 'owner_dashboard_screen.dart';
 import 'notification_screen.dart'; 
 import 'chat_screen.dart'; 
-
+import '../providers/review_provider.dart';
+import 'unauthorized_screen.dart';
 class SearchImmobileScreen extends StatefulWidget {
   const SearchImmobileScreen({super.key});
 
@@ -29,6 +37,7 @@ class _SearchImmobileScreenState extends State<SearchImmobileScreen> {
 
   final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
   String? _userType;
+  int _selectedIndex = 0;
 
   final Map<String, String> tipoMap = {
     'Casa': 'house',
@@ -58,6 +67,7 @@ class _SearchImmobileScreenState extends State<SearchImmobileScreen> {
     _searchController.dispose();
     super.dispose();
   }
+  
 
   Future<void> fetchImmobiles(Map<String, dynamic>? filtros) async {
     try {
@@ -565,8 +575,11 @@ class _SearchImmobileScreenState extends State<SearchImmobileScreen> {
         backgroundColor: Colors.green[600],
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white70,
-        currentIndex: 0,
+        currentIndex: _selectedIndex,
         onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
           switch (index) {
             case 0:
               break;
@@ -585,7 +598,22 @@ class _SearchImmobileScreenState extends State<SearchImmobileScreen> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatScreen()));
               break;
             case 3:
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const TenantProfileScreen()));
+              if (_userType == 'Proprietario') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const OwnerProfileScreen()),
+                );
+              } else if (_userType == 'Inquilino') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const TenantProfileScreen()),
+                );
+              } else {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const UnauthorizedScreen()),
+                );
+              }
               break;
             default:
               break;
@@ -784,15 +812,58 @@ class _SearchImmobileScreenState extends State<SearchImmobileScreen> {
                                   ),
                                 );
                               },
-                              child: PropertyCard(
-                                imageUrl: 'https://th.bing.com/th/id/OIP.Dzz0pHitTq_-nEuYC0dgtQHaFC?rs=1&pid=ImgDetMain',
-                                title: imovel.propertyType,
-                                location: '${imovel.city}, ${imovel.state}',
-                                beds: imovel.bedrooms,
-                                baths: imovel.bathrooms,
-                                size: 2,
-                                rating: 4.5,
-                              ),
+                              child: FutureBuilder<Immobile>(
+  future: ApiService().fetchOneImmobile(imovel.idImmobile),
+  builder: (context, immobileSnapshot) {
+    if (immobileSnapshot.connectionState == ConnectionState.waiting) {
+      return const SizedBox(
+        height: 120, // Ajuste a altura conforme necessário
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (immobileSnapshot.hasError || !immobileSnapshot.hasData || immobileSnapshot.data?.photosBlob.isEmpty == true) {
+      return PropertyCard(
+        imageUrl: 'https://th.bing.com/th/id/OIP.Dzz0pHitTq_-nEuYC0dgtQHaFC?rs=1&pid=ImgDetMain',
+        title: imovel.propertyType.toLowerCase() == 'house'
+            ? 'Casa'
+            : (imovel.propertyType.toLowerCase() == 'apartment' ? 'Apartamento' : imovel.propertyType),
+        location: '${imovel.city}, ${imovel.state}',
+        beds: imovel.bedrooms,
+        baths: imovel.bathrooms,
+        size: imovel.area?.toInt() ?? 0,
+        rating: 4.0, // Ou algum valor padrão
+      );
+    }
+    final immobileDetails = immobileSnapshot.data!;
+    return FutureBuilder<List<Review>>(
+      future: ApiService().fetchReviews(type: 'immobile', targetId: imovel.idImmobile),
+      builder: (context, reviewSnapshot) {
+        double averageRating = 4.0;
+        int reviewCount = 0;
+        if (reviewSnapshot.hasData && reviewSnapshot.data!.isNotEmpty) {
+          final reviews = reviewSnapshot.data!;
+          final totalRating = reviews.fold<double>(0, (sum, review) => sum + review.rating);
+          averageRating = totalRating / reviews.length;
+          reviewCount = reviews.length;
+        }
+
+        return PropertyCard(
+          imageUrl: 'data:${immobileDetails.photosBlob.first.contentType};base64,${immobileDetails.photosBlob.first.imageBase64}',
+              
+          title: imovel.propertyType.toLowerCase() == 'house'
+              ? 'Casa'
+              : (imovel.propertyType.toLowerCase() == 'apartment' ? 'Apartamento' : imovel.propertyType),
+          location: '${imovel.city}, ${imovel.state}',
+          beds: immobileDetails.bedrooms ?? imovel.bedrooms,
+          baths: immobileDetails.bathrooms ?? imovel.bathrooms,
+          size: immobileDetails.area?.toInt() ?? 0,
+          rating: averageRating, // Passa a avaliação média
+          
+        );
+      },
+    );
+  },
+),
                             );
                           },
                         ),

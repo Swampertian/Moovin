@@ -8,6 +8,10 @@ import '../services/auth_service.dart';
 import '../providers/notification_provider.dart'; 
 import 'notification_screen.dart'; 
 import 'chat_screen.dart'; 
+import 'review_screen.dart';
+import '../providers/review_provider.dart';
+import 'owner_profile_screen.dart';
+import 'unauthorized_screen.dart';
 
 
 class TenantProfileScreen extends StatefulWidget {
@@ -20,11 +24,19 @@ class TenantProfileScreen extends StatefulWidget {
 class _TenantProfileScreenState extends State<TenantProfileScreen> {
   bool _isLoading = true;
   final AuthService _authService = AuthService(); // Instância de AuthService
+  int _selectedIndex = 3;
+  String? _userType;
 
   @override
   void initState() {
     super.initState();
     _checkAccess();
+    _loadUserType();
+  }
+
+  Future<void> _loadUserType() async {
+    _userType = await _authService.getUserType();
+    setState(() {});
   }
 
   Widget _buildHistoryItem(String text, IconData icon) {
@@ -59,7 +71,8 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
       });
     }
   }
-
+  
+  bool hasFetchedReviews = false;
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -67,9 +80,12 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
         body: Center(child: CircularProgressIndicator()),
       );
     }
-
-    return ChangeNotifierProvider(
-      create: (context) => TenantProvider()..fetchTenant(),
+  //bool hasFetchedReviews = false;
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => TenantProvider()..fetchTenant()),
+        ChangeNotifierProvider(create: (context) => ReviewProvider()),
+      ],
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
@@ -265,39 +281,108 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            const Text(
-                              'Avaliação do usuário',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              tenant != null
-                                  ? tenant.userRating.toStringAsFixed(1)
-                                  : '0.0',
-                              style: const TextStyle(fontSize: 18),
-                            ),
-                            const SizedBox(width: 8),
-                            Row(
-                              children: List.generate(
-                                5,
-                                (index) => Icon(
-                                  index <
-                                          (tenant != null
-                                                  ? tenant.userRating.floor()
-                                                  : 0)
-                                      ? Icons.star
-                                      : Icons.star_border,
-                                  color: Colors.yellow[700],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                        Consumer<ReviewProvider>(
+                                        builder: (context, reviewProvider, child) {
+                                          // Para evitar múltiplas chamadas na reconstrução
+                                          if (!hasFetchedReviews) {
+                                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                                            if (tenant != null && reviewProvider.reviews.isEmpty && !reviewProvider.isLoading) {
+                                              reviewProvider.fetchReviews(targetId: tenant.id, type: 'TENANT');
+                                              hasFetchedReviews = true;
+                                            }
+                                          });
+                                          }
+
+                                          if (reviewProvider.isLoading) {
+                                            return const CircularProgressIndicator();
+                                          }
+
+                                          final reviews = reviewProvider.reviews;
+                                          double averageRating = 0;
+
+                                          if (reviews.isNotEmpty) {
+                                            final totalRating = reviews.fold<double>(0, (sum, review) => sum + review.rating);
+                                            averageRating = totalRating / reviews.length;
+
+                                            return Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                const Text('Avaliação do inquilino', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                                const SizedBox(height: 8),
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) => ReviewsScreen(
+                                                          reviewType: 'TENANT',
+                                                          targetId: tenant?.id ?? 1,
+                                                          title: 'Avaliações do Inquilino',
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
+                                                  child: Row(
+                                                    children: [
+                                                      // Assumindo que você tem um widget StarRating
+                                                      // StarRating(rating: averageRating, starSize: 20),
+                                                      Text('${averageRating.toStringAsFixed(1)} ', style: const TextStyle(fontSize: 18)),
+                                                      const Icon(Icons.star, color: Colors.amber),
+                                                      const SizedBox(width: 8),
+                                                      Text('(${reviews.length} avaliações)', style: const TextStyle(color: Colors.grey)),
+                                                    ],
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 8),
+                                                Align(
+                                                  alignment: Alignment.centerLeft,
+                                                  child: ElevatedButton(
+                                                    onPressed: () {
+                                                      Navigator.pushNamed(
+                                                        context,
+                                                        '/review',
+                                                        arguments: {
+                                                          'reviewType': 'OWNER',
+                                                          'targetId': tenant?.id ?? 1,
+                                                          'targetName': tenant?.name ?? 'Nome não informado',
+                                                        },
+                                                      );
+                                                    },
+                                                    child: const Text('Avaliar Inquilino'),
+                                                  ),
+                                                ),
+                                              ],
+                                            );
+                                          } else {
+                                            return Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                const Text('Avaliação do inquilino', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                                const SizedBox(height: 8),
+                                                const Text('Nenhuma avaliação ainda.'),
+                                                const SizedBox(height: 8),
+                                                Align(
+                                                  alignment: Alignment.centerLeft,
+                                                  child: ElevatedButton(
+                                                    onPressed: () {
+                                                      Navigator.pushNamed(
+                                                        context,
+                                                        '/review',
+                                                        arguments: {
+                                                          'reviewType': 'TENANT',
+                                                          'targetId': tenant?.id ?? 1,
+                                                          'targetName': tenant?.name,
+                                                        },
+                                                      );
+                                                    },
+                                                    child: const Text('Avaliar Proprietário'),
+                                                  ),
+                                                ),
+                                              ],
+                                            );
+                                          }
+                                        },
+                                      ),
                         const SizedBox(height: 24),
                         const Text(
                           'Histórico na plataforma',
@@ -382,7 +467,7 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.search),
-              label: 'Buscar',
+              label: 'Pesquisar',
               backgroundColor: Colors.green,
             ),
             BottomNavigationBarItem(
@@ -404,29 +489,57 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
           backgroundColor: Colors.green[600],
           selectedItemColor: Colors.white,
           unselectedItemColor: Colors.white70,
-          currentIndex: 3, 
+          currentIndex: _selectedIndex, 
           onTap: (index) {
-          
-            if (index == 0) {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const SearchImmobileScreen()));
-            } else if (index == 1) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ChangeNotifierProvider(
-                    create: (context) => NotificationProvider(),
-                    child: const NotificationScreen(),
+            setState(() {
+              _selectedIndex = index; // Added: Update selected index
+            });
+            switch (index) {
+              case 0:
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SearchImmobileScreen()),
+                );
+                break;
+              case 1:
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChangeNotifierProvider(
+                      create: (context) => NotificationProvider(),
+                      child: const NotificationScreen(),
+                    ),
                   ),
-                ),
-              );
-            } else if (index == 2) {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatScreen()));
-            } else if (index == 3) {
-      
+                );
+                break;
+              case 2:
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ChatScreen()),
+                );
+                break;
+              case 3:
+                // Modified: Logic to choose profile based on user type
+                if (_userType == 'Proprietario') {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const OwnerProfileScreen()),
+                  );
+                } else if (_userType == 'Inquilino') {
+                  // Already on TenantProfileScreen, do nothing
+                } else {
+                  // If user type is undefined (not logged in or error)
+                  Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const UnauthorizedScreen()),
+                );
+                }
+                break;
             }
           },
         ),
       ),
+  
     );
   }
 }

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:rental_app/models/immobile.dart';
+import 'package:rental_app/providers/immobile_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'providers/review_provider.dart';
-import 'providers/notification_provider.dart'; 
+import 'providers/notification_provider.dart';
+import 'providers/owner_provider.dart'; 
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/tenant_profile_screen.dart';
@@ -15,20 +18,27 @@ import 'screens/review_screen.dart';
 import 'screens/create_profile_screen.dart';
 import 'screens/unauthorized_screen.dart';
 import 'screens/notification_screen.dart';
-import 'screens/chat_screen.dart'; 
+import 'screens/chat_screen.dart';
+import 'screens/forgot_password_screen.dart';
 import 'screens/review_create_screen.dart';
 import 'screens/verify_email_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'providers/chat_provider.dart';
+import 'providers/tenant_provider.dart';
 
-void main() async { 
-  WidgetsFlutterBinding.ensureInitialized(); 
-  final prefs = await SharedPreferences.getInstance(); 
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
   final bool hasCompletedOnboarding = prefs.getBool('has_completed_onboarding') ?? false;
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
+        ChangeNotifierProvider(create: (_) => OwnerProvider()), // ✅ Adicionado
+        ChangeNotifierProvider(create: (_) => ChatProvider()),
+        ChangeNotifierProvider(create: (_) => TenantProvider()),
+        ChangeNotifierProvider(create: (_) => ImmobileProvider()),
       ],
       child: MyApp(hasCompletedOnboarding: hasCompletedOnboarding),
     ),
@@ -48,7 +58,6 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.green,
         textTheme: GoogleFonts.khulaTextTheme(),
       ),
-
       home: hasCompletedOnboarding
           ? const LoginScreen()
           : const OnboardingScreen(),
@@ -57,16 +66,20 @@ class MyApp extends StatelessWidget {
         '/register': (context) => const RegisterScreen(),
         '/tenant': (context) => const TenantProfileScreen(),
         '/owner': (context) => const OwnerProfileScreen(),
+        '/chat': (context) => const ChatScreen(),
         '/verify-email': (context) => const VerifyEmailScreen(),
         '/immobile_details': (context) => ChangeNotifierProvider(
               create: (context) => ReviewProvider(),
-              child: DetailImmobileScreen(immobileId: ModalRoute.of(context)?.settings.arguments as int? ?? 3), 
+              child: DetailImmobileScreen(
+                immobileId: ModalRoute.of(context)?.settings.arguments as int? ?? 3,
+              ),
             ),
         '/owner_dashboard': (context) => const OwnerDashboardScreen(),
         '/search-immobile': (context) => const SearchImmobileScreen(),
         '/erro-screen': (context) => const UnauthorizedScreen(),
+        '/forgot-password': (context) => const ForgotPasswordScreen(),
         '/notifications': (context) => const NotificationScreen(),
-        '/conversations': (context) => const ChatScreen(), 
+        '/conversations': (context) => const ChatScreen(),
         '/create_review': (context) => ChangeNotifierProvider(
               create: (_) => ReviewProvider(),
               child: Builder(
@@ -128,6 +141,4 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
-}    
-
-//nao apague os comentarios que chamam funcoes nem importacoes desnecessarios, elas serviram para testes.
+}

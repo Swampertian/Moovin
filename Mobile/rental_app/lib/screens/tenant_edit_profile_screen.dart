@@ -99,10 +99,13 @@ class TenantEditProfileScreenState extends State<TenantEditProfileScreen> {
       appBar: AppBar(
         backgroundColor: Colors.green,
         title: const Text('Editar Perfil'),
+        titleTextStyle: const TextStyle(color: Colors.white, fontSize: 20),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
+        // Ícones (incluindo a seta de voltar) na cor branca
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -209,6 +212,7 @@ class TenantEditProfileScreenState extends State<TenantEditProfileScreen> {
                             onPressed: _saveProfile,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green,
+                              foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 36, vertical: 18),
                             ),

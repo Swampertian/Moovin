@@ -1,0 +1,215 @@
+{% extends 'landing_page/base_lp.html' %}
+{% load static %}
+
+{% block title %}Sua Plataforma de Aluguel de Imóveis{% endblock %}
+
+{% block content %}
+    <section class="section hero-section">
+        <div class="hero-content-wrapper">
+            <div class="hero-left-column">
+                <h1>Moovin</h1>
+                <p class="slogan">Aluguel de imóveis sem complicações. Conectando proprietários e inquilinos.</p>
+                <div class="hero-buttons">
+                    <p>Funcionalidades de download e assinatura em breve!</p>
+                </div>
+            </div>
+            <div class="hero-right-column">
+                <img src="{% static 'app-mockup.png' %}" alt="Mockup do Aplicativo Moovin em uso" class="app-mockup">
+            </div>
+        </div>
+    </section>
+
+    <!-- Descrição e Benefícios do Produto -->
+    <section class="section description-benefits-section">
+        <h2 class="section-title">O Moovin simplifica o aluguel para você.</h2>
+        <p>Descubra uma nova forma de gerenciar seus imóveis e encontrar o lar perfeito. Nossa plataforma oferece transparência, eficiência e segurança em cada etapa do processo.</p>
+
+        <div class="benefits-grid">
+            <div class="benefit-item">
+                <i class="fas fa-search-dollar"></i>
+                <h5>Encontre seu imóvel ideal</h5>
+                <p>Pesquise e filtre por localização, preço, tipo e comodidades para encontrar o que realmente procura.</p>
+            </div>
+            <div class="benefit-item">
+                <i class="fas fa-home"></i>
+                <h5>Anuncie seus imóveis facilmente</h5>
+                <p>Cadastre seus imóveis com fotos e detalhes, atraindo inquilinos qualificados de forma rápida.</p>
+            </div>
+            <div class="benefit-item">
+                <i class="fas fa-calendar-alt"></i>
+                <h5>Gerenciamento de visitas e pagamentos</h5>
+                <p>Organize agendamentos de visitas e acompanhe pagamentos de aluguel de forma intuitiva.</p>
+            </div>
+            <div class="benefit-item">
+                <i class="fas fa-file-alt"></i>
+                <h5>Documentação simplificada</h5>
+                <p>Tenha acesso fácil a contratos e documentos importantes, tudo em um só lugar.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Diferenciais do Moovin -->
+    <section class="section differentiators-section">
+        <h2 class="section-title">Por que escolher o Moovin?</h2>
+        <div class="differentiators-grid">
+            <div class="differentiator-item">
+                <div class="icon">✨</div>
+                <h5>Facilidade de Uso</h5>
+                <p>Interface intuitiva e navegação simplificada para todos os usuários.</p>
+            </div>
+            <div class="differentiator-item">
+                <div class="icon">✅</div>
+                <h5>Transparência Total</h5>
+                <p>Informações claras sobre imóveis, contratos e pagamentos.</p>
+            </div>
+            <div class="differentiator-item">
+                <div class="icon">⚡</div>
+                <h5>Eficiência e Rapidez</h5>
+                <p>Agilize processos de aluguel e encontre o que precisa em minutos.</p>
+            </div>
+            <div class="differentiator-item">
+                <div class="icon">🔒</div>
+                <h5>Segurança dos Dados</h5>
+                <p>Protegemos suas informações com as melhores práticas de segurança.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Depoimentos -->
+    <section class="section testimonials-section">
+        <h2 class="section-title">O que nossos usuários dizem</h2>
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                "O Moovin transformou a forma como gerencio meus imóveis. É incrivelmente fácil e eficiente!"
+                <strong>- Maria S., Proprietária</strong>
+            </div>
+            <div class="testimonial-card">
+                "Encontrei meu apartamento dos sonhos em tempo recorde. A interface é super amigável."
+                <strong>- João P., Inquilino</strong>
+            </div>
+        </div>
+    </section>
+
+    <!-- Seção "Plano Premium para Proprietários" -->
+    <section class="section premium-plan-section">
+        <h2 class="section-title">Plano Premium para Proprietários</h2>
+        <p>Desbloqueie todo o potencial do Moovin com recursos exclusivos para gerenciar seus imóveis.</p>
+
+        <div class="pricing-table">
+            <div class="pricing-card">
+                <h4>Plano Gratuito</h4>
+                <div class="price">R$ 0<small>/mês</small></div>
+                <ul>
+                    <li><i class="fas fa-check-circle"></i> 1 imóvel cadastrado</li>
+                    <li><i class="fas fa-check-circle"></i> Gerenciamento básico de visitas</li>
+                    <li><i class="fas fa-check-circle"></i> Acompanhamento de pagamentos</li>
+                    <li class="unavailable"><i class="fas fa-times-circle"></i> Anúncios ilimitados</li>
+                    <li class="unavailable"><i class="fas fa-times-circle"></i> Suporte prioritário</li>
+                    <li class="unavailable"><i class="fas fa-times-circle"></i> Relatórios avançados</li>
+                </ul>
+                <button class="btn btn-secondary" disabled>Plano Atual</button>
+            </div>
+
+            <div class="pricing-card">
+                <h4>Plano Premium</h4>
+                <div class="price">R$ 29,90<small>/mês</small></div>
+                <ul>
+                    <li><i class="fas fa-check-circle"></i> Anúncios ilimitados</li>
+                    <li><i class="fas fa-check-circle"></i> Suporte prioritário 24/7</li>
+                    <li><i class="fas fa-check-circle"></i> Relatórios de desempenho avançados</li>
+                    <li><i class="fas fa-check-circle"></i> Gerenciamento completo de visitas</li>
+                    <li><i class="fas fa-check-circle"></i> Ferramentas de análise de mercado</li>
+                    <li><i class="fas fa-check-circle"></i> Integração com plataformas de pagamento</li>
+                </ul>
+               <a href="{% url 'checkout' %}"><button class="btn btn-primary">Assinar</button></a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Seções Combinadas 2: Download + FAQ -->
+    <section class="section combined-section combined-section-alt-bg">
+        <div class="combined-section-inner">
+            <!-- Instruções para Download -->
+            <div class="section-column">
+                <h2 class="section-title">Baixe o Moovin agora!</h2>
+                <p>Comece a simplificar sua vida de aluguel hoje mesmo.</p>
+                <div class="download-instructions">
+                    <img src="{% static 'qr-code-placeholder.png' %}" alt="QR Code para Download do APK" class="qr-code">
+                    <p>Escaneie o QR Code ou clique no link abaixo:</p>
+                    <p>Download do APK em breve!</p>
+
+                    <p style="margin-top: 2rem;"><strong>Instruções para instalar o APK no Android:</strong></p>
+                    <ol class="instructions-list">
+                        <li>Baixe o arquivo APK para o seu dispositivo.</li>
+                        <li>Se o download for de uma fonte desconhecida, vá em <strong>Configurações > Segurança > Fontes Desconhecidas</strong> e habilite a opção.</li>
+                        <li>Localize o arquivo APK na sua pasta de downloads e toque nele para iniciar a instalação.</li>
+                        <li>Siga as instruções na tela para concluir a instalação.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Perguntas Frequentes (FAQ) -->
+            <div class="section-column">
+                <h2 class="section-title">Perguntas Frequentes</h2>
+                <div class="faq-container">
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            Como funciona a assinatura do Plano Premium?
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>A assinatura do Plano Premium é mensal e pode ser cancelada a qualquer momento. Ela oferece acesso a recursos avançados como anúncios ilimitados, suporte prioritário e relatórios detalhados.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            É seguro baixar o APK diretamente?
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Sim, o download do APK é seguro e direto dos nossos servidores. Garantimos a integridade do arquivo. Se for a primeira vez que você baixa um APK de fora da Play Store, pode ser necessário habilitar a instalação de "fontes desconhecidas" nas configurações do seu Android.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            Como recuperar minha senha?
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Na tela de login do aplicativo, clique em "Esqueci minha senha" e siga as instruções para redefinir sua senha através do seu e-mail cadastrado.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item"> {# Nova pergunta #}
+                        <div class="faq-question">
+                            Posso confiar nas informações dos imóveis?
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Sim, o Moovin se esforça para garantir a precisão das informações. Proprietários são incentivados a fornecer dados completos e fotos atualizadas. Além disso, a plataforma oferece ferramentas para agendamento de visitas, permitindo que você verifique pessoalmente todos os detalhes antes de tomar uma decisão.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function copyToClipboard(text) {
+        document.execCommand('copy');
+        alert('Link copiado para a área de transferência!');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const faqQuestions = document.querySelectorAll('.faq-question');
+
+        faqQuestions.forEach(question => {
+            question.addEventListener('click', () => {
+                const faqItem = question.closest('.faq-item');
+                faqItem.classList.toggle('active');
+            });
+        });
+    });
+</script>
+{% endblock %}
