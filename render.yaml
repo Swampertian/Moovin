@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: django-app
+    env: python
+    plan: free
+    runtime: python
+    buildCommand: |
+      cd Backend
+      pip install -r requirements.txt
+      python manage.py collectstatic --noinput
+
+    startCommand: gunicorn backend.wsgi:application
+    workingDir: backend
+    envVars:
+    - key: DJANGO_SETTINGS_MODULE
+      value: backend.settings
+    - key: SECRET_KEY
+      generateValue: true
+    - key: DEBUG
+      value: "False"
+    - key: DB_NAME
+      value: moovin
+    - key: DB_USER
+      value: admin_moovin
+    - key: DB_PASSWORD
+      fromSecret: DB_PASSWORD
+    - key: DB_HOST
+      value: dpg-d14ndr3uibrs73al0ekg-a
+    - key: DB_PORT
+      value: "5432"
+    - key: DATABASE_URL
+      fromSecret: DATABASE_URL
+    - key: STRIPE_SECRET_KEY
+      fromSecret: STRIPE_SECRET_KEY
+    - key: STRIPE_PUBLISHABLE_KEY
+      fromSecret: STRIPE_PUBLISHABLE_KEY
+    - key: STRIPE_WEBHOOK_SECRET
+      fromSecret: STRIPE_WEBHOOK_SECRET
+    - key: EMAIL_HOST_PASSWORD
+      fromSecret: EMAIL_HOST_PASSWORD
