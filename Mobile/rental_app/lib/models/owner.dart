@@ -72,21 +72,38 @@ class Owner {
 
 
 class OwnerPhoto {
+  final int id;
   final int photoId;
+  String imageBase64;
+  String contentType;
   final String uploadedAt;
-  final String url;
 
   OwnerPhoto({
+    required this.id,
     required this.photoId,
+    required this.imageBase64,
+    required this.contentType,
     required this.uploadedAt,
-    required this.url,
   });
 
   factory OwnerPhoto.fromJson(Map<String, dynamic> json) {
     return OwnerPhoto(
-      photoId: json['photo_id'],
-      uploadedAt: json['uploaded_at'],
-      url: json['url'],
+      id: json['id'] as int,
+      photoId: json['id'] as int, // mesmo valor de id e photoId, como no exemplo original
+      imageBase64: json['image_blob'] as String,
+      contentType: json['content_type'] as String,
+      uploadedAt: json['uploaded_at'] as String,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'photo_id': photoId,
+      'image_blob': imageBase64,
+      'content_type': contentType,
+      'uploaded_at': uploadedAt,
+    };
+  }
 }
+
