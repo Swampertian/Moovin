@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
-
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 class CreateProfileScreen extends StatefulWidget {
   final String userId;
@@ -30,25 +32,49 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
   final _ageController = TextEditingController();
   final _jobController = TextEditingController();
   final _aboutMeController = TextEditingController();
-
   final _formKey = GlobalKey<FormState>();
-  File? _selectedImage;
+  XFile? _selectedImage;
+  Uint8List? _selectedImageBytes;
 
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    _cityController.dispose();
+    _stateController.dispose();
+    _ageController.dispose();
+    _jobController.dispose();
+    _aboutMeController.dispose();
+    super.dispose();
+  }
+
+  // Método para selecionar a imagem
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       setState(() {
-        _selectedImage = File(pickedFile.path);
+        _selectedImage = pickedFile;
+        _selectedImageBytes = null; // Reset bytes for web
       });
+
+      if (kIsWeb) {
+        // Para web, carrega os bytes para exibição
+        final bytes = await pickedFile.readAsBytes();
+        setState(() {
+          _selectedImageBytes = bytes;
+        });
+      }
     }
   }
 
+  // Método para salvar o perfil e fazer upload da imagem
   Future<void> _saveProfile() async {
+    if (!_formKey.currentState!.validate()) return;
+
     final url = widget.isOwner
-        ? 'http://127.0.0.1:8000/api/owners/owner_create'
-        : 'http://127.0.0.1:8000/api/tenants/tenant_create';
+        ? 'http://10.0.2.2:8000/api/owners/owner_create'
+        : 'http://10.0.2.2:8000/api/tenants/tenant_create';
 
     final body = widget.isOwner
         ? {
@@ -70,6 +96,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
           };
 
     try {
+      // Criar o perfil
       final response = await http.post(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
@@ -78,57 +105,75 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
 
       if (response.statusCode == 201) {
         final createdProfile = jsonDecode(response.body);
-        final int ownerId = createdProfile['id'];
+        final int? profileId = createdProfile['id'] as int?;
 
-
-        if (widget.isOwner && _selectedImage != null) {
-          final uploadUrl = Uri.parse('http://127.0.0.1:8000/api/owners/owner-photo-upload/');
-          var request = http.MultipartRequest('POST', uploadUrl);
-          request.files.add(
-            await http.MultipartFile.fromPath('photos', _selectedImage!.path),
-          );
-          request.fields['owner_id'] = ownerId.toString();
-
-          final uploadResponse = await request.send();
-          if (uploadResponse.statusCode != 201) {
-            print('Erro ao enviar imagem');
-          }
-        }
-        if (!widget.isOwner && _selectedImage != null) {
-          final uploadUrl = Uri.parse('http://127.0.0.1:8000/api/tenants/owner-photo-upload/');
-          var request = http.MultipartRequest('POST', uploadUrl);
-          request.files.add(
-            await http.MultipartFile.fromPath('photos', _selectedImage!.path),
-          );
-          request.fields['tenant_id'] = ownerId.toString();
-
-          final uploadResponse = await request.send();
-          if (uploadResponse.statusCode != 201) {
-            print('Erro ao enviar imagem');
-          }
+        if (profileId == null) {
+          _showSnackBar('Erro: ID do perfil criado é nulo.', Colors.red);
+          return;
         }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Perfil criado com sucesso!'), backgroundColor: Colors.green),
-        );
+        // Fazer upload da imagem, se selecionada
+        if (_selectedImage != null) {
+          final uploadUrl = widget.isOwner
+              ? Uri.parse('http://10.0.2.2:8000/api/owners/owner-photo-upload/')
+              : Uri.parse('http://10.0.2.2:8000/api/tenants/owner-photo-upload/');
+
+          var request = http.MultipartRequest('POST', uploadUrl);
+          // Adicionar o ID do perfil (owner_id ou tenant_id)
+          request.fields[widget.isOwner ? 'owner_id' : 'tenant_id'] = profileId.toString();
+
+          // Adicionar o arquivo de imagem
+          if (kIsWeb) {
+            final bytes = await _selectedImage!.readAsBytes();
+            request.files.add(
+              http.MultipartFile.fromBytes(
+                'photos',
+                bytes,
+                filename: _selectedImage!.name,
+                contentType: MediaType('image', _selectedImage!.name.split('.').last),
+              ),
+            );
+          } else {
+            request.files.add(
+              await http.MultipartFile.fromPath(
+                'photos',
+                _selectedImage!.path,
+              ),
+            );
+          }
+
+          // Enviar a requisição de upload
+          final uploadResponse = await request.send();
+          if (uploadResponse.statusCode == 201 || uploadResponse.statusCode == 200) {
+            _showSnackBar('Perfil e foto criados com sucesso!', Colors.green);
+          } else {
+            final errorData = await uploadResponse.stream.bytesToString();
+            _showSnackBar('Erro ao enviar a foto: $errorData', Colors.red);
+            return;
+          }
+        } else {
+          _showSnackBar('Perfil criado com sucesso!', Colors.green);
+        }
+
+        // Navegar para a tela de login
         Navigator.pushReplacementNamed(context, '/login');
       } else {
         final errorData = jsonDecode(response.body);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: ${errorData.toString()}'), backgroundColor: Colors.red),
-        );
+        _showSnackBar('Erro ao criar perfil: $errorData', Colors.red);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro na conexão com o servidor: $e'), backgroundColor: Colors.red),
-      );
+      _showSnackBar('Erro na conexão com o servidor: $e', Colors.red);
     }
   }
 
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: color),
+    );
+  }
+
   void _goToLogin() {
-    if (_formKey.currentState?.validate() ?? false) {
-      _saveProfile();
-    }
+    _saveProfile();
   }
 
   @override
@@ -154,40 +199,31 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-
                 _buildTextField(
                   controller: TextEditingController(text: widget.name),
                   label: 'Nome',
-                  validator: (value) =>
-                      value == null || value.isEmpty ? 'Por favor, insira o nome' : null,
+                  validator: (value) => value == null || value.isEmpty ? 'Por favor, insira o nome' : null,
                   enabled: false,
                 ),
                 const SizedBox(height: 16),
-
                 _buildTextField(
                   controller: _phoneController,
                   label: 'Telefone',
-                  validator: (value) =>
-                      value == null || value.isEmpty ? 'Por favor, insira o telefone' : null,
+                  validator: (value) => value == null || value.isEmpty ? 'Por favor, insira o telefone' : null,
                 ),
                 const SizedBox(height: 16),
-
                 _buildTextField(
                   controller: _cityController,
                   label: 'Cidade',
-                  validator: (value) =>
-                      value == null || value.isEmpty ? 'Por favor, insira a cidade' : null,
+                  validator: (value) => value == null || value.isEmpty ? 'Por favor, insira a cidade' : null,
                 ),
                 const SizedBox(height: 16),
-
                 _buildTextField(
                   controller: _stateController,
                   label: 'Estado',
-                  validator: (value) =>
-                      value == null || value.isEmpty ? 'Por favor, insira o estado' : null,
+                  validator: (value) => value == null || value.isEmpty ? 'Por favor, insira o estado' : null,
                 ),
                 const SizedBox(height: 16),
-
                 if (!widget.isOwner) ...[
                   _buildTextField(
                     controller: _ageController,
@@ -201,7 +237,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                     },
                   ),
                   const SizedBox(height: 16),
-
                   _buildTextField(
                     controller: _jobController,
                     label: 'Profissão',
@@ -210,7 +245,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                   ),
                   const SizedBox(height: 16),
                 ],
-
                 _buildTextField(
                   controller: _aboutMeController,
                   label: 'Sobre mim',
@@ -218,22 +252,33 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                       value == null || value.isEmpty ? 'Por favor, insira uma descrição sobre você' : null,
                 ),
                 const SizedBox(height: 20),
-
-                // 🖼️ Seção de imagem
                 const Text(
                   'Foto do perfil (opcional)',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF2F6D3C)),
                 ),
                 const SizedBox(height: 10),
                 if (_selectedImage != null)
-                  Image.file(_selectedImage!, height: 150),
+                  if (kIsWeb && _selectedImageBytes != null)
+                    Image.memory(
+                      _selectedImageBytes!,
+                      height: 150,
+                      fit: BoxFit.cover,
+                    )
+                  else if (!kIsWeb)
+                    Image.file(
+                      File(_selectedImage!.path),
+                      height: 150,
+                      fit: BoxFit.cover,
+                    )
+                  else
+                    const SizedBox(height: 150, child: Center(child: CircularProgressIndicator())),
+                const SizedBox(height: 10),
                 TextButton.icon(
                   onPressed: _pickImage,
-                  icon: Icon(Icons.image),
-                  label: Text('Selecionar imagem'),
+                  icon: const Icon(Icons.image),
+                  label: const Text('Selecionar imagem'),
                 ),
                 const SizedBox(height: 30),
-
                 _buildSubmitButton(
                   text: 'Salvar e Ir para Login',
                   onPressed: _goToLogin,
