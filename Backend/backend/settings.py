@@ -38,8 +38,9 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = 'moovinaplicativo@gmail.com'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG", "False") == "True"
 
+# DEBUG = "True"
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
 
 # ALLOWED_HOSTS = ["*"]
