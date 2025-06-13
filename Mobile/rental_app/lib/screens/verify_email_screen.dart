@@ -15,7 +15,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   final TextEditingController _verificationCodeController = TextEditingController();
   bool _isLoading = false;
   String? _errorMessage;
-  final ApiService _apiService = ApiService(baseUrl: 'http://127.0.0.1:8000/api');
+  final ApiService _apiService = ApiService(baseUrl: 'http://10.0.2.2:8000/api');
 
   Future<void> _verifyCode() async {
     setState(() {
