@@ -11,9 +11,10 @@ __pycache__/
 **/__pycache__/
 *.swo
 *.tmp
-**/migrations/
-!**/migrations/__init__.py
-**/*.pyc
+# Ignora tudo na pasta migrations exceto os arquivos Python
+**/migrations/*
+!**/migrations/*.py
+
 
 *.py[cod]
 *.sqlite3

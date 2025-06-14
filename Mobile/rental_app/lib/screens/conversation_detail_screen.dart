@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/chat_provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ConversationDetailScreen extends StatefulWidget {
   final int conversationId;
@@ -103,44 +104,50 @@ class _ConversationDetailScreenState extends State<ConversationDetailScreen> {
                     itemCount: conversation.messages.length,
                     itemBuilder: (context, index) {
                       final message = conversation.messages[index];
-                      final isMe = _userId != null && message.sender.id == _userId;
+                      final isMe =
+                          _userId != null && message.sender.id == _userId;
                       return Align(
                         alignment:
                             isMe ? Alignment.centerRight : Alignment.centerLeft,
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(vertical: 4.0),
-                          padding: const EdgeInsets.all(12.0),
-                          decoration: BoxDecoration(
-                            color: isMe ? Colors.green[100] : Colors.grey[200],
-                            borderRadius: BorderRadius.circular(12.0),
+                        child: ConstrainedBox( 
+                          constraints: BoxConstraints(
+                            maxWidth: MediaQuery.of(context).size.width * 0.70,
                           ),
-                          child: Column(
-                            crossAxisAlignment:
-                                isMe
-                                    ? CrossAxisAlignment.end
-                                    : CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                message.content,
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                DateFormat(
-                                  'HH:mm',
-                                ).format(DateTime.parse(message.sentAt)),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[600],
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(vertical: 4.0),
+                            padding: const EdgeInsets.all(12.0),
+                            decoration: BoxDecoration(
+                              color: isMe ? Colors.green[100] : Colors.grey[200],
+                              borderRadius: BorderRadius.circular(12.0),
+                            ),
+                            child: Column(
+                              crossAxisAlignment:
+                                  isMe
+                                      ? CrossAxisAlignment.end
+                                      : CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  message.content,
+                                  style: const TextStyle(fontSize: 16),
                                 ),
-                              ),
-                              if (isMe && message.isRead)
-                                const Icon(
-                                  Icons.check_circle,
-                                  size: 12,
-                                  color: Colors.blue,
+                                const SizedBox(height: 4),
+                                Text(
+                                  DateFormat(
+                                    'HH:mm',
+                                  ).format(DateTime.parse(message.sentAt)),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[600],
+                                  ),
                                 ),
-                            ],
+                                if (isMe && message.isRead)
+                                  const Icon(
+                                    Icons.check_circle,
+                                    size: 12,
+                                    color: Colors.blue,
+                                  ),
+                              ],
+                            ),
                           ),
                         ),
                       );
@@ -182,30 +189,56 @@ class _ConversationDetailScreenState extends State<ConversationDetailScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          ElevatedButton(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Funcionalidade de alugar em desenvolvimento.'),
-                                ),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: Colors.green,
-                              side: BorderSide(color: Colors.green.withOpacity(0.5), width: 1.0),
-                            ),
-                            child: const Text('Alugar'),
-                          ),
                           if (_userType == 'Proprietario') ...[
-                            const SizedBox(width: 16.0),
                             ElevatedButton(
-                              onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Funcionalidade de marcar visita em desenvolvimento.'),
-                                  ),
-                                );
+                              onPressed: () async {
+                                final int? immobileId = conversation.immobile?.idImmobile;
+                                if (immobileId == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Imóvel não encontrado na conversa.'),
+                                    ),
+                                  );
+                                  return;
+                                }
+                                final String rentalUrl = 'http://127.0.0.1:8000/api/rentals/rental-register/$immobileId/';
+                                final Uri uri = Uri.parse(rentalUrl);
+                                if (await canLaunchUrl(uri)) {
+                                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Não foi possível abrir a página de registro de aluguel.'),
+                                    ),
+                                  );
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: Colors.green,
+                                side: BorderSide(
+                                  color: Colors.green.withOpacity(0.5),
+                                  width: 1.0,
+                                ),
+                              ),
+                              child: const Text('Alugar'),
+                            ),
+                            const SizedBox(width: 16.0),
+                          ],
+                          if (_userType == 'Proprietario') ...[
+                            ElevatedButton(
+                              onPressed: () async {
+                                const String visitUrl = 'http://127.0.0.1:8000/api/visits/create-form/';
+                                final Uri uri = Uri.parse(visitUrl);
+                                if (await canLaunchUrl(uri)) {
+                                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Não foi possível abrir a página de agendamento.'),
+                                    ),
+                                  );
+                                }
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.white,
@@ -219,7 +252,7 @@ class _ConversationDetailScreenState extends State<ConversationDetailScreen> {
                       ),
                     ],
                   ),
-                )
+                ),
               ],
             );
           } catch (e) {
