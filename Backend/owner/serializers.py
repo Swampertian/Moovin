@@ -19,12 +19,12 @@ class OwnerPhotoSerializer(serializers.ModelSerializer):
     
 class OwnerSerializer(serializers.ModelSerializer):
     properties = ImmobileSerializer(many=True, read_only=True)
-    photosBlob = OwnerPhotoSerializer(many=True,read_only=True,source='photos_blob')
+    photos = OwnerPhotoSerializer(many=True,read_only=True,source='photos_blob')
     class Meta:
         model = Owner
         fields = [
             'id', 'user', 'name', 'phone', 'city', 'state', 'about_me',
             'revenue_generated', 'rented_properties', 'rated_by_tenants',
-            'recommended_by_tenants', 'fast_responder', 'properties','photosBlob',
+            'recommended_by_tenants', 'fast_responder', 'properties','photos',
         ]
-        read_only_fields = ['id', 'user']
+        #read_only_fields = ['id', 'user']

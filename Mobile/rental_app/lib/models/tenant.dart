@@ -17,6 +17,7 @@ class Tenant {
   final int favoritedProperties;
   final bool fastResponder;
   final String memberSince;
+   final List<TenantPhoto> photos; 
 
   Tenant({
     required this.id,
@@ -37,6 +38,7 @@ class Tenant {
     required this.favoritedProperties,
     required this.fastResponder,
     required this.memberSince,
+    required this.photos, 
   });
 
   factory Tenant.fromJson(Map<String, dynamic> json) {
@@ -59,6 +61,45 @@ class Tenant {
       favoritedProperties: json['favorited_properties'] ?? 0,
       fastResponder: json['fast_responder'] ?? false,
       memberSince: json['member_since'] ?? '',
+      photos: (json['photos'] as List<dynamic>? ?? []) 
+          .map((e) => TenantPhoto.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 }
+class TenantPhoto {
+  final int id;
+  final int photoId;
+  String imageBase64;
+  String contentType;
+  final String uploadedAt;
+
+  TenantPhoto({
+    required this.id,
+    required this.photoId,
+    required this.imageBase64,
+    required this.contentType,
+    required this.uploadedAt,
+  });
+
+  factory TenantPhoto.fromJson(Map<String, dynamic> json) {
+    return TenantPhoto(
+      id: json['id'] as int,
+      photoId: json['id'] as int,
+      imageBase64: json['image_blob'] as String,
+      contentType: json['content_type'] as String,
+      uploadedAt: json['uploaded_at'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'photo_id': photoId,
+      'image_blob': imageBase64,
+      'content_type': contentType,
+      'uploaded_at': uploadedAt,
+    };
+  }
+}
+
