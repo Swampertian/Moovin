@@ -48,7 +48,7 @@ class VisitViewSet(viewsets.ModelViewSet):
 
 
 # --- HTML tradicional (formulário com render) ---
-@login_required
+@login_required(login_url='login-web')
 def visit_create_view(request):
     if request.method == 'POST':
         form = VisitForm(request.POST, user=request.user)
@@ -63,4 +63,4 @@ def visit_create_view(request):
     else:
         form = VisitForm(user=request.user)
 
-    return render(request, 'visit_schedule.html', {'form': form})
+    return render(request, 'owner/visit_schedule.html', {'form': form})

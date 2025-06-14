@@ -104,6 +104,7 @@ class OwnerViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     
     @action(detail=True, methods=['get'], url_path='getbyimmobile')
     def immobile_owner(self, request, pk=None):

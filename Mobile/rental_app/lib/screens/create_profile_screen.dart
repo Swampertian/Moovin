@@ -47,8 +47,8 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
 
   Future<void> _saveProfile() async {
     final url = widget.isOwner
-        ? 'http://10.0.2.2:8000/api/owners/owner_create'
-        : 'http://10.0.2.2:8000/api/tenants/tenant_create';
+        ? 'http://127.0.0.1:8000/api/owners/owner_create'
+        : 'http://127.0.0.1:8000/api/tenants/tenant_create';
 
     final body = widget.isOwner
         ? {
@@ -82,7 +82,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
 
 
         if (widget.isOwner && _selectedImage != null) {
-          final uploadUrl = Uri.parse('http://10.0.2.2:8000/api/owners/owner-photo-upload/');
+          final uploadUrl = Uri.parse('http://127.0.0.1:8000/api/owners/owner-photo-upload/');
           var request = http.MultipartRequest('POST', uploadUrl);
           request.files.add(
             await http.MultipartFile.fromPath('photo', _selectedImage!.path),

@@ -3,9 +3,11 @@ from .views import TenantCreateView
 from .views import *
 from rest_framework.routers import DefaultRouter
 from . import views
+from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
-router.register(r'', TenantViewSet, basename='tenants')
+router.register(r'profile', TenantViewSet)
+
 
 urlpatterns = [
     path('', include(router.urls)),
