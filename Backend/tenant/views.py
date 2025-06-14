@@ -80,9 +80,9 @@ class ServeImageBlobAPIView(APIView):
         print("  First 20 bytes of blob:", photo.image_blob[:20] if photo.image_blob else None)
         return HttpResponse(photo.image_blob, content_type=photo.content_type)
 class TenantPhotoListAPIView(APIView):
-    def get(self, request, owner_id):
+    def get(self, request, tenant_id):
         try:
-            tenant = Tenant.objects.get(id=owner_id)
+            tenant = Tenant.objects.get(id=tenant_id)
         except Tenant.DoesNotExist:
             return Response({'error': 'Owner not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -104,21 +104,48 @@ class TenantPhotoUploadAPIView(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
     def post(self, request, format=None):
-        uploaded_file = request.FILES.get('photo')
+        print("\n--- DEBUG: TenantPhotoUploadAPIView POST request received ---")
+        print(f"Request method: {request.method}") # Deve ser POST
+
+        # Tenta obter o arquivo e o ID do inquilino
+        uploaded_file = request.FILES.get('photos') # Nome do campo do arquivo no Flutter
         tenant_id = request.data.get('tenant_id')
 
+        print(f"DEBUG: 'photos' (uploaded_file): {uploaded_file.name if uploaded_file else 'None'} (Type: {type(uploaded_file)})")
+        print(f"DEBUG: 'tenant_id': {tenant_id} (Type: {type(tenant_id)})")
+
+        # Mostra o conteúdo completo de request.FILES e request.data
+        print(f"DEBUG: Full request.FILES content: {request.FILES}")
+        print(f"DEBUG: Full request.data content: {request.data}")
+
         if not uploaded_file or not tenant_id:
+            print(f"DEBUG: BAD REQUEST - Missing photo or tenant_id. uploaded_file: {uploaded_file}, tenant_id: {tenant_id}")
             return Response({'error': 'Missing photo or tenant_id'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            owner = Tenant.objects.get(id=tenant_id)
+            # Tenta encontrar o objeto Tenant
+            tenant = Tenant.objects.get(id=tenant_id)
+            print(f"DEBUG: Tenant found: {tenant} (ID: {tenant.id})")
         except Tenant.DoesNotExist:
-            return Response({'error': 'Owner not found'}, status=status.HTTP_404_NOT_FOUND)
+            # ATENÇÃO: A mensagem de erro aqui está 'Owner not found'.
+            # Mudei para 'Tenant not found' para refletir a lógica.
+            print(f"DEBUG: NOT FOUND - Tenant with ID {tenant_id} not found.")
+            return Response({'error': 'Tenant not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            # Captura outras exceções ao buscar o tenant
+            print(f"DEBUG: SERVER ERROR - Error trying to get Tenant: {e}")
+            return Response({'error': f'Server error trying to find tenant: {e}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        photo = TenantPhoto.objects.create(
-            owner=owner,
-            image_blob=uploaded_file.read(),
-            content_type=uploaded_file.content_type
-        )
-
-        return Response({'message': 'Photo uploaded successfully', 'photo_id': photo.id}, status=status.HTTP_201_CREATED)
+        try:
+            # Cria o objeto TenantPhoto e salva o BLOB
+            photo = TenantPhoto.objects.create(
+                tenant=tenant,
+                image_blob=uploaded_file.read(),
+                content_type=uploaded_file.content_type
+            )
+            print(f"DEBUG: TenantPhoto created successfully with ID: {photo.id}")
+            return Response({'message': 'Photo uploaded successfully', 'photo_id': photo.id}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            # Captura exceções durante a criação do TenantPhoto
+            print(f"DEBUG: SERVER ERROR - Error creating TenantPhoto object: {e}")
+            return Response({'error': f'Error saving photo: {e}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:convert'; // Import para base64Decode
+
 import '../providers/tenant_provider.dart';
-import '../services/api_service.dart';
+import '../services/api_service.dart'; // Certifique-se de que este import está correto
 import './tenant_edit_profile_screen.dart';
 import 'search_immobile_screen.dart';
 import '../services/auth_service.dart';
-import '../providers/notification_provider.dart'; 
-import 'notification_screen.dart'; 
-import 'chat_screen.dart'; 
+import '../providers/notification_provider.dart';
+import 'notification_screen.dart';
+import 'chat_screen.dart';
 import 'review_screen.dart';
 import '../providers/review_provider.dart';
 import 'owner_profile_screen.dart';
 import 'unauthorized_screen.dart';
-
 
 class TenantProfileScreen extends StatefulWidget {
   const TenantProfileScreen({super.key});
@@ -26,6 +27,7 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
   final AuthService _authService = AuthService(); // Instância de AuthService
   int _selectedIndex = 3;
   String? _userType;
+  bool hasFetchedReviews = false; // Mantenha aqui para controle do estado
 
   @override
   void initState() {
@@ -60,7 +62,18 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
       return;
     } else if (!isTenant) {
       if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/erro-screen');
+        // Se não for inquilino, verifica se é proprietário.
+        // Se o _userType for 'Proprietario', redireciona para OwnerProfileScreen
+        // Caso contrário, redireciona para UnauthorizedScreen
+        if (_userType == 'Proprietario') {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const OwnerProfileScreen()),
+          );
+        } else {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const UnauthorizedScreen()),
+          );
+        }
       }
       return;
     }
@@ -71,8 +84,7 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
       });
     }
   }
-  
-  bool hasFetchedReviews = false;
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -80,7 +92,7 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
         body: Center(child: CircularProgressIndicator()),
       );
     }
-  //bool hasFetchedReviews = false;
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => TenantProvider()..fetchTenant()),
@@ -141,6 +153,11 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
 
             final tenant = provider.tenant;
 
+            // Extrai a URL da primeira foto, se existir
+            final String? base64Image = tenant != null && tenant.photos.isNotEmpty
+          ? tenant.photos.first.imageBase64
+          : null;
+
             return SingleChildScrollView(
               child: Column(
                 children: [
@@ -161,18 +178,23 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
                                 padding: const EdgeInsets.all(16.0),
                                 child: Column(
                                   children: [
-                                    const CircleAvatar(
+                                    CircleAvatar(
                                       radius: 40,
                                       backgroundColor: Colors.grey,
-                                      child: Icon(
-                                        Icons.person,
-                                        size: 50,
-                                        color: Colors.white,
-                                      ),
+                                      child: base64Image != null && base64Image.isNotEmpty
+                                          ? ClipOval(
+                                              child: Image.memory(
+                                                base64Decode(base64Image), // Decodifica diretamente, assumindo que não há prefixo
+                                                width: 80,
+                                                height: 80,
+                                                fit: BoxFit.cover,
+                                              ),
+                                            )
+                                          : const Icon(Icons.person, size: 50, color: Colors.white),
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      tenant != null && tenant.name.isNotEmpty && tenant.age > 0
+                                      tenant != null && tenant.name.isNotEmpty && tenant.age != null && tenant.age! > 0
                                           ? '${tenant.name}, ${tenant.age}'
                                           : 'Nome não informado',
                                       style: const TextStyle(
@@ -282,107 +304,107 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
                         ),
                         const SizedBox(height: 16),
                         Consumer<ReviewProvider>(
-                                        builder: (context, reviewProvider, child) {
-                                          // Para evitar múltiplas chamadas na reconstrução
-                                          if (!hasFetchedReviews) {
-                                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                                            if (tenant != null && reviewProvider.reviews.isEmpty && !reviewProvider.isLoading) {
-                                              reviewProvider.fetchReviews(targetId: tenant.id, type: 'TENANT');
-                                              hasFetchedReviews = true;
-                                            }
-                                          });
-                                          }
+                          builder: (context, reviewProvider, child) {
+                            // Para evitar múltiplas chamadas na reconstrução
+                            if (!hasFetchedReviews && tenant != null && !reviewProvider.isLoading) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (reviewProvider.reviews.isEmpty) { // Fetch only if reviews are empty
+                                  reviewProvider.fetchReviews(targetId: tenant.id!, type: 'TENANT');
+                                  hasFetchedReviews = true;
+                                }
+                              });
+                            }
 
-                                          if (reviewProvider.isLoading) {
-                                            return const CircularProgressIndicator();
-                                          }
+                            if (reviewProvider.isLoading) {
+                              return const CircularProgressIndicator();
+                            }
 
-                                          final reviews = reviewProvider.reviews;
-                                          double averageRating = 0;
+                            final reviews = reviewProvider.reviews;
+                            double averageRating = 0;
 
-                                          if (reviews.isNotEmpty) {
-                                            final totalRating = reviews.fold<double>(0, (sum, review) => sum + review.rating);
-                                            averageRating = totalRating / reviews.length;
+                            if (reviews.isNotEmpty) {
+                              final totalRating = reviews.fold<double>(0, (sum, review) => sum + review.rating);
+                              averageRating = totalRating / reviews.length;
 
-                                            return Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                const Text('Avaliação do inquilino', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                                const SizedBox(height: 8),
-                                                GestureDetector(
-                                                  onTap: () {
-                                                    Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                        builder: (context) => ReviewsScreen(
-                                                          reviewType: 'TENANT',
-                                                          targetId: tenant?.id ?? 1,
-                                                          title: 'Avaliações do Inquilino',
-                                                        ),
-                                                      ),
-                                                    );
-                                                  },
-                                                  child: Row(
-                                                    children: [
-                                                      // Assumindo que você tem um widget StarRating
-                                                      // StarRating(rating: averageRating, starSize: 20),
-                                                      Text('${averageRating.toStringAsFixed(1)} ', style: const TextStyle(fontSize: 18)),
-                                                      const Icon(Icons.star, color: Colors.amber),
-                                                      const SizedBox(width: 8),
-                                                      Text('(${reviews.length} avaliações)', style: const TextStyle(color: Colors.grey)),
-                                                    ],
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 8),
-                                                Align(
-                                                  alignment: Alignment.centerLeft,
-                                                  child: ElevatedButton(
-                                                    onPressed: () {
-                                                      Navigator.pushNamed(
-                                                        context,
-                                                        '/review',
-                                                        arguments: {
-                                                          'reviewType': 'OWNER',
-                                                          'targetId': tenant?.id ?? 1,
-                                                          'targetName': tenant?.name ?? 'Nome não informado',
-                                                        },
-                                                      );
-                                                    },
-                                                    child: const Text('Avaliar Inquilino'),
-                                                  ),
-                                                ),
-                                              ],
-                                            );
-                                          } else {
-                                            return Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                const Text('Avaliação do inquilino', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                                const SizedBox(height: 8),
-                                                const Text('Nenhuma avaliação ainda.'),
-                                                const SizedBox(height: 8),
-                                                Align(
-                                                  alignment: Alignment.centerLeft,
-                                                  child: ElevatedButton(
-                                                    onPressed: () {
-                                                      Navigator.pushNamed(
-                                                        context,
-                                                        '/review',
-                                                        arguments: {
-                                                          'reviewType': 'TENANT',
-                                                          'targetId': tenant?.id ?? 1,
-                                                          'targetName': tenant?.name,
-                                                        },
-                                                      );
-                                                    },
-                                                    child: const Text('Avaliar Proprietário'),
-                                                  ),
-                                                ),
-                                              ],
-                                            );
-                                          }
-                                        },
-                                      ),
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('Avaliação do inquilino', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                  const SizedBox(height: 8),
+                                  GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => ReviewsScreen(
+                                            reviewType: 'TENANT',
+                                            targetId: tenant?.id ?? 1,
+                                            title: 'Avaliações do Inquilino',
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Row(
+                                      children: [
+                                        // Assumindo que você tem um widget StarRating
+                                        // StarRating(rating: averageRating, starSize: 20),
+                                        Text('${averageRating.toStringAsFixed(1)} ', style: const TextStyle(fontSize: 18)),
+                                        const Icon(Icons.star, color: Colors.amber),
+                                        const SizedBox(width: 8),
+                                        Text('(${reviews.length} avaliações)', style: const TextStyle(color: Colors.grey)),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.pushNamed(
+                                          context,
+                                          '/review',
+                                          arguments: {
+                                            'reviewType': 'TENANT', // Se for avaliar o proprietário, o tipo é OWNER
+                                            'targetId': tenant?.id ?? 1, // Se for avaliar o proprietário, o ID alvo é o do proprietário (tenant.ownerId talvez?)
+                                            'targetName': tenant?.name, // Nome do proprietário
+                                          },
+                                        );
+                                      },
+                                      child: const Text('Avaliar Inquilino'), // Corrigido o texto do botão
+                                    ),
+                                  ),
+                                ],
+                              );
+                            } else {
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('Avaliação do inquilino', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                  const SizedBox(height: 8),
+                                  const Text('Nenhuma avaliação ainda.'),
+                                  const SizedBox(height: 8),
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.pushNamed(
+                                          context,
+                                          '/review',
+                                          arguments: {
+                                            'reviewType': 'TENANT', // Se for avaliar o proprietário, o tipo é OWNER
+                                            'targetId': tenant?.id ?? 1, // Se for avaliar o proprietário, o ID alvo é o do proprietário (tenant.ownerId talvez?)
+                                            'targetName': tenant?.name, // Nome do proprietário
+                                          },
+                                        );
+                                      },
+                                      child: const Text('Avaliar Inquilino'), // Corrigido o texto do botão
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }
+                          },
+                        ),
                         const SizedBox(height: 24),
                         const Text(
                           'Histórico na plataforma',
@@ -445,7 +467,7 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
                         const SizedBox(height: 8),
                         Center(
                           child: Text(
-                            tenant != null
+                            tenant != null && tenant.memberSince != null
                                 ? 'Usuário desde ${tenant.memberSince}'
                                 : 'Usuário desde: Não informado',
                             style: TextStyle(
@@ -489,10 +511,10 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
           backgroundColor: Colors.green[600],
           selectedItemColor: Colors.white,
           unselectedItemColor: Colors.white70,
-          currentIndex: _selectedIndex, 
+          currentIndex: _selectedIndex,
           onTap: (index) {
             setState(() {
-              _selectedIndex = index; // Added: Update selected index
+              _selectedIndex = index;
             });
             switch (index) {
               case 0:
@@ -519,27 +541,24 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
                 );
                 break;
               case 3:
-                // Modified: Logic to choose profile based on user type
                 if (_userType == 'Proprietario') {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (context) => const OwnerProfileScreen()),
                   );
                 } else if (_userType == 'Inquilino') {
-                  // Already on TenantProfileScreen, do nothing
+                  // Já está na TenantProfileScreen, não faz nada
                 } else {
-                  // If user type is undefined (not logged in or error)
                   Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const UnauthorizedScreen()),
-                );
+                    context,
+                    MaterialPageRoute(builder: (context) => const UnauthorizedScreen()),
+                  );
                 }
                 break;
             }
           },
         ),
       ),
-  
     );
   }
 }
