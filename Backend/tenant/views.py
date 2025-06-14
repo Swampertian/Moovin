@@ -80,9 +80,9 @@ class ServeImageBlobAPIView(APIView):
         print("  First 20 bytes of blob:", photo.image_blob[:20] if photo.image_blob else None)
         return HttpResponse(photo.image_blob, content_type=photo.content_type)
 class TenantPhotoListAPIView(APIView):
-    def get(self, request, owner_id):
+    def get(self, request, tenant_id):
         try:
-            tenant = Tenant.objects.get(id=owner_id)
+            tenant = Tenant.objects.get(id=tenant_id)
         except Tenant.DoesNotExist:
             return Response({'error': 'Owner not found'}, status=status.HTTP_404_NOT_FOUND)
 
