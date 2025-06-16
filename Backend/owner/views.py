@@ -104,18 +104,21 @@ class OwnerViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    
     @action(detail=True, methods=['get'], url_path='getbyimmobile')
-    def get_owner(self, request, pk):
+    def immobile_owner(self, request, pk=None):
         try:
-            immobile = Immobile.objects.get(id_immobile=pk)
+            immobile = Immobile.objects.get(pk=pk)
             profile = immobile.owner
-            if profile == None:
+            if profile is None:
                 return Response({"detail": "Este imóvel não possui um proprietário associado."}, status=status.HTTP_404_NOT_FOUND)
         except Immobile.DoesNotExist:
             return Response({"detail": "Imóvel não encontrado."}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = self.get_serializer(profile)
         return Response(serializer.data)
+
 class ServeImageBlobAPIView(APIView):
     """
     Retorna o conteúdo binário da foto.

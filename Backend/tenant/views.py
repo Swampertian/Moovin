@@ -29,7 +29,7 @@ class TenantViewSet(ModelViewSet):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    @action(detail=False, methods=['get'], url_path='me')
+    @action(detail=False, methods=['get'], url_path='profile/me')
     def me(self,request):
         try:
             profile = Tenant.objects.get(user=request.user)
