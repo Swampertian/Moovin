@@ -27,14 +27,19 @@ class OwnerPhotoSerializer(serializers.ModelSerializer):
 class OwnerSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())  
     properties = ImmobileSerializer(many=True, read_only=True)
-    photosBlob = OwnerPhotoSerializer(many=True,source='photos_blob',required=False,allow_null=True)
+
+    photos = OwnerPhotoSerializer(many=True,read_only=True,source='photos_blob',allow_null=True)
+
     class Meta:
         model = Owner
         fields = [
             'id', 'user', 'name', 'phone', 'city', 'state', 'about_me',
             'revenue_generated', 'rented_properties', 'rated_by_tenants',
-            'recommended_by_tenants', 'fast_responder', 'properties','photosBlob',
+            'recommended_by_tenants', 'fast_responder', 'properties','photos',
         ]
+
+        #read_only_fields = ['id', 'user']
+
         read_only_fields = ['id']
     def create(self, validated_data):
     
@@ -47,3 +52,4 @@ class OwnerSerializer(serializers.ModelSerializer):
             OwnerPhoto.objects.create(owner=owner, **photo_data)
 
         return owner
+

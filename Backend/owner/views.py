@@ -165,8 +165,12 @@ class OwnerPhotoUploadAPIView(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
     def post(self, request, format=None):
-        uploaded_file = request.FILES.get('photo')
+
+        print(f"Request method: {request.method}")
+        
+        uploaded_file = request.FILES.get('photos')
         owner_id = request.data.get('owner_id')
+        print(f"Uploaded file name (from request.FILES.get('photos')): {uploaded_file.name if uploaded_file else 'None'}")
 
         if not uploaded_file or not owner_id:
             return Response({'error': 'Missing photo or owner_id'}, status=status.HTTP_400_BAD_REQUEST)
@@ -185,10 +189,7 @@ class OwnerPhotoUploadAPIView(APIView):
         return Response({'message': 'Photo uploaded successfully', 'photo_id': photo.id}, status=status.HTTP_201_CREATED)
         
 #Criacao de PERFIL SEM AUTENTICACAO.
-class OwnerCreateView(generics.CreateAPIView):
-    queryset = Owner.objects.all()
-    serializer_class = OwnerSerializer
-    permission_classes = [AllowAny]
+
 
 
 # Statistics Page
