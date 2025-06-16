@@ -19,7 +19,7 @@ class TenantPhotoSerializer(serializers.ModelSerializer):
         return None
 
 class TenantSerializer(serializers.ModelSerializer):
-    photosBlob = TenantPhotoSerializer(many=True,read_only=True,source='photo_blob')
+    photos = TenantPhotoSerializer(many=True,read_only=True,source='photos_blob')
     
     class Meta:
         model = Tenant
@@ -28,6 +28,6 @@ class TenantSerializer(serializers.ModelSerializer):
             'about_me', 'prefers_studio', 'prefers_apartment',
             'prefers_shared_rent', 'accepts_pets', 'user_rating',
             'properties_rented', 'rated_by_landlords', 'recommended_by_landlords',
-            'favorited_properties', 'fast_responder', 'member_since','photosBlob',
+            'favorited_properties', 'fast_responder', 'member_since','photos'
         ]
 

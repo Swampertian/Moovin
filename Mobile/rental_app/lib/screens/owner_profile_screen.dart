@@ -4,7 +4,7 @@ import 'review_screen.dart';
 import '../providers/review_provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../providers/owner_provider.dart';
-import '../models/owner.dart';
+import '../models/owner.dart'; // O seu modelo Owner já foi atualizado e tem 'photos'
 import 'edit_owner_profile_screen.dart';
 import 'owner_immobiles_screen.dart';
 import 'edit_immobile_screen.dart';
@@ -16,15 +16,11 @@ import 'tenant_profile_screen.dart';
 import 'login_screen.dart';
 import '../providers/notification_provider.dart';
 import 'unauthorized_screen.dart';
-
+import 'dart:convert';
 
 class OwnerProfileScreen extends StatefulWidget {
-
-
   final int? immobileId;
-  // const OwnerProfileScreen({super.key});
   const OwnerProfileScreen({Key? key, this.immobileId}) : super(key: key);
-
 
   @override
   _OwnerProfileScreenState createState() => _OwnerProfileScreenState();
@@ -70,24 +66,20 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
     if (!loggedIn) {
       Navigator.of(context).pushReplacementNamed('/login');
       return;
-    }
-    else if (isOwner) {
+    } else if (isOwner) {
       permissions = true;
-      return;
     }
-
 
     setState(() {
       _isLoading = false;
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => OwnerProvider()..fetchOwner(immobileId : widget.immobileId)),
+        ChangeNotifierProvider(create: (_) => OwnerProvider()..fetchOwner(immobileId: widget.immobileId)),
         ChangeNotifierProvider(create: (_) => ReviewProvider()),
       ],
       child: Consumer<OwnerProvider>(
@@ -95,18 +87,21 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
           final owner = provider.owner;
           bool hasFetchedReviews = false;
 
+          // Extrai a URL da primeira foto, se existir
+          final String? base64Image = owner != null && owner.photos.isNotEmpty
+          ? owner.photos.first.imageBase64
+          : null;
+
           return Scaffold(
             backgroundColor: Colors.white,
             appBar: AppBar(
               backgroundColor: Colors.green,
               title: const Text('Perfil'),
-              // Adicionado para o título ser branco
               titleTextStyle: const TextStyle(color: Colors.white, fontSize: 20),
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () => Navigator.pop(context),
               ),
-              // Adicionado para os ícones serem brancos
               iconTheme: const IconThemeData(color: Colors.white),
               actions: [
                 IconButton(
@@ -116,39 +111,39 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
                     Navigator.pushNamed(context, '/notifications');
                   },
                 ),
-                if(permissions)
-                IconButton(
-                  icon: const Icon(Icons.edit),
-                  tooltip: 'Editar Perfil',
-                  onPressed: owner == null
-                      ? null
-                      : () async {
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => EditOwnerProfileScreen(owner: owner),
-                            ),
-                          );
-                          if (result == true) {
-                            provider.fetchOwner();
-                          }
-                        },
-                ),
-                if(permissions)
-                IconButton(
-                  icon: const Icon(Icons.home_work),
-                  tooltip: 'Meus Imóveis',
-                  onPressed: owner == null
-                      ? null
-                      : () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const OwnerImmobilesScreen(),
-                            ),
-                          );
-                        },
-                ),
+                if (permissions)
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    tooltip: 'Editar Perfil',
+                    onPressed: owner == null
+                        ? null
+                        : () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => EditOwnerProfileScreen(owner: owner),
+                              ),
+                            );
+                            if (result == true) {
+                              provider.fetchOwner(immobileId: widget.immobileId); // Recarrega após edição
+                            }
+                          },
+                  ),
+                if (permissions)
+                  IconButton(
+                    icon: const Icon(Icons.home_work),
+                    tooltip: 'Meus Imóveis',
+                    onPressed: owner == null
+                        ? null
+                        : () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const OwnerImmobilesScreen(),
+                              ),
+                            );
+                          },
+                  ),
               ],
             ),
             body: provider.isLoading
@@ -174,11 +169,20 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
                                               padding: const EdgeInsets.all(16.0),
                                               child: Column(
                                                 children: [
-                                                  const CircleAvatar(
-                                                    radius: 40,
-                                                    backgroundColor: Colors.grey,
-                                                    child: Icon(Icons.person, size: 50, color: Colors.white),
-                                                  ),
+                                                 CircleAvatar(
+                                                  radius: 40,
+                                                  backgroundColor: Colors.grey,
+                                                  child: base64Image != null && base64Image.isNotEmpty
+                                                      ? ClipOval(
+                                                          child: Image.memory(
+                                                            base64Decode(base64Image.split(',').last), // Remove prefixo se houver
+                                                            width: 80,
+                                                            height: 80,
+                                                            fit: BoxFit.cover,
+                                                          ),
+                                                        )
+                                                      : const Icon(Icons.person, size: 50, color: Colors.white),
+                                                ),
                                                   const SizedBox(height: 8),
                                                   Text(
                                                     owner.name,
@@ -217,14 +221,13 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
 
                                       Consumer<ReviewProvider>(
                                         builder: (context, reviewProvider, child) {
-                                          // Para evitar múltiplas chamadas na reconstrução
                                           if (!hasFetchedReviews) {
-                                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                                            if (owner != null && reviewProvider.reviews.isEmpty && !reviewProvider.isLoading) {
-                                              reviewProvider.fetchReviews(targetId: owner.id, type: 'OWNER');
-                                              hasFetchedReviews = true;
-                                            }
-                                          });
+                                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                                              if (owner != null && reviewProvider.reviews.isEmpty && !reviewProvider.isLoading) {
+                                                reviewProvider.fetchReviews(targetId: owner.id, type: 'OWNER');
+                                                hasFetchedReviews = true;
+                                              }
+                                            });
                                           }
 
                                           if (reviewProvider.isLoading) {
@@ -258,8 +261,6 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
                                                   },
                                                   child: Row(
                                                     children: [
-                                                      // Assumindo que você tem um widget StarRating
-                                                      // StarRating(rating: averageRating, starSize: 20),
                                                       Text('${averageRating.toStringAsFixed(1)} ', style: const TextStyle(fontSize: 18)),
                                                       const Icon(Icons.star, color: Colors.amber),
                                                       const SizedBox(width: 8),
@@ -466,9 +467,9 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
                       );
                     } else {
                       Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const UnauthorizedScreen()),
-                    );
+                        context,
+                        MaterialPageRoute(builder: (context) => const UnauthorizedScreen()),
+                      );
                     }
                     break;
                 }

@@ -104,18 +104,21 @@ class OwnerViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    
     @action(detail=True, methods=['get'], url_path='getbyimmobile')
-    def get_owner(self, request, pk):
+    def immobile_owner(self, request, pk=None):
         try:
-            immobile = Immobile.objects.get(id_immobile=pk)
+            immobile = Immobile.objects.get(pk=pk)
             profile = immobile.owner
-            if profile == None:
+            if profile is None:
                 return Response({"detail": "Este imóvel não possui um proprietário associado."}, status=status.HTTP_404_NOT_FOUND)
         except Immobile.DoesNotExist:
             return Response({"detail": "Imóvel não encontrado."}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = self.get_serializer(profile)
         return Response(serializer.data)
+
 class ServeImageBlobAPIView(APIView):
     """
     Retorna o conteúdo binário da foto.
@@ -162,8 +165,12 @@ class OwnerPhotoUploadAPIView(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
     def post(self, request, format=None):
-        uploaded_file = request.FILES.get('photo')
+
+        print(f"Request method: {request.method}")
+        
+        uploaded_file = request.FILES.get('photos')
         owner_id = request.data.get('owner_id')
+        print(f"Uploaded file name (from request.FILES.get('photos')): {uploaded_file.name if uploaded_file else 'None'}")
 
         if not uploaded_file or not owner_id:
             return Response({'error': 'Missing photo or owner_id'}, status=status.HTTP_400_BAD_REQUEST)
@@ -182,10 +189,7 @@ class OwnerPhotoUploadAPIView(APIView):
         return Response({'message': 'Photo uploaded successfully', 'photo_id': photo.id}, status=status.HTTP_201_CREATED)
         
 #Criacao de PERFIL SEM AUTENTICACAO.
-class OwnerCreateView(generics.CreateAPIView):
-    queryset = Owner.objects.all()
-    serializer_class = OwnerSerializer
-    permission_classes = [AllowAny]
+
 
 
 # Statistics Page

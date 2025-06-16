@@ -11,6 +11,7 @@ class OwnerImmobilesScreen extends StatelessWidget {
 
   Future<void> _launchRegisterUrl() async {
     const url = 'https://moovin.onrender.com/api/immobile/register/part1/'; 
+
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
