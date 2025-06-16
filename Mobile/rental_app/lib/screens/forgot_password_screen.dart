@@ -24,7 +24,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final TextEditingController _newPasswordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
-  final ApiService _apiService = ApiService(baseUrl: 'http://localhost:8000/api');
+  final ApiService _apiService = ApiService(baseUrl: 'https://moovin.onrender.com/api');
   String? _errorMessage;
 
   Future<void> _sendCode() async {
