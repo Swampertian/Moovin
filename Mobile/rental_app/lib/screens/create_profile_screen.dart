@@ -159,14 +159,14 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
 
         // Navegar para a tela de login
         Navigator.pushReplacementNamed(context, '/login');
-      } else {
+        } else {
         final errorData = jsonDecode(response.body);
         _showSnackBar('Erro ao criar perfil: $errorData', Colors.red);
+        }
       }
-    } catch (e) {
+  }  catch (e) {
       _showSnackBar('Erro na conexão com o servidor: $e', Colors.red);
     }
-  }
 
   void _showSnackBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
