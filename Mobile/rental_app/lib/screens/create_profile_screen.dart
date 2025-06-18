@@ -78,22 +78,22 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
 
     final body = widget.isOwner
         ? {
-            'user': int.parse(widget.userId),
-            'name': widget.name,
-            'phone': _phoneController.text,
-            'city': _cityController.text,
-            'state': _stateController.text,
-            'about_me': _aboutMeController.text,
-          }
+      'user': int.parse(widget.userId),
+      'name': widget.name,
+      'phone': _phoneController.text,
+      'city': _cityController.text,
+      'state': _stateController.text,
+      'about_me': _aboutMeController.text,
+    }
         : {
-            'user': int.parse(widget.userId),
-            'name': widget.name,
-            'age': int.tryParse(_ageController.text) ?? 0,
-            'job': _jobController.text,
-            'city': _cityController.text,
-            'state': _stateController.text,
-            'about_me': _aboutMeController.text,
-          };
+      'user': int.parse(widget.userId),
+      'name': widget.name,
+      'age': int.tryParse(_ageController.text) ?? 0,
+      'job': _jobController.text,
+      'city': _cityController.text,
+      'state': _stateController.text,
+      'about_me': _aboutMeController.text,
+    };
 
     try {
       // Criar o perfil
@@ -115,14 +115,18 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
         // Fazer upload da imagem, se selecionada
         if (_selectedImage != null) {
           final uploadUrl = widget.isOwner
-              ? Uri.parse('http://127.0.0.1:8000/api/owners/owner-photo-upload/')
-              : Uri.parse('http://127.0.0.1:8000/api/tenants/owner-photo-upload/');
-
+              ? Uri.parse(
+              'http://127.0.0.1:8000/api/owners/owner-photo-upload/')
+              : Uri.parse(
+              'http://127.0.0.1:8000/api/tenants/owner-photo-upload/');
+        }
         if (widget.isOwner && _selectedImage != null) {
-          final uploadUrl = Uri.parse('https://moovin.onrender.com/api/owners/owner-photo-upload/');
+          final uploadUrl = Uri.parse(
+              'https://moovin.onrender.com/api/owners/owner-photo-upload/');
           var request = http.MultipartRequest('POST', uploadUrl);
           // Adicionar o ID do perfil (owner_id ou tenant_id)
-          request.fields[widget.isOwner ? 'owner_id' : 'tenant_id'] = profileId.toString();
+          request.fields[widget.isOwner ? 'owner_id' : 'tenant_id'] =
+              profileId.toString();
 
           // Adicionar o arquivo de imagem
           if (kIsWeb) {
@@ -132,10 +136,14 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                 'photos',
                 bytes,
                 filename: _selectedImage!.name,
-                contentType: MediaType('image', _selectedImage!.name.split('.').last),
+                contentType: MediaType('image', _selectedImage!
+                    .name
+                    .split('.')
+                    .last),
               ),
             );
-          } else {
+          }
+          else {
             request.files.add(
               await http.MultipartFile.fromPath(
                 'photos',
@@ -146,28 +154,30 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
 
           // Enviar a requisição de upload
           final uploadResponse = await request.send();
-          if (uploadResponse.statusCode == 201 || uploadResponse.statusCode == 200) {
+          if (uploadResponse.statusCode == 201 ||
+              uploadResponse.statusCode == 200) {
             _showSnackBar('Perfil e foto criados com sucesso!', Colors.green);
-          } else {
+          }
+          else {
             final errorData = await uploadResponse.stream.bytesToString();
             _showSnackBar('Erro ao enviar a foto: $errorData', Colors.red);
             return;
           }
-        } else {
+        }
+        else {
           _showSnackBar('Perfil criado com sucesso!', Colors.green);
         }
 
         // Navegar para a tela de login
         Navigator.pushReplacementNamed(context, '/login');
-        } else {
+      } else {
         final errorData = jsonDecode(response.body);
         _showSnackBar('Erro ao criar perfil: $errorData', Colors.red);
-        }
       }
-  }  catch (e) {
+    } catch (e) {
       _showSnackBar('Erro na conexão com o servidor: $e', Colors.red);
     }
-
+  }
   void _showSnackBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: color),
