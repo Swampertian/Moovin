@@ -116,9 +116,9 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
         if (_selectedImage != null) {
           final uploadUrl = widget.isOwner
               ? Uri.parse(
-              'http://127.0.0.1:8000/api/owners/owner-photo-upload/')
+              'https://moovin.onrender.com/api/owners/owner-photo-upload/')
               : Uri.parse(
-              'http://127.0.0.1:8000/api/tenants/owner-photo-upload/');
+              'https://moovin.onrender.com/api/tenants/owner-photo-upload/');
         }
         if (widget.isOwner && _selectedImage != null) {
           final uploadUrl = Uri.parse(
