@@ -39,8 +39,8 @@ DEFAULT_FROM_EMAIL = 'moovinaplicativo@gmail.com'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
-DEBUG = "True"
-# DEBUG = os.getenv("DEBUG", "False") == "True"
+# DEBUG = "True"
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
 
 # ALLOWED_HOSTS = ["*"]
