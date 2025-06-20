@@ -115,11 +115,9 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
         // Fazer upload da imagem, se selecionada
         if (_selectedImage != null) {
           final uploadUrl = widget.isOwner
-              ? Uri.parse('http://127.0.0.1:8000/api/owners/owner-photo-upload/')
-              : Uri.parse('http://127.0.0.1:8000/api/tenants/owner-photo-upload/');
+              ? Uri.parse('https://moovin.onrender.com/api/owners/owner-photo-upload/')
+              : Uri.parse('https://moovin.onrender.com/api/tenants/owner-photo-upload/');
 
-        if (widget.isOwner && _selectedImage != null) {
-          final uploadUrl = Uri.parse('https://moovin.onrender.com/api/owners/owner-photo-upload/');
           var request = http.MultipartRequest('POST', uploadUrl);
           // Adicionar o ID do perfil (owner_id ou tenant_id)
           request.fields[widget.isOwner ? 'owner_id' : 'tenant_id'] = profileId.toString();
